@@ -136,110 +136,140 @@ THEME = {
 load_css()
 
 
-# --- CLEAN HEADER ---
-header_container = st.container(border=True)
 
-with header_container:
-    left_col, right_col = st.columns([7.5, 4.5], vertical_alignment="center")
+# --- N.O.R.A SOC LAYOUT ---
 
-    with left_col:
-        logo_col, text_col = st.columns([1, 7], gap="small", vertical_alignment="center")
+sidebar_html = f"""<div class='nora-command-sidebar'>
+<div class='nora-sidebar-logo'>
+N.O.R.A
+</div>
 
-        with logo_col:
+<div class='nora-sidebar-nav-item active'>
+{get_icon("activity")}
+<span>Overview</span>
+</div>
+
+<div class='nora-sidebar-nav-item'>
+{get_icon("shield")}
+<span>Threat</span>
+</div>
+
+<div class='nora-sidebar-nav-item'>
+{get_icon("bar_chart")}
+<span>Traffic</span>
+</div>
+
+<div class='nora-sidebar-nav-item'>
+{get_icon("brain")}
+<span>Detection</span>
+</div>
+
+<div class='nora-sidebar-bottom-tools'>
+<div class='nora-sidebar-tool-icon nora-sidebar-tool-settings' title='Settings'>
+<img class='nora-inline-svg' src='https://api.iconify.design/lucide/settings.svg' />
+</div>
+
+<div class='nora-sidebar-tool-icon nora-sidebar-tool-user' title='Logged in as: Analyst'>
+<img class='nora-inline-svg' src='https://api.iconify.design/lucide/user-round.svg' />
+</div>
+</div>
+
+</div>"""
+
+st.markdown(sidebar_html.strip(), unsafe_allow_html=True)
+
+with st.container():
+
+    header_container = st.container(border=True)
+
+    with header_container:
+        left_col, right_col = st.columns([7.5, 4.5], vertical_alignment="center")
+
+        with left_col:
+            st.markdown("# PROJECT N.O.R.A")
+
+        with right_col:
             st.markdown(
                 """
-                <div class='nora-logo-placeholder'>
-                    N.O.R.A<br>LOGO
+                <div class='nora-analyst-badge'>
+                    <span>● N.O.R.A: NETWORK OPERATIONS & RESPONSE ANALYST ●</span>
                 </div>
                 """,
                 unsafe_allow_html=True
             )
 
-        with text_col:
-            st.markdown("# PROJECT N.O.R.A")
+with st.container():
+    # --- GREETING + CONTROL BAR ---
+    current_hour = datetime.datetime.now().hour
 
+    if current_hour < 12:
+        greeting = "Good morning"
+    elif current_hour < 18:
+        greeting = "Good afternoon"
+    else:
+        greeting = "Good evening"
 
-    with right_col:
-        st.markdown(
-            """
-            <div class='nora-analyst-badge'>
-                <span>● N.O.R.A: NETWORK OPERATIONS & RESPONSE ANALYST ●</span>
-            </div>
-            """,
-    unsafe_allow_html=True
+    control_bg = '#111827' if dark_mode else '#FFFFFF'
+    control_border = '#334155' if dark_mode else '#E5E7EB'
+    status_color = '#22C55E'
 
-)
+    control_container = st.container(border=True)
 
-# --- GREETING + CONTROL BAR ---
-current_hour = datetime.datetime.now().hour
+    with control_container:
 
-if current_hour < 12:
-    greeting = "Good morning"
-elif current_hour < 18:
-    greeting = "Good afternoon"
-else:
-    greeting = "Good evening"
-
-control_bg = '#111827' if dark_mode else '#FFFFFF'
-control_border = '#334155' if dark_mode else '#E5E7EB'
-status_color = '#22C55E'
-
-control_container = st.container(border=True)
-
-with control_container:
-
-    left_col, mid_col, right_col = st.columns(
-        [3, 4, 3],
-        gap="large",
-        vertical_alignment="center"
-    )
-
-    with left_col:
-        st.markdown(
-            f"""
-            <div class='nora-greeting-block'>
-                <div class='nora-greeting-title'>{greeting}, Analyst </div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    with mid_col:
-        st.markdown("<div class='nora-radio-align-wrap'>", unsafe_allow_html=True)
-
-        label_col, radio_col = st.columns(
-            [0.01, 5],
-            gap="small",
+        left_col, mid_col, right_col = st.columns(
+            [3, 4, 3],
+            gap="large",
             vertical_alignment="center"
         )
 
-        with radio_col:
-            option = st.radio(
-                "Analyse logs",
-                ("Use sample logs", "Upload log file"),
-                horizontal=True,
-                label_visibility="collapsed"
+        with left_col:
+            st.markdown(
+                f"""
+                <div class='nora-greeting-block'>
+                    <div class='nora-greeting-title'>{greeting}, Analyst </div>
+                </div>
+                """,
+                unsafe_allow_html=True
             )
 
-        st.markdown("</div>", unsafe_allow_html=True)
+        with mid_col:
+            st.markdown("<div class='nora-radio-align-wrap'>", unsafe_allow_html=True)
 
-    with right_col:
-        status_text = (
-            "📄 Using sample log dataset"
-            if option == "Use sample logs"
-            else "📤 External log upload mode"
-        )
+            label_col, radio_col = st.columns(
+                [0.01, 5],
+                gap="small",
+                vertical_alignment="center"
+            )
 
-        st.markdown(
-            f"""
-            <div class='nora-live-status'>
-                <div class='nora-live-dot'></div>
-                <span>{status_text}</span>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+            with radio_col:
+                option = st.radio(
+                    "Analyse logs",
+                    ("Use sample logs", "Upload log file"),
+                    horizontal=True,
+                    label_visibility="collapsed"
+                )
 
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        with right_col:
+            status_text = (
+                "📄 Using sample log dataset"
+                if option == "Use sample logs"
+                else "📤 External log upload mode"
+            )
+
+            st.markdown(
+                f"""
+                <div class='nora-live-status'>
+                    <div class='nora-live-dot'></div>
+                    <span>{status_text}</span>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+        # Workspace wrapper continues into dashboard rendering
 # ---------------- FUNCTION TO RENDER DASHBOARD ----------------
 
 def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies, df_anom, pattern_colors):
@@ -619,17 +649,6 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
                         size=11
                     ),
                     title=None
-                )
-                # --- Traffic Overview LIVE ANALYSIS strip and telemetry cards (no nested container) ---
-                st.markdown(
-                    """
-                    <div class='nora-panel-badge-wrap'>
-                        <div class='nora-panel-badge'>
-                            LIVE ANALYSIS
-                        </div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
                 )
 
                 telemetry1, telemetry2, telemetry3, telemetry4, telemetry5, telemetry6, telemetry7 = st.columns(7)
