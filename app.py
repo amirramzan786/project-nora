@@ -1,5 +1,11 @@
 
+
 import streamlit as st
+import base64
+
+def get_base64_image(image_path):
+    with open(image_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
 
 def load_css():
     with open("assets/style.css") as f:
@@ -135,13 +141,11 @@ THEME = {
 # --- Global Styling ---
 load_css()
 
-
-
 # --- N.O.R.A SOC LAYOUT ---
 
 sidebar_html = f"""<div class='nora-command-sidebar'>
-<div class='nora-sidebar-logo'>
-N.O.R.A
+<div class='nora-sidebar-logo nora-sidebar-logo-image'>
+    <img src='data:image/png;base64,{get_base64_image("logo.png")}' alt='N.O.R.A Logo'>
 </div>
 
 <div class='nora-sidebar-nav-item active'>
@@ -1140,27 +1144,39 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
     log_container = st.container(border=True)
 
     with log_container:
-        st.markdown(f"## {get_icon('search')} Traffic Log Analysis", unsafe_allow_html=True)
 
-        row1_left, row1_right = st.columns([1.35, 1], gap="large")
+        title_left, title_right = st.columns([1, 1], gap="medium")
+
+        with title_left:
+            st.markdown(f"## {get_icon('search')} Traffic Log Analysis", unsafe_allow_html=True)
+
+        with title_right:
+            st.markdown(f"## {get_icon('shield_alert')} Security Alerts", unsafe_allow_html=True)
+
+        row1_left, row1_right = st.columns([1, 1], gap="medium")
 
         # --- Normal Activity (structured) ---
         with row1_left:
             if normal_activity:
-                for entry in normal_activity[:5]:
+                for entry in normal_activity[:3]:
                     st.markdown(f"""
-<div class='nora-activity-card'>
-    <strong>{entry['ip']}</strong><br>
-    <small>{entry['timestamp']}</small>
-    <p>Requests: {entry['count']}</p>
+<div class='nora-activity-card nora-activity-inline-card'>
+    <span class='nora-inline-ip'>{entry['ip']}</span>
+    <span class='nora-inline-time'>{entry['timestamp']}</span>
+    <span class='nora-inline-requests'>Requests: {entry['count']}</span>
 </div>
 """, unsafe_allow_html=True)
             else:
                 st.success("No normal traffic recorded")
 
+            st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+
+            if st.button("See More Logs", key="see_more_logs"):
+                st.session_state.active_page = "traffic"
+                st.rerun()
+
         # --- Unified Alerts (ML + Rule-Based) ---
         with row1_right:
-            st.write("### Security Alerts")
 
             combined_alerts = []
 
@@ -1198,22 +1214,28 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
 
                     if alert["level"] == "high":
                         st.markdown(f"""
-<div class='nora-activity-card'>
-    <strong>{get_icon("shield_alert")} High Activity</strong>
-    <p>{msg}</p>
+<div class='nora-activity-card nora-alert-inline-card nora-alert-high'>
+    <span class='nora-alert-inline-title'>🔴 High Activity</span>
+    <span class='nora-alert-inline-msg'>{msg}</span>
 </div>
 """, unsafe_allow_html=True)
 
                     else:
                         st.markdown(f"""
-<div class='nora-activity-card'>
-    <strong>{get_icon("alert_triangle")} Suspicious Traffic</strong>
-    <p>{msg}</p>
+<div class='nora-activity-card nora-alert-inline-card nora-alert-medium'>
+    <span class='nora-alert-inline-title'>🟠 Suspicious Traffic</span>
+    <span class='nora-alert-inline-msg'>{msg}</span>
 </div>
 """, unsafe_allow_html=True)
 
             else:
                 st.success("No suspicious activity detected")
+
+            st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+
+            if st.button("See More Security Alerts", key="see_more_security_alerts"):
+                st.session_state.active_page = "threat"
+                st.rerun()
 
 
 # ---------------- MAIN LOGIC ----------------
