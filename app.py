@@ -5,7 +5,42 @@ def load_css():
     with open("assets/style.css") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-from textwrap import dedent
+
+
+# --- Centralised SVG Icon System ---
+SVG_ICONS = {
+    "database": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/database.svg' />",
+
+    "shield_alert": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/shield-alert.svg' />",
+
+    "shield": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/shield.svg' />",
+
+    "timer": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/timer-reset.svg' />",
+
+    "activity": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/activity.svg' />",
+
+    "brain": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/brain-circuit.svg' />",
+
+    "alert_triangle": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/alert-triangle.svg' />",
+
+    "check_circle": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/check-circle.svg' />",
+
+    "shield_warning": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/shield-alert.svg' />",
+
+    "bar_chart": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/chart-column.svg' />",
+
+    "globe": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/globe.svg' />",
+
+    "clock": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/clock-3.svg' />",
+
+    "folder": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/folder.svg' />",
+
+    "search": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/search.svg' />"
+}
+
+
+def get_icon(name):
+    return SVG_ICONS.get(name, "")
 
 
 from src.log_parser import read_logs
@@ -163,7 +198,7 @@ with control_container:
         st.markdown(
             f"""
             <div class='nora-greeting-block'>
-                <div class='nora-greeting-title'>{greeting}, Analyst 👋</div>
+                <div class='nora-greeting-title'>{greeting}, Analyst </div>
             </div>
             """,
             unsafe_allow_html=True
@@ -220,9 +255,9 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
 
             if max_requests >= 5:
                 st.markdown(
-                    """
+                    f"""
                     <div class='nora-alert-banner danger'>
-                        <span class='nora-alert-icon'>🚨</span>
+                        <div class='nora-alert-icon'>{get_icon("shield_alert")}</div>
                         <div>
                             <div class='nora-alert-title'>DDoS Attack Detected</div>
                             <div class='nora-alert-sub'>Immediate attention required</div>
@@ -234,9 +269,9 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
 
             elif max_requests >= 3:
                 st.markdown(
-                    """
+                    f"""
                     <div class='nora-alert-banner warning'>
-                        <span class='nora-alert-icon'>⚠️</span>
+                        <div class='nora-alert-icon'>{get_icon("alert_triangle")}</div>
                         <div>
                             <div class='nora-alert-title'>Suspicious Traffic Detected</div>
                             <div class='nora-alert-sub'>Monitoring and investigation advised</div>
@@ -248,9 +283,9 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
 
             else:
                 st.markdown(
-                    """
+                    f"""
                     <div class='nora-alert-banner success'>
-                        <span class='nora-alert-icon'>✅</span>
+                        <div class='nora-alert-icon'>{get_icon("check_circle")}</div>
                         <div>
                             <div class='nora-alert-title'>Normal Traffic Conditions</div>
                             <div class='nora-alert-sub'>No active denial-of-service indicators detected</div>
@@ -263,15 +298,18 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
     # st.markdown("<div style='margin-top:-12px;'></div>", unsafe_allow_html=True)
     # --- Key Metrics ---
     st.markdown("## Detection Summary")
+    def metric_card(title, value, subtitle="", icon="", risk_class=""):
 
-    def metric_card(title, value, subtitle="", icon="📊", risk_class=""):
-        card_html = f"""
-<div class='nora-metric-card'>
-    <div class='nora-metric-title'>{icon} {title}</div>
-    <div class='nora-metric-value {risk_class}'>{value}</div>
-    <div class='nora-metric-subtitle'>{subtitle}</div>
-</div>
-"""
+        card_html = (
+            f"<div class='nora-metric-component-card'>"
+            f"<div class='nora-metric-component-title'>"
+            f"<div class='nora-icon'>{icon}</div>"
+            f"<div>{title}</div>"
+            f"</div>"
+            f"<div class='nora-metric-component-value {risk_class}'>{value}</div>"
+            f"<div class='nora-metric-component-subtitle'>{subtitle}</div>"
+            f"</div>"
+        )
 
         st.markdown(card_html, unsafe_allow_html=True)
 
@@ -326,7 +364,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
                     "Total Requests",
                     total_requests,
                     "analysed traffic events",
-                    "📄"
+                    get_icon("database")
                 )
 
             with c2:
@@ -334,7 +372,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
                     "Anomaly Events",
                     len(anomalies),
                     "flagged by detection engine",
-                    "🚨"
+                    get_icon("shield_alert")
                 )
 
             with c3:
@@ -342,7 +380,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
                     "Risk Level",
                     risk,
                     "current threat posture",
-                    "🛡️",
+                    get_icon("shield"),
                     f"nora-risk-{risk.lower()}"
                 )
 
@@ -351,7 +389,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
                     "Requests / Min",
                     req_per_min,
                     "average throughput",
-                    "⏱️"
+                    get_icon("timer")
                 )
 
             with c5:
@@ -359,7 +397,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
                     "Peak Traffic",
                     peak_time,
                     "highest activity window",
-                    "📈"
+                    get_icon("activity")
                 )
 
             with c6:
@@ -367,14 +405,14 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
                     "ML Anomalies",
                     len(anomalies),
                     "machine learning detections",
-                    "🧠"
+                    get_icon("brain")
                 )
 
     except Exception:
         pass
 
     # --- MAIN DASHBOARD AREA ---
-    main_left, main_right = st.columns([3.5, 1.5], gap="large")
+    main_left, main_right = st.columns([3.2, 1.8], gap="medium")
     if df_time is not None and not df_time.empty:
         # Calculate baseline (average)
         avg_requests = df_time["Requests"].mean()
@@ -421,10 +459,10 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
 
             with st.container(border=True):
                 st.markdown(
-                    """
+                    f"""
                     <div class='nora-panel-header'>
                         <div>
-                            <div class='nora-panel-title'>📈 Traffic Overview</div>
+                            <div class='nora-panel-title'>{get_icon("bar_chart")}Traffic Overview</div>
                             <div class='nora-panel-sub'>
                                 Real-time telemetry and anomaly monitoring
                             </div>
@@ -599,7 +637,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
                 with telemetry1:
                     st.markdown(f"""
                     <div class='nora-mini-telemetry'>
-                        <div class='nora-mini-label'>⚡ Peak Requests</div>
+                        <div class='nora-mini-label'>{get_icon("activity")} Peak Requests</div>
                         <div class='nora-mini-value'>{max(time_counts.values()) if time_counts else 0}</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -609,7 +647,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
 
                     st.markdown(f"""
                     <div class='nora-mini-telemetry'>
-                        <div class='nora-mini-label'>📊 Avg Throughput</div>
+                        <div class='nora-mini-label'>{get_icon("bar_chart")} Avg Throughput</div>
                         <div class='nora-mini-value'>{avg_requests_display}</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -617,7 +655,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
                 with telemetry3:
                     st.markdown(f"""
                     <div class='nora-mini-telemetry'>
-                        <div class='nora-mini-label'>🌐 Unique IPs</div>
+                        <div class='nora-mini-label'>{get_icon("globe")} Unique IPs</div>
                         <div class='nora-mini-value'>{len(ip_totals)}</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -625,7 +663,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
                 with telemetry4:
                     st.markdown(f"""
                     <div class='nora-mini-telemetry'>
-                        <div class='nora-mini-label'>🧠 ML Alerts</div>
+                        <div class='nora-mini-label'>{get_icon("brain")} ML Alerts</div>
                         <div class='nora-mini-value'>{len(anomalies)}</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -636,7 +674,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
 
                     st.markdown(f"""
                     <div class='nora-mini-telemetry'>
-                        <div class='nora-mini-label'>🕒 Log Window</div>
+                        <div class='nora-mini-label'>{get_icon("clock")} Log Window</div>
                         <div class='nora-mini-value nora-mini-time'>{start_time} → {end_time}</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -646,7 +684,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
 
                     st.markdown(f"""
                     <div class='nora-mini-telemetry'>
-                        <div class='nora-mini-label'>🗂️ Total Records</div>
+                        <div class='nora-mini-label'>{get_icon("folder")} Total Records</div>
                         <div class='nora-mini-value'>{total_records_display}</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -656,7 +694,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
 
                     st.markdown(f"""
                     <div class='nora-mini-telemetry'>
-                        <div class='nora-mini-label'>🌍 Top Source IP</div>
+                        <div class='nora-mini-label'>{get_icon("globe")} Top Source IP</div>
                         <div class='nora-mini-value nora-mini-time'>{top_ip_display}</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -747,7 +785,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
                             st.markdown(f"""
 <div class='nora-intel-panel'>
     <div class='nora-intel-inner'>
-    <div class='nora-intel-title'>🧠 Detection Intelligence</div>
+    <div class='nora-intel-title'>{get_icon("brain")}Detection Intelligence</div>
     <div class='nora-threat-grid'>
         <div class='nora-threat-stat'>
             <div class='nora-threat-label'>Detection Window</div>
@@ -793,7 +831,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
 
                             # (Removed expanders from main panel, now in right-side intelligence modules)
                         else:
-                            st.markdown("### 🧠 Detection Explanation")
+                            st.markdown(f"### {get_icon('brain')} Detection Explanation", unsafe_allow_html=True)
                             st.info("Traffic patterns remain within expected thresholds. No significant anomalies or indicators of denial-of-service activity were detected.")
 
                 except Exception:
@@ -812,9 +850,9 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
                 st.markdown("## Traffic Overview")
                 st.markdown("<div style='margin-top:-10px;'></div>", unsafe_allow_html=True)
                 st.info("No traffic data available")
-                st.markdown("### 🧠 Detection Explanation")
+                st.markdown(f"### {get_icon('brain')} Detection Explanation", unsafe_allow_html=True)
                 st.info("Traffic patterns remain within expected thresholds. No significant anomalies or indicators of denial-of-service activity were detected.")
-                st.markdown("### 🚨 ML Anomaly Insights")
+                st.markdown(f"### {get_icon('shield_alert')} ML Anomaly Insights", unsafe_allow_html=True)
                 if anomalies and len(anomalies) > 0:
                     avg_requests = df_time["Requests"].mean() if df_time is not None and not df_time.empty else 0
                     filtered_anomalies = [a for a in anomalies if a.get("requests", 0) > avg_requests]
@@ -901,10 +939,10 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
                         st.warning("Evaluation data could not be loaded.")
 
     with main_right:
-        st.markdown("<div style='height:20px;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height:18px;'></div>", unsafe_allow_html=True)
 
         with st.container(border=True):
-            st.markdown("<div class='nora-intel-title'>🛡️ SOC Threat Intelligence</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='nora-intel-title'>{get_icon('shield')}SOC Threat Intelligence</div>", unsafe_allow_html=True)
 
             # --- Top IPs Bar Chart ---
             try:
@@ -956,7 +994,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
 - Severity Context: {right_side_modules['severity_reason']}
 """)
 
-                    with st.expander("🚨 ML Anomaly Insights (Optional Analyst View)"):
+                    with st.expander("ML Anomaly Insights (Optional Analyst View)"):
                         for a in right_side_modules['anomalies'][:3]:
                             sev = (a.get("severity") or "LOW").upper()
                             time_val = a.get("time", "Unknown")
@@ -982,7 +1020,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
                             return
 
                         st.markdown(
-                            "<div class='nora-intel-title'>📊 Detection Performance Center</div>",
+                            f"<div class='nora-intel-title'>{get_icon('bar_chart')}Detection Performance Center</div>",
                             unsafe_allow_html=True
                         )
 
@@ -1043,7 +1081,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
                         except Exception:
                             st.warning("Evaluation data could not be loaded.")
 
-                        with st.expander("🧪 N.O.R.A Analyst Validation", expanded=False):
+                        with st.expander("Confirm False Positives / Real Threat", expanded=False):
 
                             st.markdown(
                                 "<div class='nora-panel-sub'>Analyst feedback, validation workflow and adaptive detection evaluation</div>",
@@ -1055,12 +1093,12 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
                             col_yes, col_no = st.columns(2)
 
                             with col_yes:
-                                if st.button("✅ Confirm Threat", key="confirm_global"):
+                                if st.button("Confirm Threat", key="confirm_global"):
                                     save_feedback(latest_anomaly, True)
                                     st.success("Threat validation recorded")
 
                             with col_no:
-                                if st.button("❌ False Positive", key="false_global"):
+                                if st.button("False Positive", key="false_global"):
                                     save_feedback(latest_anomaly, False)
                                     st.success("False positive recorded")
 
@@ -1083,7 +1121,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
     log_container = st.container(border=True)
 
     with log_container:
-        st.markdown("## 🔍 Traffic Log Analysis")
+        st.markdown(f"## {get_icon('search')} Traffic Log Analysis", unsafe_allow_html=True)
 
         row1_left, row1_right = st.columns([1.35, 1], gap="large")
 
@@ -1142,7 +1180,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
                     if alert["level"] == "high":
                         st.markdown(f"""
 <div class='nora-activity-card'>
-    <strong>🚨 High Activity</strong>
+    <strong>{get_icon("shield_alert")} High Activity</strong>
     <p>{msg}</p>
 </div>
 """, unsafe_allow_html=True)
@@ -1150,7 +1188,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
                     else:
                         st.markdown(f"""
 <div class='nora-activity-card'>
-    <strong>⚠️ Suspicious Traffic</strong>
+    <strong>{get_icon("alert_triangle")} Suspicious Traffic</strong>
     <p>{msg}</p>
 </div>
 """, unsafe_allow_html=True)
