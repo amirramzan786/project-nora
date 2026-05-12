@@ -302,6 +302,19 @@ h4 {
 }
 
 /* =====================================================
+   PLOTLY LEGEND TYPOGRAPHY
+===================================================== */
+.gtitle,
+.legendtext,
+.xtick text,
+.ytick text {
+    font-family: "Inter", "Segoe UI", sans-serif !important;
+    fill: #CBD5E1 !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.2px !important;
+}
+
+/* =====================================================
    N.O.R.A LOGO PLACEHOLDER
 ===================================================== */
 
