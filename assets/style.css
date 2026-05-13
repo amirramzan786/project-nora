@@ -1,3 +1,4 @@
+
 /* =====================================================
    N.O.R.A - GLOBAL THEME
 ===================================================== */
@@ -49,7 +50,7 @@ section.main > div {
 }
 
 header {
-    visibility: hidden;
+    background:transparent !important;
 }
 
 .block-container {
@@ -57,7 +58,7 @@ header {
     margin-left:0 !important;
 
     padding-top: 0.8rem;
-    padding-left: 7rem;
+    padding-left: 2rem;
     padding-right: 1.8rem;
     padding-bottom: 2rem;
 }
@@ -1472,279 +1473,148 @@ h4 {
 .nora-risk-low {
     color:#22C55E !important;
 }
-
 .nora-risk-medium {
     color:#F59E0B !important;
 }
-
 .nora-risk-high {
     color:#EF4444 !important;
 }
+
 /* =====================================================
-   N.O.R.A SOC SIDEBAR NAVIGATION
+   STREAMLIT SIDEBAR NAVIGATION
 ===================================================== */
 
-.nora-command-sidebar {
-    position:fixed !important;
-    top:0 !important;
-    left:0 !important;
-    bottom:0 !important;
-    z-index:9999 !important;
-    margin-left:0 !important;
-    transform:none !important;
-
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-
-    width:82px;
-    height:100vh;
-
-    padding:4px 8px;
-
-    border-right:1px solid rgba(92,198,238,0.12);
-
+[data-testid="stSidebar"] {
     background:
         linear-gradient(180deg,
             rgba(18,32,46,0.985) 0%,
-            rgba(8,18,30,0.995) 100%);
+            rgba(8,18,30,0.995) 100%) !important;
 
-    box-shadow:
-        inset -1px 0 0 rgba(255,255,255,0.02),
-        10px 0 26px rgba(2,6,23,0.22);
+    border-right:1px solid rgba(92,198,238,0.12);
+
+    transition:all 0.2s ease !important;
 }
 
-.nora-sidebar-logo {
-    width:140px;
-    height:140px;
-
-    display:flex;
-    align-items:center;
-    justify-content:center;
-
-    margin-bottom:6px;
-
-    overflow:hidden;
+[data-testid="stSidebar"] > div:first-child {
+    background:transparent !important;
 }
 
-.nora-sidebar-logo img {
-    width:100%;
-    height:100%;
-
-    object-fit:contain;
-    object-position:center;
-
-    display:block;
-}
-
-.nora-sidebar-nav-item {
-    position:relative;
-
-    width:54px;
-
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-
-    gap:5px;
-
-    padding:10px 4px;
-    margin-bottom:12px;
-
-    border-radius:16px;
-
-    transition:
-        background 0.18s ease,
-        border-color 0.18s ease,
-        transform 0.18s ease,
-        box-shadow 0.18s ease;
-
-    cursor:pointer;
-}
-
-.nora-sidebar-nav-item img {
-    width:18px;
-    height:18px;
-
-    filter:
-        brightness(0)
-        invert(1);
-
-    opacity:0.92;
-}
-
-.nora-sidebar-nav-item span {
-    color:#E2E8F0;
-
-    font-size:11px;
-    font-weight:700;
-    letter-spacing:0.2px;
-
-    text-align:center;
-    line-height:1.2;
-}
-
-.nora-sidebar-nav-item:hover {
-    position:relative;
-
-    width:82px;
-    margin-left:-8px;
-    margin-right:-8px;
-
-    border-radius:0;
-
-    background:
-        linear-gradient(90deg,
-            rgba(37,150,190,0.08) 0%,
-            rgba(37,150,190,0.03) 55%,
-            rgba(37,150,190,0.00) 100%);
-
-    box-shadow:
-        inset 0 0 10px rgba(37,150,190,0.04),
-        0 0 14px rgba(37,150,190,0.10);
-}
-
-.nora-sidebar-nav-item.active {
-    position:relative;
-
-    width:82px;
-    margin-left:-8px;
-    margin-right:-8px;
-
-    border-radius:0;
-    border-left:none;
-    border-right:none;
-
-    background:
-        linear-gradient(90deg,
-            rgba(37,150,190,0.22) 0%,
-            rgba(37,150,190,0.10) 55%,
-            rgba(37,150,190,0.00) 100%);
-
-    box-shadow:
-        inset 0 0 24px rgba(37,150,190,0.10),
-        0 0 26px rgba(37,150,190,0.18);
+[data-testid="stSidebar"] .block-container {
+    padding-top:1.2rem !important;
+    padding-left:1rem !important;
+    padding-right:1rem !important;
 }
 
 
 /* =====================================================
-   N.O.R.A SIDEBAR BOTTOM UTILITIES
+   N.O.R.A SIDEBAR BRANDING
 ===================================================== */
 
-.nora-sidebar-bottom-tools {
-    margin-top:auto;
-
+.nora-sidebar-brand {
     display:flex;
     flex-direction:column;
     align-items:center;
-    gap:16px;
-
-    width:100%;
-
-    padding-top:28px;
-    padding-bottom:10px;
-}
-
-.nora-sidebar-tool-icon {
-    width:48px;
-    height:48px;
-
-    display:flex;
-    align-items:center;
     justify-content:center;
 
-    border-radius:14px;
+    text-align:center;
 
-    transition:
-        background 0.18s ease,
-        transform 0.18s ease,
-        box-shadow 0.18s ease,
-        border-color 0.18s ease;
-
-    cursor:pointer;
+    margin-top:-12px;
+    margin-bottom:1.4rem;
 }
 
-.nora-sidebar-tool-icon img {
-    width:18px;
-    height:18px;
+.nora-sidebar-brand h2 {
+    margin-top:0 !important;
+    margin-bottom:0.15rem !important;
 
-    filter:
-        brightness(0)
-        invert(1);
+    color:#F8FAFC !important;
 
-    opacity:0.92;
+    font-size:24px !important;
+    font-weight:800 !important;
+    letter-spacing:-0.6px !important;
 }
 
-.nora-sidebar-tool-icon:hover {
-    position:relative;
+.nora-sidebar-brand p {
+    margin-top:0 !important;
+    margin-bottom:0 !important;
 
-    width:82px;
-    margin-left:-8px;
-    margin-right:-8px;
+    color:#94A3B8 !important;
 
-    border-radius:0;
+    font-size:15px !important;
+    font-weight:500 !important;
+    line-height:1.45 !important;
+    letter-spacing:0.15px !important;
+}
 
+/* Sidebar Header */
+
+[data-testid="stSidebar"] h2 {
+    color:#F8FAFC !important;
+    font-size:24px !important;
+    font-weight:800 !important;
+    letter-spacing:-0.5px !important;
+    margin-bottom:0.2rem !important;
+}
+
+[data-testid="stSidebar"] .stCaption {
+    color:#94A3B8 !important;
+    font-size:12px !important;
+    margin-bottom:1rem !important;
+}
+
+/* Sidebar Buttons */
+
+[data-testid="stSidebar"] .stButton > button {
+    width:100%;
+    min-height:54px;
+
+    margin-bottom:10px;
+
+    border-radius:14px !important;
+
+    background:
+        linear-gradient(135deg,
+            rgba(15,23,42,0.92) 0%,
+            rgba(8,15,28,0.98) 100%) !important;
+
+    border:1px solid rgba(37,150,190,0.16) !important;
+
+    color:#E2E8F0 !important;
+
+    font-size:13px !important;
+    font-weight:700 !important;
+    letter-spacing:0.2px !important;
+
+    text-align:left !important;
+
+    transition:all 0.18s ease !important;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 8px 18px rgba(2,6,23,0.22);
+}
+
+[data-testid="stSidebar"] .stButton > button:hover {
     transform:translateY(-2px);
 
-    background:
-        linear-gradient(90deg,
-            rgba(37,150,190,0.14) 0%,
-            rgba(37,150,190,0.06) 55%,
-            rgba(37,150,190,0.00) 100%);
+    border-color:rgba(92,198,238,0.34) !important;
 
     box-shadow:
-        inset 0 0 18px rgba(37,150,190,0.08),
-        0 0 24px rgba(37,150,190,0.18);
+        0 0 20px rgba(37,150,190,0.14);
 }
 
-.nora-sidebar-tool-icon:active {
-    transform:scale(0.96);
-}
+/* Active Navigation Button */
 
-.nora-sidebar-tool-user {
-    position:relative;
-}
-
-.nora-sidebar-tool-user::after {
-    content:attr(title);
-
-    position:absolute;
-    left:62px;
-    top:50%;
-    transform:translateY(-50%);
-
-    padding:10px 14px;
-
-    border-radius:12px;
-
+[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     background:
-        linear-gradient(180deg,
-            rgba(15,23,42,0.98) 0%,
-            rgba(10,18,32,0.98) 100%);
+        linear-gradient(135deg,
+            rgba(37,150,190,0.28) 0%,
+            rgba(37,150,190,0.12) 100%) !important;
 
-    border:1px solid rgba(92,198,238,0.18);
+    border:1px solid rgba(92,198,238,0.42) !important;
 
-    color:#E2E8F0;
-    font-size:12px;
-    font-weight:700;
-    letter-spacing:0.2px;
-
-    white-space:nowrap;
-
-    opacity:0;
-    pointer-events:none;
+    color:#F8FAFC !important;
 
     box-shadow:
-        0 0 18px rgba(37,150,190,0.12),
-        0 12px 24px rgba(2,6,23,0.38);
-
-    transition:
-        opacity 0.18s ease,
-        transform 0.18s ease;
-}
-
-.nora-sidebar-tool-user:hover::after {
-    opacity:1;
-    transform:translateY(-50%) translateX(6px);
+        0 0 24px rgba(37,150,190,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.04);
 }

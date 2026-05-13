@@ -1,7 +1,13 @@
 
 
 import streamlit as st
+st.set_page_config(
+    page_title="Project N.O.R.A",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 import base64
+from components.sidebar import render_sidebar
 
 def get_base64_image(image_path):
     with open(image_path, "rb") as img_file:
@@ -11,39 +17,23 @@ def load_css():
     with open("assets/style.css") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-
-
 # --- Centralised SVG Icon System ---
 SVG_ICONS = {
     "database": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/database.svg' />",
-
     "shield_alert": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/shield-alert.svg' />",
-
     "shield": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/shield.svg' />",
-
     "timer": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/timer-reset.svg' />",
-
     "activity": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/activity.svg' />",
-
     "brain": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/brain-circuit.svg' />",
-
     "alert_triangle": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/alert-triangle.svg' />",
-
     "check_circle": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/check-circle.svg' />",
-
     "shield_warning": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/shield-alert.svg' />",
-
     "bar_chart": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/chart-column.svg' />",
-
     "globe": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/globe.svg' />",
-
     "clock": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/clock-3.svg' />",
-
     "folder": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/folder.svg' />",
-
     "search": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/search.svg' />"
 }
-
 
 def get_icon(name):
     return SVG_ICONS.get(name, "")
@@ -141,46 +131,8 @@ THEME = {
 # --- Global Styling ---
 load_css()
 
-# --- N.O.R.A SOC LAYOUT ---
-
-sidebar_html = f"""<div class='nora-command-sidebar'>
-<div class='nora-sidebar-logo nora-sidebar-logo-image'>
-    <img src='data:image/png;base64,{get_base64_image("logo.png")}' alt='N.O.R.A Logo'>
-</div>
-
-<div class='nora-sidebar-nav-item active'>
-{get_icon("activity")}
-<span>Overview</span>
-</div>
-
-<div class='nora-sidebar-nav-item'>
-{get_icon("shield")}
-<span>Threat</span>
-</div>
-
-<div class='nora-sidebar-nav-item'>
-{get_icon("bar_chart")}
-<span>Traffic</span>
-</div>
-
-<div class='nora-sidebar-nav-item'>
-{get_icon("brain")}
-<span>Detection</span>
-</div>
-
-<div class='nora-sidebar-bottom-tools'>
-<div class='nora-sidebar-tool-icon nora-sidebar-tool-settings' title='Settings'>
-<img class='nora-inline-svg' src='https://api.iconify.design/lucide/settings.svg' />
-</div>
-
-<div class='nora-sidebar-tool-icon nora-sidebar-tool-user' title='Logged in as: Analyst'>
-<img class='nora-inline-svg' src='https://api.iconify.design/lucide/user-round.svg' />
-</div>
-</div>
-
-</div>"""
-
-st.markdown(sidebar_html.strip(), unsafe_allow_html=True)
+ # --- N.O.R.A Navigation System ---
+active_page = render_sidebar()
 
 with st.container():
 
@@ -196,7 +148,7 @@ with st.container():
             st.markdown(
                 """
                 <div class='nora-analyst-badge'>
-                    <span>● N.O.R.A: NETWORK OPERATIONS & RESPONSE ANALYST ●</span>
+                    <span>● N.O.R.A: NETWORK OPERATIONS & RESPONSE ASSISTANT ●</span>
                 </div>
                 """,
                 unsafe_allow_html=True
@@ -1171,8 +1123,8 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
 
             st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
 
-            if st.button("See More Logs", key="see_more_logs"):
-                st.session_state.active_page = "traffic"
+            if st.button("Open Log Explorer", key="see_more_logs"):
+                st.session_state.active_page = "log_explorer"
                 st.rerun()
 
         # --- Unified Alerts (ML + Rule-Based) ---
@@ -1233,8 +1185,8 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
 
             st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
 
-            if st.button("See More Security Alerts", key="see_more_security_alerts"):
-                st.session_state.active_page = "threat"
+            if st.button("Open Threat Intelligence Center", key="see_more_security_alerts"):
+                st.session_state.active_page = "threat_intelligence"
                 st.rerun()
 
 
@@ -1242,7 +1194,10 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
 
 if option == "Upload log file":
 
-    uploaded_file = st.file_uploader("Please upload a file to begin analysis", type=["log", "txt"])
+    uploaded_file = st.file_uploader(
+        "Please upload a file to begin analysis",
+        type=["log", "txt"]
+    )
 
     if uploaded_file is not None:
 
@@ -1250,12 +1205,58 @@ if option == "Upload log file":
 
         file_bytes = uploaded_file.read()
 
-        # ✅ Unpack all 7 return values
-        ip_totals, alerts, normal_activity, time_counts, anomalies, df_anom, pattern_colors = read_logs(file_content=file_bytes)
+        ip_totals, alerts, normal_activity, time_counts, anomalies, df_anom, pattern_colors = read_logs(
+            file_content=file_bytes
+        )
 
-        render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies, df_anom, pattern_colors)
+    else:
+        ip_totals = {}
+        alerts = []
+        normal_activity = []
+        time_counts = {}
+        anomalies = []
+        df_anom = None
+        pattern_colors = {}
 
 else:
-    # ✅ Unpack all 7 return values
-    ip_totals, alerts, normal_activity, time_counts, anomalies, df_anom, pattern_colors = read_logs("logs/sample.log")
-    render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies, df_anom, pattern_colors)
+    ip_totals, alerts, normal_activity, time_counts, anomalies, df_anom, pattern_colors = read_logs(
+        "logs/sample.log"
+    )
+
+
+# ---------------- WORKSPACE ROUTING ----------------
+
+if active_page == "overview":
+    render_dashboard(
+        ip_totals,
+        alerts,
+        normal_activity,
+        time_counts,
+        anomalies,
+        df_anom,
+        pattern_colors
+    )
+
+elif active_page == "adaptive_intelligence":
+    st.markdown("# Adaptive Intelligence Engine")
+    st.info("Adaptive learning workspace coming online.")
+
+elif active_page == "log_explorer":
+    st.markdown("# Log Explorer")
+    st.info("Expanded log telemetry workspace coming online.")
+
+elif active_page == "threat_intelligence":
+    st.markdown("# Threat Intelligence Center")
+    st.info("Threat enrichment and reputation analysis workspace coming online.")
+
+elif active_page == "network_traffic":
+    st.markdown("# Network Traffic Analysis")
+    st.info("Network telemetry analysis workspace coming online.")
+
+elif active_page == "detection_intelligence":
+    st.markdown("# Detection Intelligence Center")
+    st.info("Detection intelligence workspace coming online.")
+
+elif active_page == "detection_performance":
+    st.markdown("# Detection Performance Center")
+    st.info("Detection evaluation and analyst validation workspace coming online.")
