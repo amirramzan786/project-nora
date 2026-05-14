@@ -74,26 +74,27 @@ header {
     border: 1px solid rgba(37,150,190,0.22) !important;
     border-radius: 22px !important;
     overflow: hidden !important;
-    padding: 0px !important;
+    padding: 2px !important;
+    margin-bottom:22px !important;
     box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.03),
         inset 0 0 0 1px rgba(255,255,255,0.02),
         0 12px 32px var(--shadow-deep),
         0 0 0 1px rgba(37,150,190,0.10),
-        0 0 22px var(--card-glow) !important;
+        0 0 16px rgba(37,150,190,0.10) !important;
     transition: all 0.22s ease;
     backdrop-filter: blur(8px);
 }
 
 [data-testid="stVerticalBlockBorderWrapper"]:hover {
     border-color: rgba(92,198,238,0.55) !important;
-    transform: translateY(-2px);
+    transform:none;
     box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.05),
         inset 0 0 0 1px rgba(255,255,255,0.03),
         0 18px 40px rgba(2,6,23,0.72),
         0 0 0 1px rgba(92,198,238,0.18),
-        0 0 34px rgba(37,150,190,0.18) !important;
+        0 0 24px rgba(37,150,190,0.12) !important;
 }
 
 /* =====================================================
@@ -421,21 +422,42 @@ h4 {
    ANALYST VALIDATION
 ===================================================== */
 .stButton > button {
+    min-height:50px;
+
+    border-radius:18px !important;
+    border:1px solid rgba(37,150,190,0.24) !important;
+
     background:
-        linear-gradient(135deg, rgba(18,30,46,0.98) 0%, rgba(10,20,34,0.98) 100%) !important;
+        linear-gradient(135deg,
+            rgba(15,23,42,0.96) 0%,
+            rgba(7,14,26,1) 100%) !important;
+
     color:#F8FAFC !important;
-    border:1px solid rgba(92,198,238,0.22) !important;
-    border-radius:12px !important;
-    font-weight:600 !important;
+    font-size:14px !important;
+    font-weight:700 !important;
+    letter-spacing:0.15px;
+
     box-shadow:
-        0 8px 18px rgba(2,6,23,0.35),
-        inset 0 1px 0 rgba(255,255,255,0.03) !important;
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 10px 24px rgba(2,6,23,0.28) !important;
+
+    backdrop-filter:blur(10px);
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease !important;
 }
 
 .stButton > button:hover {
-    border-color:rgba(92,198,238,0.55) !important;
+    transform:none;
+
+    border-color:rgba(92,198,238,0.34) !important;
+
     box-shadow:
-        0 0 24px rgba(37,150,190,0.18) !important;
+        inset 0 1px 0 rgba(255,255,255,0.05),
+        0 14px 30px rgba(2,6,23,0.40),
+        0 0 20px rgba(37,150,190,0.12) !important;
 }
 
 /* =====================================================
@@ -600,7 +622,7 @@ h4 {
     border:1px solid rgba(255,255,255,0.06);
     box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.03),
-        0 10px 24px rgba(2,6,23,0.38);
+        0 8px 18px rgba(2,6,23,0.30);
 }
 
 .nora-alert-banner.danger {
@@ -802,14 +824,12 @@ h4 {
 }
 
 .nora-mini-telemetry:hover {
-    transform:translateY(-2px);
-
-    border-color:rgba(92,198,238,0.34);
-
+    transform:none;
+    border-color:rgba(37,150,190,0.18);
     box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.05),
-        0 14px 28px rgba(2,6,23,0.42),
-        0 0 24px rgba(37,150,190,0.16);
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 8px 20px rgba(2,6,23,0.32),
+        0 0 14px rgba(37,150,190,0.08);
 }
 
 .nora-mini-label {
@@ -872,7 +892,7 @@ h4 {
     box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.03),
         0 12px 28px rgba(2,6,23,0.38),
-        0 0 22px rgba(37,150,190,0.08);
+        0 0 14px rgba(37,150,190,0.06);
 
     backdrop-filter: blur(10px);
 }
@@ -969,14 +989,12 @@ h4 {
 }
 
 .nora-threat-stat:hover {
-    transform:translateY(-2px);
-
-    border-color:rgba(92,198,238,0.34);
-
+    transform:none;
+    border-color:rgba(37,150,190,0.14);
     box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.04),
-        0 16px 30px rgba(2,6,23,0.42),
-        0 0 22px rgba(37,150,190,0.14);
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 8px 18px rgba(2,6,23,0.26),
+        0 0 12px rgba(37,150,190,0.06);
 }
 
 .nora-threat-label {
@@ -1402,36 +1420,45 @@ h4 {
 ===================================================== */
 
 .nora-metric-component-card {
-    background:
-        radial-gradient(circle at top left, rgba(37,150,190,0.12), transparent 40%),
-        linear-gradient(180deg, rgba(15,23,42,0.98) 0%, rgba(10,18,32,0.96) 100%);
+    position:relative;
+    overflow:hidden;
 
-    border:1px solid rgba(37,150,190,0.22);
-    border-radius:18px;
-    padding:18px;
-    height:128px;
-    box-sizing:border-box;
+    background:
+        linear-gradient(135deg,
+            rgba(15,23,42,0.92) 0%,
+            rgba(8,15,28,0.98) 100%);
+
+    border:1px solid rgba(37,150,190,0.14);
+    border-radius:16px;
+
+    min-height:82px;
+    height:auto;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+
+    padding:14px 16px;
+    margin-bottom:4px;
 
     box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.03),
-        0 10px 24px rgba(2,6,23,0.38),
-        0 0 18px rgba(37,150,190,0.08);
+        0 8px 18px rgba(2,6,23,0.26),
+        0 0 12px rgba(37,150,190,0.06);
 
-    transition:
-        transform 0.18s ease,
-        border-color 0.18s ease,
-        box-shadow 0.18s ease;
+    transition:none !important;
+    transform:none !important;
 }
 
 .nora-metric-component-card:hover {
-    transform:translateY(-2px);
+    transform:none !important;
 
-    border-color:rgba(92,198,238,0.34);
+    border-color:rgba(37,150,190,0.14);
 
     box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.05),
-        0 18px 34px rgba(2,6,23,0.55),
-        0 0 28px rgba(37,150,190,0.16);
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 8px 18px rgba(2,6,23,0.26),
+        0 0 12px rgba(37,150,190,0.06);
 }
 
 .nora-metric-component-title {
@@ -1439,9 +1466,13 @@ h4 {
     align-items:center;
     gap:8px;
 
-    color:#CBD5E1;
-    font-size:14px;
-    font-weight:700;
+    color:#94A3B8;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:0.9px;
+    text-transform:uppercase;
+
+    margin-bottom:6px;
 }
 
 .nora-metric-component-title svg {
@@ -1452,18 +1483,167 @@ h4 {
 }
 
 .nora-metric-component-value {
-    margin-top:18px;
     color:#F8FAFC;
-    font-size:30px;
+    font-size:18px;
     font-weight:800;
-    line-height:1;
+    line-height:1.35;
+    letter-spacing:-0.4px;
+
+    margin-top:0;
 }
 
 .nora-metric-component-subtitle {
-    margin-top:10px;
+    margin-top:6px;
+
+    color:#64748B;
+    font-size:10px;
+    font-weight:600;
+
+    letter-spacing:0.2px;
+}
+
+ .nora-compact-metric-card {
+    min-height:92px !important;
+    padding:14px 14px !important;
+    border-radius:16px !important;
+    overflow:hidden;
+}
+
+.nora-compact-metric-card .nora-metric-component-label {
+    display:flex;
+    align-items:center;
+    gap:6px;
+
+    color:#CBD5E1;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:0.15px;
+}
+
+.nora-compact-metric-card .nora-metric-component-value {
+    margin-top:8px;
+    font-size:18px;
+    letter-spacing:-0.4px;
+}
+
+.nora-compact-telemetry-wrapper {
+    padding:0;
+    margin:0;
+    border:none;
+    background:transparent;
+    box-shadow:none;
+}
+
+/* =====================================================
+   DETECTION REPORT MODULE
+===================================================== */
+
+.nora-report-module {
+    position:relative;
+    overflow:hidden;
+
+    padding:20px !important;
+    margin-top:14px;
+    margin-bottom:24px;
+
+    background:
+        radial-gradient(circle at top left, rgba(37,150,190,0.10), transparent 38%),
+        linear-gradient(180deg, rgba(10,18,32,0.98) 0%, rgba(4,10,18,0.99) 100%);
+
+    border:1px solid rgba(92,198,238,0.14);
+    border-radius:22px;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 12px 28px rgba(2,6,23,0.34),
+        0 0 14px rgba(37,150,190,0.06);
+
+    backdrop-filter:blur(10px);
+
+    transition:none !important;
+
+    transform:none !important;
+}
+
+.nora-report-module:hover {
+    transform:none !important;
+    border-color:rgba(92,198,238,0.14) !important;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 12px 28px rgba(2,6,23,0.34),
+        0 0 22px rgba(37,150,190,0.08) !important;
+}
+
+.nora-report-grid {
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0,1fr));
+    gap:16px;
+    margin-top:8px;
+}
+
+.nora-report-stat-card {
+    position:relative;
+    overflow:hidden;
+
+    background:
+        linear-gradient(135deg,
+            rgba(15,23,42,0.92) 0%,
+            rgba(8,15,28,0.98) 100%);
+
+    border:1px solid rgba(37,150,190,0.14);
+    border-radius:16px;
+
+    min-height:82px;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+
+    padding:14px 16px;
+    margin-bottom:4px;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 8px 18px rgba(2,6,23,0.26),
+        0 0 12px rgba(37,150,190,0.06);
+
+    transition:none !important;
+    transform:none !important;
+}
+
+.nora-report-stat-card:hover {
+    transform:none !important;
+
+    border-color:rgba(37,150,190,0.20) !important;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 12px 24px rgba(2,6,23,0.34),
+        0 0 18px rgba(37,150,190,0.08) !important;
+}
+
+.nora-report-stat-label {
     color:#94A3B8;
-    font-size:11px;
-    font-weight:500;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:0.9px;
+    text-transform:uppercase;
+    margin-bottom:6px;
+
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.nora-report-stat-value {
+    color:#F8FAFC;
+    font-size:18px;
+    font-weight:800;
+    line-height:1.35;
+    letter-spacing:-0.4px;
+
+    margin-top:0;
 }
 
 /* =====================================================
@@ -1503,46 +1683,6 @@ h4 {
     padding-top:1.2rem !important;
     padding-left:1rem !important;
     padding-right:1rem !important;
-}
-
-
-/* =====================================================
-   N.O.R.A SIDEBAR BRANDING
-===================================================== */
-
-.nora-sidebar-brand {
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-
-    text-align:center;
-
-    margin-top:-12px;
-    margin-bottom:1.4rem;
-}
-
-.nora-sidebar-brand h2 {
-    margin-top:0 !important;
-    margin-bottom:0.15rem !important;
-
-    color:#F8FAFC !important;
-
-    font-size:24px !important;
-    font-weight:800 !important;
-    letter-spacing:-0.6px !important;
-}
-
-.nora-sidebar-brand p {
-    margin-top:0 !important;
-    margin-bottom:0 !important;
-
-    color:#94A3B8 !important;
-
-    font-size:15px !important;
-    font-weight:500 !important;
-    line-height:1.45 !important;
-    letter-spacing:0.15px !important;
 }
 
 /* Sidebar Header */
@@ -1594,12 +1734,51 @@ h4 {
 }
 
 [data-testid="stSidebar"] .stButton > button:hover {
-    transform:translateY(-2px);
+    transform:none;
 
     border-color:rgba(92,198,238,0.34) !important;
 
     box-shadow:
         0 0 20px rgba(37,150,190,0.14);
+}
+
+/* =====================================================
+   N.O.R.A SIDEBAR BRANDING
+===================================================== */
+
+.nora-sidebar-brand {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    text-align:center;
+
+    margin-top:-28px;
+    margin-bottom:1.4rem;
+}
+
+.nora-sidebar-brand h2 {
+    margin-top:0 !important;
+    margin-bottom:0.15rem !important;
+
+    color:#F8FAFC !important;
+
+    font-size:24px !important;
+    font-weight:800 !important;
+    letter-spacing:-0.6px !important;
+}
+
+.nora-sidebar-brand p {
+    margin-top:0 !important;
+    margin-bottom:0 !important;
+
+    color:#94A3B8 !important;
+
+    font-size:12px !important;
+    font-weight:500 !important;
+    line-height:1.45 !important;
+    letter-spacing:0.15px !important;
 }
 
 /* Active Navigation Button */
@@ -1617,4 +1796,339 @@ h4 {
     box-shadow:
         0 0 24px rgba(37,150,190,0.18),
         inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+
+
+/* =====================================================
+   WORKSPACE SECTION TITLES
+===================================================== */
+
+.nora-workspace-title {
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    color:#F8FAFC;
+
+    font-size:32px;
+    font-weight:800;
+    letter-spacing:-0.8px;
+    line-height:1.1;
+
+    margin-bottom:4px;
+}
+
+.nora-workspace-title .nora-icon,
+.nora-workspace-title .nora-inline-svg,
+.nora-workspace-title .nora-lucide-icon {
+    margin-right:0 !important;
+    flex-shrink:0;
+}
+
+.nora-workspace-subtitle {
+    color:#94A3B8;
+    font-size:16px;
+    font-weight:500;
+    line-height:1.55;
+    letter-spacing:0.15px;
+    margin-top:6px;
+}
+
+.nora-section-title {
+    display:flex;
+    align-items:center;
+    gap:10px;
+
+    color:#F8FAFC;
+
+    font-size:18px;
+    font-weight:800;
+    letter-spacing:-0.3px;
+
+    margin-top:0;
+    margin-bottom:6px;
+}
+
+.nora-section-title .nora-icon,
+.nora-section-title .nora-inline-svg,
+.nora-section-title .nora-lucide-icon {
+    margin-right:0 !important;
+    flex-shrink:0;
+}
+
+/* =====================================================
+   ANALYST ACTION PANEL
+===================================================== */
+
+.nora-analyst-panel {
+    margin-top:12px;
+
+    padding:18px;
+
+    border:1px solid rgba(37,150,190,0.14);
+    border-radius:18px;
+
+    background:
+        linear-gradient(180deg,
+            rgba(8,15,28,0.94) 0%,
+            rgba(3,8,18,0.98) 100%);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 10px 24px rgba(2,6,23,0.24);
+}
+
+/* =====================================================
+   DATAFRAME CONTAINERS
+===================================================== */
+
+.nora-dataframe-panel {
+    margin-top:8px;
+
+    padding:10px;
+
+    border:1px solid rgba(37,150,190,0.12);
+    border-radius:18px;
+
+    background:
+        linear-gradient(180deg,
+            rgba(10,18,32,0.88) 0%,
+            rgba(5,10,20,0.96) 100%);
+
+    overflow:hidden;
+}
+
+/* =====================================================
+   WORKSPACE SPACING HELPERS
+===================================================== */
+
+.nora-workspace-spacing {
+    height:6px;
+}
+
+/* =====================================================
+   DETECTION INTELLIGENCE WORKSPACE REFINEMENT
+===================================================== */
+
+/* Workspace header breathing room */
+.nora-panel-header {
+    margin-bottom:22px;
+}
+
+/* Detection telemetry row spacing only */
+.nora-detection-metrics-row {
+    gap:10px;
+    margin-bottom:34px;
+}
+
+/* Tighten telemetry column spacing */
+.nora-detection-metrics-row [data-testid="column"] {
+    padding-left:4px;
+    padding-right:4px;
+}
+
+/* Detection Intelligence metric cards */
+[data-testid="metric-container"] {
+    position:relative;
+    overflow:hidden;
+
+    backdrop-filter:blur(10px);
+
+    cursor:default;
+
+    min-height:138px;
+
+    background:
+        radial-gradient(circle at top left, rgba(37,150,190,0.12), transparent 40%),
+        linear-gradient(180deg, rgba(15,23,42,0.98) 0%, rgba(10,18,32,0.96) 100%) !important;
+
+    border:1px solid rgba(37,150,190,0.20) !important;
+    border-radius:20px !important;
+
+    padding:20px 18px !important;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 10px 24px rgba(2,6,23,0.38),
+        0 0 18px rgba(37,150,190,0.08) !important;
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease !important;
+}
+
+[data-testid="metric-container"]:hover {
+    transform:none;
+    border-color:rgba(37,150,190,0.20) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 10px 24px rgba(2,6,23,0.38),
+        0 0 18px rgba(37,150,190,0.08) !important;
+}
+
+/* Improve metric label hierarchy */
+[data-testid="metric-container"] label {
+    color:#CBD5E1 !important;
+
+    font-size:12px !important;
+    font-weight:700 !important;
+
+    letter-spacing:0.15px;
+
+    margin-bottom:10px !important;
+}
+
+/* Improve metric values */
+[data-testid="metric-container"] [data-testid="stMetricValue"] {
+    color:#F8FAFC !important;
+
+    font-size:30px !important;
+    font-weight:800 !important;
+
+    letter-spacing:-0.8px;
+
+    line-height:1.1 !important;
+}
+
+/* Prevent cramped metric alignment */
+[data-testid="metric-container"] > div {
+    justify-content:space-between;
+    height:100%;
+}
+
+/* Threat severity custom metric */
+.nora-severity-metric-card {
+    min-height:82px;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+
+    padding:14px 16px;
+    margin-bottom:4px;
+}
+
+
+.nora-severity-label {
+    display:flex;
+    align-items:center;
+    gap:8px;
+
+    color:#CBD5E1;
+
+    font-size:10px;
+    font-weight:700;
+    text-transform:uppercase;
+
+    margin-bottom:6px;
+
+    letter-spacing:0.15px;
+}
+
+.nora-severity-value {
+    margin-top:0;
+    color:#F8FAFC;
+    font-size:18px;
+    font-weight:800;
+    line-height:1.35;
+    letter-spacing:-0.4px;
+}
+
+.nora-severity-label .nora-icon,
+.nora-severity-label .nora-inline-svg,
+.nora-severity-label .nora-lucide-icon {
+    width:18px;
+    height:18px;
+
+    margin-right:0 !important;
+
+    flex-shrink:0;
+}
+
+/* Streamlit dataframe wrapper cleanup */
+.nora-dataframe-panel .stDataFrame {
+    border:none !important;
+    background:transparent !important;
+}
+
+.nora-dataframe-panel [data-testid="stDataFrame"] {
+    border:none !important;
+    background:transparent !important;
+}
+
+/* Remove default dataframe top chrome */
+.nora-dataframe-panel div[data-testid="stDataFrame"] > div {
+    background:transparent !important;
+    border:none !important;
+}
+
+/* Operational workspace cohesion */
+.nora-analyst-panel,
+.nora-dataframe-panel {
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+/* Smooth visual rhythm between sections */
+.nora-section-title {
+    margin-top:0;
+    margin-bottom:16px;
+    padding-bottom:2px;
+}
+
+/* Improve captions readability */
+.stCaption {
+    line-height:1.6 !important;
+    opacity:0.88;
+}
+
+/* =====================================================
+   SIDEBAR USER BAR
+===================================================== */
+
+.nora-sidebar-userbar {
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+
+    margin:12px 0 20px 0;
+    padding:14px;
+
+    border-radius:16px;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(15,23,42,0.94) 0%,
+            rgba(8,15,28,0.98) 100%
+        );
+
+    border:1px solid rgba(37,150,190,0.14);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 8px 18px rgba(2,6,23,0.24);
+}
+
+.nora-sidebar-settings,
+.nora-sidebar-user {
+    display:flex;
+    align-items:center;
+    gap:8px;
+
+    color:#CBD5E1;
+
+    font-size:11px;
+    font-weight:700;
+
+    letter-spacing:0.25px;
+}
+
+.nora-sidebar-settings {
+    padding-bottom:10px;
+    border-bottom:1px solid rgba(37,150,190,0.10);
 }
