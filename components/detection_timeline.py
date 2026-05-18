@@ -6,7 +6,8 @@ from src.icons import get_icon
 
 def render_detection_timeline(
     time_counts,
-    anomalies
+    anomalies,
+    compact_mode=False
 ):
 
     timeline_data = pd.DataFrame({
@@ -16,40 +17,48 @@ def render_detection_timeline(
 
     if not timeline_data.empty:
 
+        # --- Phase 2.5 timeline realism calibration ---
+        # Prevent Plotly/Pandas from auto-generating Jan 1 1900 timestamps
+        # by enforcing clean HH:MM operational labels only.
         timeline_data["Time Window"] = (
             timeline_data["Time Window"]
             .astype(str)
+            .str.strip()
             .str[:5]
         )
 
-        timeline_data["TimeParsed"] = pd.to_datetime(
-            timeline_data["Time Window"],
-            format="%H:%M",
-            errors="coerce"
-        )
-
-        timeline_data = timeline_data.sort_values("TimeParsed")
 
         avg_requests = timeline_data["Requests"].mean()
 
         fig = go.Figure()
 
         fig.add_trace(go.Scatter(
-            x=timeline_data["TimeParsed"],
+            x=timeline_data["Time Window"],
             y=timeline_data["Requests"],
-            mode='lines+markers',
+            mode='lines',
             name='Detection Traffic',
-            line=dict(color='#2563EB', width=2),
-            marker=dict(size=6),
-            hovertemplate="<b>Time:</b> %{x|%H:%M}<br><b>Requests:</b> %{y}<extra></extra>"
+            line=dict(
+                color='#1E6BFF',
+                width=3,
+                shape='spline',
+                smoothing=1.15
+            ),
+            fill='tozeroy',
+            fillcolor='rgba(30,107,255,0.12)',
+            hovertemplate="<b>Time:</b> %{x}<br><b>Requests:</b> %{y}<extra></extra>"
         ))
 
         fig.add_trace(go.Scatter(
-            x=timeline_data["TimeParsed"],
+            x=timeline_data["Time Window"],
             y=[avg_requests] * len(timeline_data),
             mode='lines',
             name='Baseline',
-            line=dict(color='#60A5FA', dash='dash'),
+            line=dict(
+                color='#60A5FA',
+                dash='dash',
+                width=2
+            ),
+            opacity=0.55,
             hoverinfo='skip'
         ))
 
@@ -74,14 +83,10 @@ def render_detection_timeline(
                 anomaly_df["Time Window"] = (
                     anomaly_df["Time Window"]
                     .astype(str)
+                    .str.strip()
                     .str[:5]
                 )
 
-                anomaly_df["TimeParsed"] = pd.to_datetime(
-                    anomaly_df["Time Window"],
-                    format="%H:%M",
-                    errors="coerce"
-                )
 
                 if "severity" not in anomaly_df.columns:
                     anomaly_df["severity"] = "LOW"
@@ -101,34 +106,134 @@ def render_detection_timeline(
                 colors = anomaly_df["severity"].map(color_map).fillna("#8B5CF6")
 
                 fig.add_trace(go.Scatter(
-                    x=anomaly_df["TimeParsed"],
+                    x=anomaly_df["Time Window"],
                     y=anomaly_df["Requests"],
                     mode='markers',
                     name='Anomalies (Severity)',
                     marker=dict(
                         color=colors,
-                        size=12,
-                        line=dict(width=1, color='black')
+                        size=10,
+                        line=dict(
+                            width=1,
+                            color='#020617'
+                        )
                     ),
                     hovertemplate=(
                         "<b>Anomaly</b><br>"
-                        "Time: %{x|%H:%M}<br>"
+                        "Time: %{x}<br>"
                         "Requests: %{y}<br>"
                         "Severity: %{text}<extra></extra>"
                     ),
                     text=anomaly_df["severity"],
                     legendgroup='anomalies',
-                    showlegend=True
+                    showlegend=False
+                ))
+
+                fig.add_trace(go.Scatter(
+                    x=[None],
+                    y=[None],
+                    mode='markers',
+                    name='High Severity',
+                    marker=dict(
+                        size=10,
+                        color='#DC2626'
+                    ),
+                    hoverinfo='skip'
+                ))
+
+                fig.add_trace(go.Scatter(
+                    x=[None],
+                    y=[None],
+                    mode='markers',
+                    name='Medium Severity',
+                    marker=dict(
+                        size=10,
+                        color='#F59E0B'
+                    ),
+                    hoverinfo='skip'
+                ))
+
+                fig.add_trace(go.Scatter(
+                    x=[None],
+                    y=[None],
+                    mode='markers',
+                    name='Low Severity',
+                    marker=dict(
+                        size=10,
+                        color='#8B5CF6'
+                    ),
+                    hoverinfo='skip'
                 ))
 
         fig.update_layout(
-            template='plotly_dark',
-            plot_bgcolor='rgba(2,6,23,0)',
-            paper_bgcolor='rgba(2,6,23,0)',
-            font=dict(color='#E2E8F0', family='Inter'),
-            height=520,
-            margin=dict(l=10, r=10, t=20, b=10),
-            hovermode='x unified'
+            height=300 if compact_mode else 420,
+            margin=dict(l=8, r=8, t=45, b=8),
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            hovermode='x unified',
+            showlegend=True,
+            font=dict(
+                color='#CBD5E1',
+                family='Inter, Segoe UI, sans-serif'
+            ),
+            hoverlabel=dict(
+                bgcolor='#0F172A',
+                bordercolor='#1E6BFF',
+                font=dict(
+                    color='#F8FAFC',
+                    size=12
+                )
+            ),
+            legend=dict(
+                orientation='h',
+                yanchor='bottom',
+                y=1.12,
+                xanchor='right',
+                x=1,
+                bgcolor='rgba(0,0,0,0)',
+                font=dict(
+                    size=11,
+                    color='#CBD5E1'
+                )
+            )
+        )
+
+        # --- Phase 2.5 operational readability calibration ---
+        # Reduce overcrowded SOC timeline labels and improve
+        # analyst-facing telemetry readability.
+
+        tick_interval = max(
+            1,
+            int(len(timeline_data) / 8)
+        )
+
+        visible_ticks = timeline_data["Time Window"].iloc[::tick_interval]
+
+        fig.update_xaxes(
+            showgrid=False,
+            zeroline=False,
+            showline=False,
+            tickfont=dict(
+                color='#94A3B8',
+                size=10
+            ),
+            tickmode='array',
+            tickvals=visible_ticks,
+            tickangle=0,
+            type='category',
+            title=None
+        )
+
+        fig.update_yaxes(
+            showgrid=True,
+            gridcolor='rgba(148,163,184,0.08)',
+            zeroline=False,
+            showline=False,
+            tickfont=dict(
+                color='#94A3B8',
+                size=10
+            ),
+            title=None
         )
 
         st.plotly_chart(

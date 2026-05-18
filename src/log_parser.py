@@ -103,9 +103,11 @@ def read_logs(file_path=None, file_content=None):
         else:
             time_counts[time_bucket] = 1
 
-    THRESHOLD = 3
+    # --- Phase 2.5: Realistic operational thresholds ---
+    # Prevent low-volume traffic from escalating into attack states.
+    THRESHOLD = 12
 
-    HIGH_THRESHOLD = 5
+    HIGH_THRESHOLD = 30
 
     alerts = []
 
@@ -231,16 +233,17 @@ def read_logs(file_path=None, file_content=None):
             avg_requests = (0.7 * current_avg) + (0.3 * global_avg)
             std_requests = (0.7 * current_std) + (0.3 * global_std)
 
-            # Train Isolation Forest
-            # Increased sensitivity for real-world detection
-            model = IsolationForest(contamination=0.2, random_state=42)
+            # --- Phase 2.5: Reduce anomaly inflation ---
+            # 20% contamination created unrealistic alert volumes and escalation noise.
+            model = IsolationForest(contamination=0.05, random_state=42)
             df_time["anomaly"] = model.fit_predict(X)
 
             # --- Hybrid Detection (ML + Statistical + Heuristic) ---
             anomaly_rows = df_time[df_time["anomaly"] == -1].copy()
 
-            # Statistical anomalies (Z-score based)
-            Z_THRESHOLD = 1.0
+            # --- Phase 2.5: Stronger statistical deviation requirement ---
+            # Small traffic fluctuations should not trigger anomaly escalation.
+            Z_THRESHOLD = 2.0
             stat_anomalies = df_time[df_time["ZScore"].abs() > Z_THRESHOLD]
 
             # Sudden spikes (velocity-based)
@@ -305,7 +308,8 @@ def read_logs(file_path=None, file_content=None):
                     deviation = req - avg_requests
 
                     # --- Burst Attack ---
-                    if req > prev_req * 1.5 and deviation > (0.6 * std_requests):
+                    # --- Phase 2.5: Require stronger burst evidence ---
+                    if req > prev_req * 2.5 and deviation > (1.2 * std_requests):
                         pattern = "Burst Attack"
 
                     # --- Sustained Attack (FIXED - stronger detection) ---
@@ -542,8 +546,9 @@ def read_logs(file_path=None, file_content=None):
 
                     time_diff = (t_curr - t_prev).total_seconds()
 
-                    # Group contiguous minutes (<= 60 seconds difference)
-                    if time_diff <= 60:
+                    # --- Phase 2.5: Reduce aggressive event merging ---
+                    # Prevent unrelated low-volume anomalies from becoming one major incident.
+                    if time_diff <= 30:
                         current_group.append(curr)
                     else:
                         grouped_anomalies.append(current_group)

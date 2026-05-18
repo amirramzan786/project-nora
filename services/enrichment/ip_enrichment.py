@@ -1,0 +1,515 @@
+"""
+Project N.O.R.A.
+IP Intelligence Enrichment Service
+
+Phase 3 Foundation:
+Central intelligence enrichment ownership layer.
+
+This service will later integrate:
+- AbuseIPDB
+- ASN intelligence
+- Geolocation enrichment
+- Threat reputation scoring
+- Pattern similarity correlation
+- ML-assisted confidence scoring
+- Regional threat analysis
+"""
+
+from copy import deepcopy
+import requests
+import streamlit as st
+# =====================================================
+# ABUSEIPDB API CONFIGURATION
+# =====================================================
+
+
+ABUSEIPDB_BASE_URL = "https://api.abuseipdb.com/api/v2/check"
+
+# =====================================================
+# ENRICHMENT CACHE
+# =====================================================
+
+# Simple in-memory cache used during early Phase 3.
+# This prevents repeated API calls for the same IP
+# during dashboard refresh cycles.
+
+ENRICHMENT_CACHE = {}
+
+
+def query_abuseipdb(ip_address):
+    """
+    Query AbuseIPDB for live threat intelligence.
+
+    Returns None safely if:
+    - API key is unavailable
+    - request fails
+    - timeout occurs
+    - rate limits are exceeded
+    """
+
+    # -------------------------------------------------
+    # Cache Lookup
+    # -------------------------------------------------
+
+    if ip_address in ENRICHMENT_CACHE:
+        return ENRICHMENT_CACHE[ip_address]
+
+    api_key = st.secrets.get("ABUSEIPDB_API_KEY")
+
+    if not api_key:
+        return None
+
+    headers = {
+        "Key": api_key,
+        "Accept": "application/json"
+    }
+
+    params = {
+        "ipAddress": ip_address,
+        "maxAgeInDays": 90
+    }
+
+    try:
+        response = requests.get(
+            ABUSEIPDB_BASE_URL,
+            headers=headers,
+            params=params,
+            timeout=5
+        )
+
+        if response.status_code != 200:
+            return None
+
+        response_data = response.json().get("data")
+
+        # ---------------------------------------------
+        # Cache Successful Response
+        # ---------------------------------------------
+
+        if response_data:
+            ENRICHMENT_CACHE[ip_address] = response_data
+
+        return response_data
+
+    except Exception:
+        return None
+
+
+
+# =====================================================
+# CANONICAL ENRICHED IP SCHEMA
+# =====================================================
+
+ENRICHED_IP_TEMPLATE = {
+    "ip_address": "",
+    "country": "Unknown",
+    "city": "Unknown",
+    "region": "Unknown",
+    "asn": "Unknown",
+    "isp": "Unknown",
+    "regional_risk": "Low",
+    "activity_profile": "Unknown",
+    "abuse_score": 0,
+    "threat_level": "Low",
+    "known_malicious": False,
+    "confidence_score": 0,
+    "request_count": 0,
+    "threat_tags": [],
+    "attack_patterns": [],
+    "threat_infrastructure": "Unknown",
+    "traffic_classification": "Unknown",
+    "region_cluster": "Unknown",
+    "confidence_justification": [],
+    "intel_sources": []
+}
+
+
+# =====================================================
+# MOCK ENRICHMENT ENGINE
+# =====================================================
+
+# NOTE:
+# This is intentionally mocked during early Phase 3.
+# Live API integrations will be connected later.
+
+
+# =====================================================
+# ADAPTIVE CONFIDENCE ENGINE
+# =====================================================
+
+
+def calculate_confidence_score(enriched_ip):
+    """
+    Calculate adaptive intelligence confidence based on:
+    - reputation scoring
+    - malicious indicators
+    - request volume
+    - behavioural indicators
+    - threat classification
+    """
+
+    confidence = 0
+
+    # -------------------------------------------------
+    # Abuse Reputation Weighting
+    # -------------------------------------------------
+
+    abuse_score = enriched_ip.get("abuse_score", 0)
+
+    if abuse_score >= 90:
+        confidence += 35
+    elif abuse_score >= 70:
+        confidence += 25
+    elif abuse_score >= 40:
+        confidence += 15
+    else:
+        confidence += 5
+
+    # -------------------------------------------------
+    # Malicious Classification
+    # -------------------------------------------------
+
+    if enriched_ip.get("known_malicious"):
+        confidence += 20
+
+    # -------------------------------------------------
+    # Request Volume Analysis
+    # -------------------------------------------------
+
+    request_count = enriched_ip.get("request_count", 0)
+
+    if request_count >= 1000:
+        confidence += 20
+    elif request_count >= 300:
+        confidence += 12
+    else:
+        confidence += 4
+
+    # -------------------------------------------------
+    # Threat Tag Density
+    # -------------------------------------------------
+
+    threat_tags = enriched_ip.get("threat_tags", [])
+
+    confidence += min(len(threat_tags) * 5, 15)
+
+    # -------------------------------------------------
+    # Behavioural Classification
+    # -------------------------------------------------
+
+    activity_profile = enriched_ip.get("activity_profile")
+
+    if activity_profile == "Known Botnet Infrastructure":
+        confidence += 15
+    elif activity_profile == "Suspicious Hosting Traffic":
+        confidence += 8
+
+    # -------------------------------------------------
+    # Coordinated Behaviour Weighting
+    # -------------------------------------------------
+
+    attack_patterns = enriched_ip.get("attack_patterns", [])
+
+    if len(attack_patterns) >= 2:
+        confidence += 8
+
+    # -------------------------------------------------
+    # Regional Risk Weighting
+    # -------------------------------------------------
+
+    if enriched_ip.get("regional_risk") == "High":
+        confidence += 6
+
+    return min(confidence, 100)
+
+
+def clear_enrichment_cache():
+    """
+    Clear cached enrichment intelligence.
+
+    This supports future:
+    - scheduled refresh workflows
+    - cache invalidation
+    - adaptive intelligence updates
+    """
+
+    ENRICHMENT_CACHE.clear()
+
+def enrich_ip(
+    ip_address,
+    request_count=0,
+    operational_severity="LOW",
+    coordinated_activity=False
+):
+    """
+    Generate a standardised enriched IP intelligence object.
+
+    This mock implementation establishes the internal
+    intelligence contract before live integrations begin.
+    """
+
+    enriched_ip = deepcopy(ENRICHED_IP_TEMPLATE)
+
+    enriched_ip["ip_address"] = ip_address
+    enriched_ip["request_count"] = request_count
+
+    # -------------------------------------------------
+    # Phase 2.5 Operational Context Injection
+    # -------------------------------------------------
+
+    operational_severity = str(
+        operational_severity
+    ).upper()
+
+    # -------------------------------------------------
+    # Live AbuseIPDB Enrichment
+    # -------------------------------------------------
+
+    abuseipdb_data = query_abuseipdb(ip_address)
+
+    if abuseipdb_data:
+
+        enriched_ip["abuse_score"] = abuseipdb_data.get(
+            "abuseConfidenceScore",
+            enriched_ip["abuse_score"]
+        )
+
+        enriched_ip["known_malicious"] = (
+            enriched_ip["abuse_score"] >= 75
+        )
+
+        enriched_ip["country"] = abuseipdb_data.get(
+            "countryCode",
+            enriched_ip["country"]
+        )
+
+        enriched_ip["isp"] = abuseipdb_data.get(
+            "isp",
+            enriched_ip["isp"]
+        )
+
+        enriched_ip["intel_sources"].append(
+            "AbuseIPDB"
+        )
+
+    # -------------------------------------------------
+    # Mock Intelligence Logic
+    # -------------------------------------------------
+
+    if (
+        request_count >= 1000
+        or (
+            operational_severity == "HIGH"
+            and coordinated_activity
+            and request_count >= 150
+        )
+    ):
+        enriched_ip["threat_level"] = "High"
+        enriched_ip["abuse_score"] = max(
+            enriched_ip["abuse_score"],
+            92
+        )
+        enriched_ip["known_malicious"] = (
+            enriched_ip["known_malicious"]
+            or enriched_ip["abuse_score"] >= 75
+        )
+
+        enriched_ip["country"] = (
+            enriched_ip["country"]
+            if enriched_ip["country"] != "Unknown"
+            else "Russia"
+        )
+        enriched_ip["city"] = (
+            enriched_ip["city"]
+            if enriched_ip["city"] != "Unknown"
+            else "Moscow"
+        )
+        enriched_ip["region"] = (
+            enriched_ip["region"]
+            if enriched_ip["region"] != "Unknown"
+            else "Eastern Europe"
+        )
+        enriched_ip["asn"] = (
+            enriched_ip["asn"]
+            if enriched_ip["asn"] != "Unknown"
+            else "AS9009"
+        )
+        enriched_ip["isp"] = (
+            enriched_ip["isp"]
+            if enriched_ip["isp"] != "Unknown"
+            else "M247 Europe"
+        )
+        enriched_ip["regional_risk"] = "High"
+        enriched_ip["activity_profile"] = "Known Botnet Infrastructure"
+
+        enriched_ip["threat_infrastructure"] = (
+            "Distributed Botnet Relay Cluster"
+        )
+
+        enriched_ip["traffic_classification"] = (
+            "Coordinated Volumetric Flood Activity"
+        )
+
+        enriched_ip["region_cluster"] = (
+            "Eastern European Traffic Corridor"
+        )
+
+        enriched_ip["threat_tags"] = [
+            "DDoS",
+            "Botnet Activity",
+            "Volumetric Attack"
+        ]
+
+        enriched_ip["attack_patterns"] = [
+            "Traffic Flooding",
+            "Distributed Saturation",
+            "Coordinated Burst Correlation",
+            "Sustained Throughput Escalation"
+        ]
+
+        enriched_ip["confidence_justification"] = [
+            "Sustained high-volume traffic activity detected",
+            "Behavioural indicators match distributed attack patterns",
+            "Multi-region escalation indicators identified",
+            "Elevated abuse reputation confidence"
+        ]
+
+    elif (
+        request_count >= 300
+        or (
+            operational_severity == "MEDIUM"
+            and request_count >= 120
+        )
+    ):
+        enriched_ip["threat_level"] = "Medium"
+        enriched_ip["abuse_score"] = max(
+            enriched_ip["abuse_score"],
+            61
+        )
+
+        enriched_ip["country"] = (
+            enriched_ip["country"]
+            if enriched_ip["country"] != "Unknown"
+            else "Germany"
+        )
+        enriched_ip["city"] = (
+            enriched_ip["city"]
+            if enriched_ip["city"] != "Unknown"
+            else "Frankfurt"
+        )
+        enriched_ip["region"] = (
+            enriched_ip["region"]
+            if enriched_ip["region"] != "Unknown"
+            else "Western Europe"
+        )
+        enriched_ip["asn"] = (
+            enriched_ip["asn"]
+            if enriched_ip["asn"] != "Unknown"
+            else "AS3320"
+        )
+        enriched_ip["isp"] = (
+            enriched_ip["isp"]
+            if enriched_ip["isp"] != "Unknown"
+            else "Deutsche Telekom"
+        )
+        enriched_ip["regional_risk"] = "Medium"
+        enriched_ip["activity_profile"] = "Suspicious Hosting Traffic"
+
+        enriched_ip["threat_infrastructure"] = (
+            "Suspicious Hosting Relay"
+        )
+
+        enriched_ip["traffic_classification"] = (
+            "Escalating Behavioural Traffic"
+        )
+
+        enriched_ip["region_cluster"] = (
+            "Western European Hosting Corridor"
+        )
+
+        enriched_ip["threat_tags"] = [
+            "Suspicious Traffic"
+        ]
+
+        enriched_ip["attack_patterns"] = [
+            "Repeated Connection Attempts",
+            "Burst Correlation Activity",
+            "Escalating Request Behaviour"
+        ]
+
+        enriched_ip["confidence_justification"] = [
+            "Repeated behavioural anomalies observed",
+            "Suspicious traffic correlation patterns identified",
+            "Elevated hosting infrastructure activity detected"
+        ]
+
+    else:
+        enriched_ip["threat_level"] = "Low"
+        enriched_ip["abuse_score"] = max(
+            enriched_ip["abuse_score"],
+            18
+        )
+
+        enriched_ip["country"] = (
+            enriched_ip["country"]
+            if enriched_ip["country"] != "Unknown"
+            else "United Kingdom"
+        )
+        enriched_ip["city"] = (
+            enriched_ip["city"]
+            if enriched_ip["city"] != "Unknown"
+            else "London"
+        )
+        enriched_ip["region"] = (
+            enriched_ip["region"]
+            if enriched_ip["region"] != "Unknown"
+            else "Western Europe"
+        )
+        enriched_ip["asn"] = (
+            enriched_ip["asn"]
+            if enriched_ip["asn"] != "Unknown"
+            else "AS5607"
+        )
+        enriched_ip["isp"] = (
+            enriched_ip["isp"]
+            if enriched_ip["isp"] != "Unknown"
+            else "Sky UK"
+        )
+        enriched_ip["regional_risk"] = "Low"
+        enriched_ip["activity_profile"] = "Baseline Drift"
+
+        enriched_ip["threat_infrastructure"] = (
+            "Residential Consumer Network"
+        )
+
+        enriched_ip["traffic_classification"] = (
+            "Low Velocity Behavioural Drift"
+        )
+
+        enriched_ip["region_cluster"] = (
+            "Stable Regional Traffic"
+        )
+
+        enriched_ip["attack_patterns"] = [
+            "Baseline Behaviour Deviation"
+        ]
+
+        enriched_ip["confidence_justification"] = [
+            "Low-risk behavioural deviation observed",
+            "Traffic patterns remain operationally stable"
+        ]
+
+    # -------------------------------------------------
+    # Adaptive Confidence Calculation
+    # -------------------------------------------------
+
+    enriched_ip["confidence_score"] = (
+        calculate_confidence_score(enriched_ip)
+    )
+
+    if not enriched_ip["intel_sources"]:
+        enriched_ip["intel_sources"] = [
+            "Mock Intelligence Engine"
+        ]
+
+    return enriched_ip

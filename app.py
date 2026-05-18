@@ -1,5 +1,6 @@
 import streamlit as st
 from workspaces.detection_intel import render_detection_intelligence
+from workspaces.adaptive_intel import render_adaptive_intelligence
 
 st.set_page_config(
     page_title="Project N.O.R.A.",
@@ -179,8 +180,7 @@ if active_page == "overview":
     )
 
 elif active_page == "adaptive_intelligence":
-    st.markdown("# Adaptive Intelligence Engine")
-    st.info("Adaptive learning workspace coming online.")
+    render_adaptive_intelligence()
 
 elif active_page == "log_explorer":
     st.markdown("# Log Explorer")

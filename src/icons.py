@@ -15,7 +15,9 @@ SVG_ICONS = {
     "search": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/search.svg' />",
     "crosshair": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/crosshair.svg' />",
     "siren": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/siren.svg' />",
-    "triangle_alert": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/triangle-alert.svg' />"
+    "triangle_alert": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/triangle-alert.svg' />",
+    "notifications": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/bell-ring.svg' />",
+    "pie_chart": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/chart-pie.svg' />"
 }
 
 def get_icon(name):
