@@ -1,10 +1,5 @@
 import streamlit as st
 
-
-from components.ui_helpers import (
-    get_detection_severity
-)
-
 import random
 
 
@@ -29,19 +24,64 @@ def render_severity_queue(
 
             request_count = anomaly.get("requests", 0)
 
-            # --- Phase 2.5 unified queue realism ---
-            # Align routing queue behaviour with the
-            # global operational severity posture.
+            # Ensure estimated confidence is numeric
+            try:
+                estimated_confidence_numeric = int(
+                    str(estimated_confidence)
+                    .replace('%', '')
+                    .strip()
+                )
+            except (ValueError, TypeError):
+                estimated_confidence_numeric = 72
 
-            severity = overall_severity
+            queue_position = len(severity_rows)
 
-            base_confidence = estimated_confidence
+            # --- Phase 2.5E adaptive queue diversification ---
+            # Create realistic operational queue distribution
+            # instead of identical escalation states.
 
-            lifecycle = {
-                "LOW": "Passive Monitoring",
-                "MEDIUM": "Active Investigation",
-                "HIGH": "Escalated Response"
-            }.get(severity, "Active Investigation")
+            if overall_severity == "MEDIUM":
+
+                diversified_queue_profiles = [
+                    {
+                        "severity": "HIGH",
+                        "lifecycle": "Escalated Response",
+                        "confidence": estimated_confidence_numeric + 10
+                    },
+                    {
+                        "severity": "MEDIUM",
+                        "lifecycle": "Active Investigation",
+                        "confidence": estimated_confidence_numeric + 4
+                    },
+                    {
+                        "severity": "MEDIUM",
+                        "lifecycle": "Analyst Review",
+                        "confidence": estimated_confidence_numeric
+                    },
+                    {
+                        "severity": "LOW",
+                        "lifecycle": "Behaviour Tracking",
+                        "confidence": estimated_confidence_numeric - 12
+                    },
+                    {
+                        "severity": "LOW",
+                        "lifecycle": "Passive Monitoring",
+                        "confidence": estimated_confidence_numeric - 18
+                    }
+                ]
+
+                profile = diversified_queue_profiles[min(
+                    queue_position,
+                    len(diversified_queue_profiles) - 1
+                )]
+
+                severity = profile["severity"]
+                lifecycle = profile["lifecycle"]
+                base_confidence = profile["confidence"]
+
+            else:
+                severity = overall_severity
+                base_confidence = estimated_confidence_numeric
 
             # Ensure confidence is numeric before applying variation
             try:
@@ -81,12 +121,13 @@ def render_severity_queue(
                 ]
             }
 
-            lifecycle = random.choice(
-                lifecycle_variations.get(
-                    severity,
-                    [lifecycle]
+            if overall_severity != "MEDIUM":
+                lifecycle = random.choice(
+                    lifecycle_variations.get(
+                        severity,
+                        [lifecycle]
+                    )
                 )
-            )
 
             severity_rows.append({
                 "Severity": severity,
@@ -100,43 +141,32 @@ def render_severity_queue(
 
         for row in severity_rows:
 
-            severity_color = {
-                "LOW": "#22c55e",
-                "MEDIUM": "#f59e0b",
-                "HIGH": "#ef4444"
-            }.get(row["Severity"], "#22c55e")
+            if row["Severity"] == "HIGH":
+                escalation_state = random.choice([
+                    "Escalate Incident",
+                    "Activate SOC Response",
+                    "Mitigate Traffic"
+                ])
 
-            escalation_variations = {
-                "LOW": [
-                    "Monitor",
-                    "Observe",
-                    "Track"
-                ],
-                "MEDIUM": [
+            elif row["Severity"] == "MEDIUM":
+                escalation_state = random.choice([
                     "Investigate",
                     "Review",
                     "Correlate"
-                ],
-                "HIGH": [
-                    "Contain Threat",
-                    "Mitigate Traffic",
-                    "Escalate Incident",
-                    "Activate SOC Response"
-                ]
-            }
+                ])
 
-            escalation_state = random.choice(
-                escalation_variations.get(
-                    row["Severity"],
-                    ["Monitor"]
-                )
-            )
+            else:
+                escalation_state = random.choice([
+                    "Monitor",
+                    "Observe",
+                    "Track"
+                ])
 
             response_card_html = (
                 f"<div class='nora-response-queue-card'>"
                 f"<div class='nora-response-queue-header'>"
-                f"<div class='nora-response-pattern'>{row['Pattern']}</div>"
-                f"<div class='nora-response-severity' style='color:{severity_color};'>{row['Severity']}</div>"
+                f"<div><div class='nora-response-pattern'>{row['Pattern']}</div><div class='nora-response-pattern-meta'>Behavioural Detection Pattern</div></div>"
+                f"<div class='nora-response-severity nora-response-severity-{row['Severity'].lower()}'>{row['Severity']}</div>"
                 f"</div>"
                 f"<div class='nora-response-meta-row'>"
                 f"<div class='nora-response-meta-block'>"
@@ -153,7 +183,8 @@ def render_severity_queue(
                 f"</div>"
                 f"</div>"
                 f"<div class='nora-response-escalation'>"
-                f"Action: <strong>{escalation_state}</strong>"
+                f"<span class='nora-response-escalation-label'>ESCALATION</span>"
+                f"<span class='nora-response-escalation-state'>{escalation_state}</span>"
                 f"</div>"
                 f"</div>"
             )
@@ -162,77 +193,3 @@ def render_severity_queue(
                 response_card_html,
                 unsafe_allow_html=True
             )
-
-    st.markdown(
-        """
-        <style>
-        .nora-response-queue-card {
-            padding: 13px 14px;
-            margin-bottom: 8px;
-            border-radius: 14px;
-            border: 1px solid rgba(0, 170, 255, 0.12);
-            background: linear-gradient(
-                135deg,
-                rgba(1, 10, 28, 0.96),
-                rgba(0, 8, 24, 0.98)
-            );
-        }
-
-        .nora-response-queue-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .nora-response-pattern {
-            font-size: 15px;
-            font-weight: 700;
-            color: white;
-        }
-
-        .nora-response-severity {
-            font-size: 14px;
-            font-weight: 700;
-        }
-
-        .nora-response-meta-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-
-        .nora-response-meta-block {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .nora-response-meta-label {
-            font-size: 11px;
-            color: rgba(255,255,255,0.45);
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-        }
-
-        .nora-response-meta-value {
-            font-size: 13px;
-            font-weight: 600;
-            color: rgba(255,255,255,0.82);
-        }
-
-        .nora-response-escalation {
-            font-size: 13px;
-            color: rgba(255,255,255,0.72);
-            padding-top: 10px;
-            border-top: 1px solid rgba(255,255,255,0.06);
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
-    st.caption(
-        "Operational response prioritisation currently uses behavioural severity thresholds and escalation lifecycle monitoring."
-    )

@@ -1,0 +1,401 @@
+/* =====================================================
+   N.O.R.A APPLICATION SHELL
+===================================================== */
+
+.nora-sidebar {
+    position: sticky;
+    top: 0.75rem;
+
+    width: 100%;
+    min-height: calc(100vh - 1.5rem);
+
+    padding: 10px 4px;
+
+    background:
+        linear-gradient(180deg,
+            rgba(7,14,26,0.98) 0%,
+            rgba(4,10,18,0.99) 100%);
+
+    border: 1px solid rgba(37,150,190,0.16);
+    border-radius: 22px;
+    margin-right:14px;
+
+    box-shadow:
+        0 0 28px rgba(2,6,23,0.45),
+        18px 0 34px rgba(2,6,23,0.28),
+        inset -1px 0 0 rgba(92,198,238,0.10),
+        inset 0 1px 0 rgba(255,255,255,0.02);
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    display:flex;
+    flex-direction:column;
+    gap:0;
+    align-items:stretch;
+    justify-content:flex-start;
+
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+}
+
+.nora-sidebar::after {
+    content:"";
+
+    position:absolute;
+    top:18px;
+    bottom:18px;
+    right:-14px;
+
+    width:2px;
+
+    background:
+        linear-gradient(180deg,
+            rgba(92,198,238,0) 0%,
+            rgba(92,198,238,0.22) 18%,
+            rgba(92,198,238,0.32) 50%,
+            rgba(92,198,238,0.22) 82%,
+            rgba(92,198,238,0) 100%);
+
+    box-shadow:
+        0 0 12px rgba(92,198,238,0.18);
+
+    pointer-events:none;
+}
+
+.nora-sidebar > div {
+    margin-top:0 !important;
+    padding-top:0 !important;
+    height:auto !important;
+    min-height:0 !important;
+}
+
+.nora-sidebar [data-testid="stVerticalBlock"] {
+    padding-top:0 !important;
+    margin-top:0 !important;
+}
+
+
+.nora-sidebar [data-testid="column"] {
+    align-self:flex-start !important;
+}
+
+.nora-sidebar::-webkit-scrollbar {
+    display: none;
+}
+
+.nora-sidebar-header {
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+
+    border-bottom: 1px solid rgba(37,150,190,0.12);
+
+    flex-shrink:0;
+}
+
+.nora-sidebar-title {
+    display:flex;
+    align-items:center;
+    gap:10px;
+
+    color: #F8FAFC;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+}
+
+.nora-sidebar-logo-wrap {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    width:100%;
+
+    margin-top:2px;
+    margin-bottom:6px;
+}
+
+.nora-sidebar-logo {
+    width:100%;
+    max-width:108px;
+    height:auto;
+
+    object-fit:contain;
+    flex-shrink:0;
+
+    filter:
+        drop-shadow(0 0 14px rgba(37,150,190,0.24));
+}
+
+.nora-sidebar-title span {
+    display:block;
+    line-height:1;
+}
+
+
+.nora-sidebar-subtitle {
+    color: #94A3B8;
+    font-size: 8px;
+    line-height: 1.6;
+    font-weight: 700;
+    letter-spacing: 0.35px;
+    text-transform: uppercase;
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 22px;
+    padding: 0 6px;
+}
+
+.nora-nav-section {
+    position:relative;
+
+    color:#5cc6ee;
+    font-size:7px;
+    font-weight:800;
+    letter-spacing:1.4px;
+    text-transform:uppercase;
+
+    margin-top:8px;
+    margin-bottom:6px;
+    padding:0 6px 6px 6px;
+
+    opacity:0.82;
+}
+
+.nora-nav-section::after {
+    content:"";
+
+    position:absolute;
+    left:8px;
+    right:8px;
+    bottom:0;
+
+    height:1px;
+
+    background:
+        linear-gradient(90deg,
+            rgba(92,198,238,0.22) 0%,
+            rgba(92,198,238,0.06) 100%);
+}
+
+.nora-sidebar .stButton {
+    width:100%;
+    margin-bottom:2px;
+    flex-shrink:0;
+}
+
+.nora-sidebar div[data-testid="stButton"] {
+    width:100%;
+    margin:0 !important;
+    padding:0 !important;
+}
+
+.nora-sidebar div[data-testid="stButton"] > div {
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+}
+
+.nora-sidebar .stButton > button {
+    width: 86px !important;
+    max-width: 86px !important;
+    min-width: 86px !important;
+
+    margin: 0 auto !important;
+
+    min-height: 68px;
+
+    border-radius: 14px !important;
+
+    border: 1px solid rgba(37,150,190,0.10) !important;
+
+    background:
+        linear-gradient(135deg,
+            rgba(15,23,42,0.82) 0%,
+            rgba(7,14,26,0.92) 100%) !important;
+
+    color: #CBD5E1 !important;
+
+    font-size: 6.5px !important;
+    font-weight: 700 !important;
+
+    display:flex !important;
+    flex-direction:column !important;
+
+    justify-content:center !important;
+    align-items:center !important;
+
+    text-align:center !important;
+    word-break:break-word !important;
+    overflow-wrap:anywhere !important;
+
+    white-space:normal !important;
+    line-height:1.05 !important;
+
+    padding: 8px 3px !important;
+
+    position: relative;
+    overflow: hidden;
+
+    gap: 0px;
+
+    letter-spacing: 0.15px;
+    text-transform: uppercase;
+
+    transition: all 0.18s ease !important;
+    backdrop-filter:blur(8px);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 6px 14px rgba(2,6,23,0.26),
+        inset 0 0 0 1px rgba(255,255,255,0.015);
+}
+
+.nora-sidebar .stButton > button p {
+    text-align:center !important;
+
+    width:100%;
+
+    margin:0 !important;
+
+    white-space:normal !important;
+    overflow-wrap:anywhere !important;
+    word-break:break-word !important;
+
+    line-height:1.18 !important;
+
+    font-size:6px !important;
+
+    text-transform:uppercase;
+    font-weight:700 !important;
+    letter-spacing:0.35px;
+    max-width:72px;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:5px;
+    padding:0 !important;
+}
+
+
+.nora-sidebar .stButton > button:hover {
+    border-color: rgba(92,198,238,0.28) !important;
+
+    transform:translateX(3px);
+
+    box-shadow:
+        0 0 18px rgba(37,150,190,0.12),
+        inset 3px 0 0 rgba(92,198,238,0.45);
+}
+
+.nora-sidebar .stButton > button[kind="primary"] {
+    background:
+        linear-gradient(135deg,
+            rgba(37,150,190,0.26) 0%,
+            rgba(37,150,190,0.10) 100%) !important;
+
+    border: 1px solid rgba(92,198,238,0.34) !important;
+
+    color: #F8FAFC !important;
+    transform:translateX(2px);
+
+    box-shadow:
+        inset 4px 0 0 #5cc6ee,
+        0 0 22px rgba(37,150,190,0.14),
+        0 0 32px rgba(37,150,190,0.10),
+        inset 0 1px 0 rgba(255,255,255,0.04) !important;
+}
+
+.nora-sidebar-footer {
+    margin-top:auto;
+    padding-top:16px;
+    padding-bottom:2px;
+
+    border-top:1px solid rgba(37,150,190,0.10);
+
+    flex-shrink:0;
+}
+
+.nora-active-workspace {
+    position:relative;
+    overflow:hidden;
+
+    margin-top:18px;
+    margin-bottom:14px;
+    padding:14px 14px;
+
+    border-radius:18px;
+    border:1px solid rgba(92,198,238,0.16);
+
+    background:
+        radial-gradient(circle at top left, rgba(37,150,190,0.14), transparent 42%),
+        linear-gradient(180deg,
+            rgba(15,23,42,0.92) 0%,
+            rgba(7,14,26,0.98) 100%);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 10px 24px rgba(2,6,23,0.28),
+        0 0 18px rgba(37,150,190,0.08);
+
+    color:#5cc6ee;
+    font-size:8px;
+    font-weight:800;
+    letter-spacing:1.2px;
+    text-transform:uppercase;
+    line-height:1.7;
+}
+
+.nora-active-workspace::before {
+    content:"";
+
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+
+    height:2px;
+
+    background:
+        linear-gradient(90deg,
+            rgba(92,198,238,0) 0%,
+            rgba(92,198,238,0.95) 50%,
+            rgba(92,198,238,0) 100%);
+}
+
+.nora-active-workspace span {
+    display:block;
+
+    margin-top:6px;
+
+    color:#F8FAFC;
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:0.4px;
+    line-height:1.45;
+
+    word-break:break-word;
+    overflow-wrap:anywhere;
+}
+
+.nora-sidebar-status {
+    color: #22C55E;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.nora-sidebar-version {
+    color: #64748B;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.nora-sidebar button p {
+    margin:0 !important;
+    line-height:1 !important;
+}

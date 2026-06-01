@@ -1,61 +1,59 @@
 import streamlit as st
 from workspaces.detection_intel import render_detection_intelligence
 from workspaces.adaptive_intel import render_adaptive_intelligence
+from workspaces.log_explorer import render_log_explorer
+from components.navigation import render_navigation
+
+from workspaces.overview import render_dashboard
+
+def load_css():
+    css_files = [
+        "assets/style.css",
+        "assets/operational_cards.css",
+        "assets/workspace.css",
+        "assets/navigation.css",
+        "assets/severity_queue.css"
+    ]
+
+    combined_css = ""
+
+    for css_file in css_files:
+        with open(css_file) as f:
+            combined_css += f.read() + "\n"
+
+    st.markdown(f"<style>{combined_css}</style>", unsafe_allow_html=True)
 
 st.set_page_config(
     page_title="Project N.O.R.A.",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
-import base64
-from components.sidebar import render_sidebar
-from workspaces.overview import render_dashboard
 
-def get_base64_image(image_path):
-    with open(image_path, "rb") as img_file:
-        return base64.b64encode(img_file.read()).decode()
+st.markdown(
+    """
+    <style>
+        [data-testid="stSidebar"] {
+            display: none !important;
+            width: 0 !important;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-def load_css():
-    with open("assets/style.css") as f:
-        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+if "page" not in st.query_params:
+    st.query_params["page"] = "overview"
 
-from src.log_parser import read_logs
-from src.feedback import save_feedback
-
-
-from src.theme import DARK_MODE, THEME
-import datetime
-
-# --- THEME SYSTEM ---
-dark_mode = DARK_MODE
-
-# --- Global Styling ---
 load_css()
 
-# --- Navigation System ---
-active_page = render_sidebar()
+from src.log_parser import read_logs
 
-with st.container():
 
-    header_container = st.container(border=True)
+from src.theme import DARK_MODE
+import datetime
 
-    with header_container:
-        left_col, right_col = st.columns([7.5, 4.5], vertical_alignment="center")
+dark_mode = DARK_MODE
 
-        with left_col:
-            st.markdown("# PROJECT N.O.R.A")
-
-        with right_col:
-            st.markdown(
-                """
-                <div class='nora-analyst-badge'>
-                    <span>● N.O.R.A.: NETWORK OPERATIONS & RESPONSE ASSISTANT ●</span>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-# --- GREETING + CONTROL BAR ---
 current_hour = datetime.datetime.now().hour
 
 if current_hour < 12:
@@ -65,13 +63,17 @@ elif current_hour < 18:
 else:
     greeting = "Good evening"
 
-control_bg = '#111827' if dark_mode else '#FFFFFF'
-control_border = '#334155' if dark_mode else '#E5E7EB'
-status_color = '#22C55E'
+shell_sidebar, shell_main = st.columns(
+    [0.72, 6.28],
+    gap="small"
+)
 
-if active_page == "overview":
+with shell_sidebar:
+    active_page = render_navigation()
 
-    with st.container():
+with shell_main:
+
+    if active_page == "overview":
 
         control_container = st.container(border=True)
 
@@ -99,8 +101,8 @@ if active_page == "overview":
                 label_col, radio_col = st.columns(
                     [0.01, 5],
                     gap="small",
-                    vertical_alignment="center"
-                )
+                        vertical_alignment="center"
+                    )
 
                 with radio_col:
                     option = st.radio(
@@ -108,7 +110,7 @@ if active_page == "overview":
                         ("Use sample logs", "Upload log file"),
                         horizontal=True,
                         label_visibility="collapsed"
-                    )
+                        )
 
                 st.markdown("</div>", unsafe_allow_html=True)
 
@@ -129,79 +131,79 @@ if active_page == "overview":
                     unsafe_allow_html=True
                 )
 
-else:
-    option = "Use sample logs"
+    else:
+        option = "Use sample logs"
 
-# ---------------- MAIN LOGIC ----------------
+    # ---------------- MAIN LOGIC ----------------
 
-if option == "Upload log file":
+    if option == "Upload log file":
 
-    uploaded_file = st.file_uploader(
-        "Please upload a file to begin analysis",
-        type=["log", "txt"]
-    )
-
-    if uploaded_file is not None:
-
-        st.success("File uploaded successfully!")
-
-        file_bytes = uploaded_file.read()
-
-        ip_totals, alerts, normal_activity, time_counts, anomalies, df_anom, pattern_colors = read_logs(
-            file_content=file_bytes
+        uploaded_file = st.file_uploader(
+            "Please upload a file to begin analysis",
+            type=["log", "txt"]
         )
 
+        if uploaded_file is not None:
+
+            st.success("File uploaded successfully!")
+
+            file_bytes = uploaded_file.read()
+
+            ip_totals, alerts, normal_activity, time_counts, anomalies, df_anom, pattern_colors = read_logs(
+                file_content=file_bytes
+            )
+
+        else:
+            ip_totals = {}
+            alerts = []
+            normal_activity = []
+            time_counts = {}
+            anomalies = []
+            df_anom = None
+            pattern_colors = {}
+
     else:
-        ip_totals = {}
-        alerts = []
-        normal_activity = []
-        time_counts = {}
-        anomalies = []
-        df_anom = None
-        pattern_colors = {}
-
-else:
-    ip_totals, alerts, normal_activity, time_counts, anomalies, df_anom, pattern_colors = read_logs(
-        "logs/sample.log"
-    )
+        ip_totals, alerts, normal_activity, time_counts, anomalies, df_anom, pattern_colors = read_logs(
+            "logs/sample.log"
+        )
 
 
-# ---------------- WORKSPACE ROUTING ----------------
+    # ---------------- WORKSPACE ROUTING ----------------
 
-if active_page == "overview":
-    render_dashboard(
-        ip_totals,
-        alerts,
-        normal_activity,
-        time_counts,
-        anomalies,
-        df_anom,
-        pattern_colors
-    )
+    if active_page == "overview":
+        render_dashboard(
+            ip_totals,
+            alerts,
+            normal_activity,
+            time_counts,
+            anomalies
+        )
 
-elif active_page == "adaptive_intelligence":
-    render_adaptive_intelligence()
+    elif active_page == "adaptive_intelligence":
+        render_adaptive_intelligence()
 
-elif active_page == "log_explorer":
-    st.markdown("# Log Explorer")
-    st.info("Expanded log telemetry workspace coming online.")
+    elif active_page == "log_explorer":
+        render_log_explorer(
+            alerts,
+            normal_activity
+        )
 
-elif active_page == "threat_intelligence":
-    st.markdown("# Threat Intelligence Center")
-    st.info("Threat enrichment and reputation analysis workspace coming online.")
+    elif active_page == "threat_intelligence":
+        st.markdown("# Threat Intelligence Center")
+        st.info("Threat enrichment and reputation analysis workspace coming online.")
 
-elif active_page == "network_traffic":
-    st.markdown("# Network Traffic Analysis")
-    st.info("Network telemetry analysis workspace coming online.")
+    elif active_page == "network_traffic":
+        st.markdown("# Network Traffic Analysis")
+        st.info("Network telemetry analysis workspace coming online.")
 
-elif active_page == "detection_intelligence":
-    render_detection_intelligence(
-        ip_totals,
-        anomalies,
-        time_counts,
-        alerts
-    )
+    elif active_page == "detection_intelligence":
+        render_detection_intelligence(
+            ip_totals,
+            anomalies,
+            time_counts,
+            alerts
+        )
 
-elif active_page == "detection_performance":
-    st.markdown("# Detection Performance Center")
-    st.info("Detection evaluation and analyst validation workspace coming online.")
+    elif active_page == "detection_performance":
+        st.markdown("# Detection Performance Center")
+        st.info("Detection evaluation and analyst validation workspace coming online.")

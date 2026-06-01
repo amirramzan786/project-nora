@@ -34,19 +34,19 @@ body,
 ===================================================== */
 
 [data-testid="stAppViewContainer"] {
-    padding-left:0 !important;
-    margin-left:0 !important;
     overflow-x:hidden !important;
 }
 
-.main {
-    padding-left:0 !important;
-    margin-left:0 !important;
+
+
+section.main {
+    padding-top:0 !important;
+    margin-top:0 !important;
 }
 
-section.main > div {
-    padding-left:0 !important;
-    margin-left:0 !important;
+[data-testid="stAppViewBlockContainer"] {
+    padding-top:0 !important;
+    margin-top:0 !important;
 }
 
 header {
@@ -54,12 +54,12 @@ header {
 }
 
 .block-container {
-    max-width: 1700px;
-    margin-left:0 !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
 
-    padding-top: 0.8rem;
-    padding-left: 2rem;
-    padding-right: 1.8rem;
+    padding-top: 0.75rem;
+    padding-left: 0.35rem;
+    padding-right: 1.25rem;
     padding-bottom: 2rem;
 }
 
@@ -175,17 +175,6 @@ small,
     letter-spacing:0.1px;
 }
 
-.nora-risk-low {
-    color:#22C55E;
-}
-
-.nora-risk-medium {
-    color:#F59E0B;
-}
-
-.nora-risk-high {
-    color:#EF4444;
-}
 /* =====================================================
    METRIC CARDS
 ===================================================== */
@@ -405,7 +394,7 @@ h4 {
     background:
         linear-gradient(135deg, rgba(18,30,46,0.98) 0%, rgba(10,20,34,0.98) 100%) !important;
     border:1px dashed rgba(92,198,238,0.45) !important;
-    border-radius:14px !important;
+    border-radius:12px !important;
 }
 
 [data-testid="stFileUploaderDropzone"] {
@@ -418,47 +407,6 @@ h4 {
     border:1px solid rgba(92,198,238,0.28) !important;
 }
 
-/* =====================================================
-   ANALYST VALIDATION
-===================================================== */
-.stButton > button {
-    min-height:50px;
-
-    border-radius:18px !important;
-    border:1px solid rgba(37,150,190,0.24) !important;
-
-    background:
-        linear-gradient(135deg,
-            rgba(15,23,42,0.96) 0%,
-            rgba(7,14,26,1) 100%) !important;
-
-    color:#F8FAFC !important;
-    font-size:14px !important;
-    font-weight:700 !important;
-    letter-spacing:0.15px;
-
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.03),
-        0 10px 24px rgba(2,6,23,0.28) !important;
-
-    backdrop-filter:blur(10px);
-
-    transition:
-        transform 0.18s ease,
-        border-color 0.18s ease,
-        box-shadow 0.18s ease !important;
-}
-
-.stButton > button:hover {
-    transform:none;
-
-    border-color:rgba(92,198,238,0.34) !important;
-
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.05),
-        0 14px 30px rgba(2,6,23,0.40),
-        0 0 20px rgba(37,150,190,0.12) !important;
-}
 
 /* =====================================================
    ACTIVITY / ALERT CARDS
@@ -692,7 +640,6 @@ h4 {
     margin-top:40px;
     margin-bottom:0px !important;
     padding:20px 24px 45px 24px;
-    display:block;
     border-radius:18px;
     background:
         radial-gradient(circle at top left, rgba(37,150,190,0.10), transparent 40%),
@@ -918,6 +865,36 @@ h4 {
 }
 
 /* =====================================================
+   REUSABLE SECTION TITLE SYSTEM
+===================================================== */
+
+.nora-section-title {
+    display:flex;
+    align-items:center;
+    gap:10px;
+
+    margin-bottom:1rem;
+
+    color:#F8FAFC;
+    font-size:24px;
+    font-weight:700;
+    line-height:1.1;
+    letter-spacing:-0.4px;
+}
+
+.nora-section-title .nora-inline-svg,
+.nora-section-title .nora-lucide-icon,
+.nora-section-title .nora-icon {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    flex-shrink:0;
+
+    margin-right:0 !important;
+}
+
+/* =====================================================
    FORCE INLINE TITLE + ICON ALIGNMENT
 ===================================================== */
 
@@ -925,8 +902,10 @@ h4 {
 .nora-panel-header h3,
 .nora-intel-panel h2,
 .nora-intel-panel h3,
-[data-testid="stVerticalBlock"] h2,
-[data-testid="stVerticalBlock"] h3 {
+.nora-report-module h2,
+.nora-report-module h3,
+.nora-validation-module h2,
+.nora-validation-module h3 {
     display:flex !important;
     align-items:center !important;
     gap:10px !important;
@@ -938,14 +917,18 @@ h4 {
 .nora-panel-header h3 img,
 .nora-intel-panel h2 img,
 .nora-intel-panel h3 img,
-[data-testid="stVerticalBlock"] h2 img,
-[data-testid="stVerticalBlock"] h3 img,
+.nora-report-module h2 img,
+.nora-report-module h3 img,
+.nora-validation-module h2 img,
+.nora-validation-module h3 img,
 .nora-panel-header .nora-inline-svg,
 .nora-panel-header .nora-lucide-icon,
 .nora-intel-panel .nora-inline-svg,
 .nora-intel-panel .nora-lucide-icon,
-[data-testid="stVerticalBlock"] .nora-inline-svg,
-[data-testid="stVerticalBlock"] .nora-lucide-icon {
+.nora-report-module .nora-inline-svg,
+.nora-report-module .nora-lucide-icon,
+.nora-validation-module .nora-inline-svg,
+.nora-validation-module .nora-lucide-icon {
     display:inline-flex !important;
     vertical-align:middle !important;
     margin-right:0 !important;
@@ -961,7 +944,9 @@ h4 {
     margin-bottom:12px;
 }
 
-.nora-threat-stat {
+.nora-threat-stat,
+.nora-metric-component-card,
+.nora-report-stat-card {
     position:relative;
     overflow:hidden;
 
@@ -988,7 +973,9 @@ h4 {
     transition:all 0.22s ease;
 }
 
-.nora-threat-stat:hover {
+.nora-threat-stat:hover,
+.nora-metric-component-card:hover,
+.nora-report-stat-card:hover {
     transform:none;
     border-color:rgba(37,150,190,0.14);
     box-shadow:
@@ -1004,6 +991,46 @@ h4 {
     letter-spacing:0.9px;
     text-transform:uppercase;
     margin-bottom:6px;
+}
+
+.nora-threat-label-header {
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+ .nora-threat-label-icon {
+     display:inline-flex;
+     align-items:center;
+     justify-content:center;
+     flex-shrink:0;
+
+     width:18px;
+     height:18px;
+
+     color:#F8FAFC;
+     opacity:0.95;
+ }
+
+.nora-threat-label-icon img,
+.nora-threat-label-icon svg,
+.nora-threat-label-icon .nora-inline-svg,
+.nora-threat-label-icon .nora-lucide-icon {
+    width:18px !important;
+    height:18px !important;
+
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+
+    margin:0 !important;
+    padding:0 !important;
+
+    opacity:0.95;
+}
+
+.nora-threat-label-text {
+    line-height:1;
 }
 
 .nora-threat-value {
@@ -1295,7 +1322,8 @@ h4 {
    DETECTION PERFORMANCE METRICS
 ===================================================== */
 
-[data-testid="stMetric"] {
+.nora-validation-module [data-testid="stMetric"],
+.nora-eval-grid [data-testid="stMetric"] {
     background: rgba(15,23,42,0.72);
     border: 1px solid rgba(37,150,190,0.14);
     border-radius: 14px;
@@ -1305,13 +1333,15 @@ h4 {
     min-height: 120px;
 }
 
-[data-testid="stMetricLabel"] {
+.nora-validation-module [data-testid="stMetricLabel"],
+.nora-eval-grid [data-testid="stMetricLabel"] {
     white-space: normal !important;
     overflow-wrap: break-word;
     line-height: 1.35 !important;
 }
 
-[data-testid="stMetricLabel"] > div {
+.nora-validation-module [data-testid="stMetricLabel"] > div,
+.nora-eval-grid [data-testid="stMetricLabel"] > div {
     white-space: normal !important;
     overflow-wrap: break-word;
 
@@ -1325,7 +1355,8 @@ h4 {
     font-weight: 700;
 }
 
-[data-testid="stMetricValue"] {
+.nora-validation-module [data-testid="stMetricValue"],
+.nora-eval-grid [data-testid="stMetricValue"] {
     text-align: center;
 
     font-size: 28px !important;
@@ -1419,47 +1450,6 @@ h4 {
    N.O.R.A METRIC COMPONENTS
 ===================================================== */
 
-.nora-metric-component-card {
-    position:relative;
-    overflow:hidden;
-
-    background:
-        linear-gradient(135deg,
-            rgba(15,23,42,0.92) 0%,
-            rgba(8,15,28,0.98) 100%);
-
-    border:1px solid rgba(37,150,190,0.14);
-    border-radius:16px;
-
-    min-height:82px;
-    height:auto;
-
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-
-    padding:14px 16px;
-    margin-bottom:4px;
-
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.03),
-        0 8px 18px rgba(2,6,23,0.26),
-        0 0 12px rgba(37,150,190,0.06);
-
-    transition:none !important;
-    transform:none !important;
-}
-
-.nora-metric-component-card:hover {
-    transform:none !important;
-
-    border-color:rgba(37,150,190,0.14);
-
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.03),
-        0 8px 18px rgba(2,6,23,0.26),
-        0 0 12px rgba(37,150,190,0.06);
-}
 
 .nora-metric-component-title {
     display:flex;
@@ -1582,46 +1572,6 @@ h4 {
     margin-top:8px;
 }
 
-.nora-report-stat-card {
-    position:relative;
-    overflow:hidden;
-
-    background:
-        linear-gradient(135deg,
-            rgba(15,23,42,0.92) 0%,
-            rgba(8,15,28,0.98) 100%);
-
-    border:1px solid rgba(37,150,190,0.14);
-    border-radius:16px;
-
-    min-height:82px;
-
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-
-    padding:14px 16px;
-    margin-bottom:4px;
-
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.03),
-        0 8px 18px rgba(2,6,23,0.26),
-        0 0 12px rgba(37,150,190,0.06);
-
-    transition:none !important;
-    transform:none !important;
-}
-
-.nora-report-stat-card:hover {
-    transform:none !important;
-
-    border-color:rgba(37,150,190,0.20) !important;
-
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.03),
-        0 12px 24px rgba(2,6,23,0.34),
-        0 0 18px rgba(37,150,190,0.08) !important;
-}
 
 .nora-report-stat-label {
     color:#94A3B8;
@@ -1658,628 +1608,4 @@ h4 {
 }
 .nora-risk-high {
     color:#EF4444 !important;
-}
-
-/* =====================================================
-   STREAMLIT SIDEBAR NAVIGATION
-===================================================== */
-
-[data-testid="stSidebar"] {
-    background:
-        linear-gradient(180deg,
-            rgba(18,32,46,0.985) 0%,
-            rgba(8,18,30,0.995) 100%) !important;
-
-    border-right:1px solid rgba(92,198,238,0.12);
-
-    transition:all 0.2s ease !important;
-}
-
-[data-testid="stSidebar"] > div:first-child {
-    background:transparent !important;
-}
-
-[data-testid="stSidebar"] .block-container {
-    padding-top:1.2rem !important;
-    padding-left:1rem !important;
-    padding-right:1rem !important;
-}
-
-/* Sidebar Header */
-
-[data-testid="stSidebar"] h2 {
-    color:#F8FAFC !important;
-    font-size:24px !important;
-    font-weight:800 !important;
-    letter-spacing:-0.5px !important;
-    margin-bottom:0.2rem !important;
-}
-
-[data-testid="stSidebar"] .stCaption {
-    color:#94A3B8 !important;
-    font-size:12px !important;
-    margin-bottom:1rem !important;
-}
-
-/* Sidebar Buttons */
-
-[data-testid="stSidebar"] .stButton > button {
-    width:100%;
-    min-height:54px;
-
-    margin-bottom:10px;
-
-    border-radius:14px !important;
-
-    background:
-        linear-gradient(135deg,
-            rgba(15,23,42,0.92) 0%,
-            rgba(8,15,28,0.98) 100%) !important;
-
-    border:1px solid rgba(37,150,190,0.16) !important;
-
-    color:#E2E8F0 !important;
-
-    font-size:13px !important;
-    font-weight:700 !important;
-    letter-spacing:0.2px !important;
-
-    text-align:left !important;
-
-    transition:all 0.18s ease !important;
-
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.03),
-        0 8px 18px rgba(2,6,23,0.22);
-}
-
-[data-testid="stSidebar"] .stButton > button:hover {
-    transform:none;
-
-    border-color:rgba(92,198,238,0.34) !important;
-
-    box-shadow:
-        0 0 20px rgba(37,150,190,0.14);
-}
-
-/* =====================================================
-   N.O.R.A SIDEBAR BRANDING
-===================================================== */
-
-.nora-sidebar-brand {
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-
-    text-align:center;
-
-    margin-top:-28px;
-    margin-bottom:1.4rem;
-}
-
-.nora-sidebar-brand h2 {
-    margin-top:0 !important;
-    margin-bottom:0.15rem !important;
-
-    color:#F8FAFC !important;
-
-    font-size:24px !important;
-    font-weight:800 !important;
-    letter-spacing:-0.6px !important;
-}
-
-.nora-sidebar-brand p {
-    margin-top:0 !important;
-    margin-bottom:0 !important;
-
-    color:#94A3B8 !important;
-
-    font-size:12px !important;
-    font-weight:500 !important;
-    line-height:1.45 !important;
-    letter-spacing:0.15px !important;
-}
-
-/* Active Navigation Button */
-
-[data-testid="stSidebar"] .stButton > button[kind="primary"] {
-    background:
-        linear-gradient(135deg,
-            rgba(37,150,190,0.28) 0%,
-            rgba(37,150,190,0.12) 100%) !important;
-
-    border:1px solid rgba(92,198,238,0.42) !important;
-
-    color:#F8FAFC !important;
-
-    box-shadow:
-        0 0 24px rgba(37,150,190,0.18),
-        inset 0 1px 0 rgba(255,255,255,0.04);
-}
-
-
-
-/* =====================================================
-   WORKSPACE SECTION TITLES
-===================================================== */
-
-.nora-workspace-title {
-    display:flex;
-    align-items:center;
-    gap:12px;
-
-    color:#F8FAFC;
-
-    font-size:32px;
-    font-weight:800;
-    letter-spacing:-0.8px;
-    line-height:1.1;
-
-    margin-bottom:4px;
-}
-
-.nora-workspace-title .nora-icon,
-.nora-workspace-title .nora-inline-svg,
-.nora-workspace-title .nora-lucide-icon {
-    margin-right:0 !important;
-    flex-shrink:0;
-}
-
-.nora-workspace-subtitle {
-    color:#94A3B8;
-    font-size:16px;
-    font-weight:500;
-    line-height:1.55;
-    letter-spacing:0.15px;
-    margin-top:6px;
-}
-
-.nora-section-title {
-    display:flex;
-    align-items:center;
-    gap:10px;
-
-    color:#F8FAFC;
-
-    font-size:18px;
-    font-weight:800;
-    letter-spacing:-0.3px;
-
-    margin-top:0;
-    margin-bottom:6px;
-}
-
-.nora-section-title .nora-icon,
-.nora-section-title .nora-inline-svg,
-.nora-section-title .nora-lucide-icon {
-    margin-right:0 !important;
-    flex-shrink:0;
-}
-
-/* =====================================================
-   ANALYST ACTION PANEL
-===================================================== */
-
-.nora-analyst-panel {
-    margin-top:12px;
-
-    padding:18px;
-
-    border:1px solid rgba(37,150,190,0.14);
-    border-radius:18px;
-
-    background:
-        linear-gradient(180deg,
-            rgba(8,15,28,0.94) 0%,
-            rgba(3,8,18,0.98) 100%);
-
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.03),
-        0 10px 24px rgba(2,6,23,0.24);
-}
-
-/* =====================================================
-   DATAFRAME CONTAINERS
-===================================================== */
-
-.nora-dataframe-panel {
-    margin-top:8px;
-
-    padding:10px;
-
-    border:1px solid rgba(37,150,190,0.12);
-    border-radius:18px;
-
-    background:
-        linear-gradient(180deg,
-            rgba(10,18,32,0.88) 0%,
-            rgba(5,10,20,0.96) 100%);
-
-    overflow:hidden;
-}
-
-/* =====================================================
-   WORKSPACE SPACING HELPERS
-===================================================== */
-
-.nora-workspace-spacing {
-    height:6px;
-}
-
-/* =====================================================
-   DETECTION INTELLIGENCE WORKSPACE REFINEMENT
-===================================================== */
-
-/* Workspace header breathing room */
-.nora-panel-header {
-    margin-bottom:22px;
-}
-
-/* Detection telemetry row spacing only */
-.nora-detection-metrics-row {
-    gap:10px;
-    margin-bottom:34px;
-}
-
-/* Tighten telemetry column spacing */
-.nora-detection-metrics-row [data-testid="column"] {
-    padding-left:4px;
-    padding-right:4px;
-}
-
-/* Detection Intelligence metric cards */
-[data-testid="metric-container"] {
-    position:relative;
-    overflow:hidden;
-
-    backdrop-filter:blur(10px);
-
-    cursor:default;
-
-    min-height:138px;
-
-    background:
-        radial-gradient(circle at top left, rgba(37,150,190,0.12), transparent 40%),
-        linear-gradient(180deg, rgba(15,23,42,0.98) 0%, rgba(10,18,32,0.96) 100%) !important;
-
-    border:1px solid rgba(37,150,190,0.20) !important;
-    border-radius:20px !important;
-
-    padding:20px 18px !important;
-
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.03),
-        0 10px 24px rgba(2,6,23,0.38),
-        0 0 18px rgba(37,150,190,0.08) !important;
-
-    transition:
-        transform 0.18s ease,
-        border-color 0.18s ease,
-        box-shadow 0.18s ease !important;
-}
-
-[data-testid="metric-container"]:hover {
-    transform:none;
-    border-color:rgba(37,150,190,0.20) !important;
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.03),
-        0 10px 24px rgba(2,6,23,0.38),
-        0 0 18px rgba(37,150,190,0.08) !important;
-}
-
-/* Improve metric label hierarchy */
-[data-testid="metric-container"] label {
-    color:#CBD5E1 !important;
-
-    font-size:12px !important;
-    font-weight:700 !important;
-
-    letter-spacing:0.15px;
-
-    margin-bottom:10px !important;
-}
-
-/* Improve metric values */
-[data-testid="metric-container"] [data-testid="stMetricValue"] {
-    color:#F8FAFC !important;
-
-    font-size:30px !important;
-    font-weight:800 !important;
-
-    letter-spacing:-0.8px;
-
-    line-height:1.1 !important;
-}
-
-/* Prevent cramped metric alignment */
-[data-testid="metric-container"] > div {
-    justify-content:space-between;
-    height:100%;
-}
-
-/* Threat severity custom metric */
-.nora-severity-metric-card {
-    min-height:82px;
-
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-
-    padding:14px 16px;
-    margin-bottom:4px;
-}
-
-
-.nora-severity-label {
-    display:flex;
-    align-items:center;
-    gap:8px;
-
-    color:#CBD5E1;
-
-    font-size:10px;
-    font-weight:700;
-    text-transform:uppercase;
-
-    margin-bottom:6px;
-
-    letter-spacing:0.15px;
-}
-
-.nora-severity-value {
-    margin-top:0;
-    color:#F8FAFC;
-    font-size:18px;
-    font-weight:800;
-    line-height:1.35;
-    letter-spacing:-0.4px;
-}
-
-.nora-severity-label .nora-icon,
-.nora-severity-label .nora-inline-svg,
-.nora-severity-label .nora-lucide-icon {
-    width:18px;
-    height:18px;
-
-    margin-right:0 !important;
-
-    flex-shrink:0;
-}
-
-/* Streamlit dataframe wrapper cleanup */
-.nora-dataframe-panel .stDataFrame {
-    border:none !important;
-    background:transparent !important;
-}
-
-.nora-dataframe-panel [data-testid="stDataFrame"] {
-    border:none !important;
-    background:transparent !important;
-}
-
-/* Remove default dataframe top chrome */
-.nora-dataframe-panel div[data-testid="stDataFrame"] > div {
-    background:transparent !important;
-    border:none !important;
-}
-
-/* Operational workspace cohesion */
-.nora-analyst-panel,
-.nora-dataframe-panel {
-    transition:
-        transform 0.18s ease,
-        border-color 0.18s ease,
-        box-shadow 0.18s ease;
-}
-
-/* Smooth visual rhythm between sections */
-.nora-section-title {
-    margin-top:0;
-    margin-bottom:16px;
-    padding-bottom:2px;
-}
-
-/* Improve captions readability */
-.stCaption {
-    line-height:1.6 !important;
-    opacity:0.88;
-}
-
-/* =====================================================
-   SIDEBAR USER BAR
-===================================================== */
-
-.nora-sidebar-userbar {
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-
-    margin:12px 0 20px 0;
-    padding:14px;
-
-    border-radius:16px;
-
-    background:
-        linear-gradient(
-            180deg,
-            rgba(15,23,42,0.94) 0%,
-            rgba(8,15,28,0.98) 100%
-        );
-
-    border:1px solid rgba(37,150,190,0.14);
-
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.03),
-        0 8px 18px rgba(2,6,23,0.24);
-}
-
-.nora-sidebar-settings,
-.nora-sidebar-user {
-    display:flex;
-    align-items:center;
-    gap:8px;
-
-    color:#CBD5E1;
-
-    font-size:11px;
-    font-weight:700;
-
-    letter-spacing:0.25px;
-}
-
-.nora-sidebar-settings {
-    padding-bottom:10px;
-    border-bottom:1px solid rgba(37,150,190,0.10);
-}
-.css
-/* =====================================================
-   STREAMLIT SIDEBAR TOGGLE VISIBILITY
-===================================================== */
-
-/* =====================================================
-   N.O.R.A OPERATIONAL TELEMETRY SYSTEM
-===================================================== */
-
-.nora-operational-grid {
-    display:grid;
-    grid-template-columns:repeat(2, minmax(0,1fr));
-    gap:14px;
-    margin-top:10px;
-    margin-bottom:18px;
-}
-
-.nora-operational-card {
-    position:relative;
-    overflow:hidden;
-
-    padding:16px 18px;
-
-    border-radius:18px;
-    border:1px solid rgba(37,150,190,0.14);
-
-    background:
-        radial-gradient(circle at top left, rgba(37,150,190,0.10), transparent 40%),
-        linear-gradient(180deg,
-            rgba(12,20,36,0.96) 0%,
-            rgba(5,10,20,0.98) 100%);
-
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.03),
-        0 10px 24px rgba(2,6,23,0.24),
-        0 0 12px rgba(37,150,190,0.05);
-
-    min-height:110px;
-
-    transition:
-        border-color 0.18s ease,
-        box-shadow 0.18s ease;
-}
-
-.nora-operational-card:hover {
-    border-color:rgba(92,198,238,0.20);
-
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.03),
-        0 14px 30px rgba(2,6,23,0.32),
-        0 0 16px rgba(37,150,190,0.08);
-}
-
-.nora-operational-label {
-    color:#94A3B8;
-
-    font-size:10px;
-    font-weight:800;
-
-    letter-spacing:0.9px;
-    text-transform:uppercase;
-
-    margin-bottom:10px;
-}
-
-.nora-operational-value {
-    color:#F8FAFC;
-
-    font-size:18px;
-    font-weight:800;
-
-    line-height:1.45;
-    letter-spacing:-0.3px;
-}
-
-.nora-operational-subtext {
-    margin-top:8px;
-
-    color:#CBD5E1;
-
-    font-size:12px;
-    font-weight:500;
-
-    line-height:1.6;
-}
-
-.nora-operational-status-row {
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-
-    margin-bottom:10px;
-}
-
-.nora-status-pill {
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-
-    padding:6px 12px;
-
-    border-radius:999px;
-
-    font-size:11px;
-    font-weight:800;
-    letter-spacing:0.4px;
-
-    border:1px solid rgba(255,255,255,0.08);
-}
-
-.nora-status-pill.low {
-    background:rgba(34,197,94,0.12);
-    border-color:rgba(34,197,94,0.22);
-    color:#22C55E;
-}
-
-.nora-status-pill.medium {
-    background:rgba(245,158,11,0.12);
-    border-color:rgba(245,158,11,0.22);
-    color:#F59E0B;
-}
-
-.nora-status-pill.high {
-    background:rgba(239,68,68,0.12);
-    border-color:rgba(239,68,68,0.22);
-    color:#EF4444;
-}
-
-.nora-status-pill.info {
-    background:rgba(37,150,190,0.12);
-    border-color:rgba(92,198,238,0.22);
-    color:#5cc6ee;
-}
-
-.nora-operational-divider {
-    height:1px;
-    margin:14px 0;
-
-    background:rgba(148,163,184,0.10);
-}
-
-/* =====================================================
-   STREAMLIT SIDEBAR TOGGLE VISIBILITY
-===================================================== */
-
-[data-testid="stToolbar"] {
-    top:12px;
-    left:10px;
-    z-index:999;
 }

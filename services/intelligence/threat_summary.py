@@ -74,13 +74,13 @@ def classify_attack_likelihood(enriched_threats, confidence_score):
         if t.get("known_malicious") is True
     ])
 
-    if confidence_score >= 90 and malicious_count >= 3:
+    if confidence_score >= 92 and malicious_count >= 4:
         return "Active Coordinated Attack Conditions"
 
-    if confidence_score >= 75 and high_risk_count >= 3:
+    if confidence_score >= 82 and high_risk_count >= 4:
         return "Probable Distributed Attack Behaviour"
 
-    if confidence_score >= 55:
+    if confidence_score >= 60:
         return "Suspicious Coordinated Network Activity"
 
     return "Elevated Network Traffic Behaviour"
@@ -185,14 +185,14 @@ def generate_threat_summary(enriched_threats):
             summary += (
                 "Multiple distributed sources originate from Eastern Europe "
                 "and display behavioural characteristics consistent with "
-                "coordinated volumetric traffic activity. "
+                "elevated coordinated traffic activity. "
             )
 
         if malicious_sources:
             summary += (
                 "Known malicious indicators and elevated abuse scoring "
-                "suggest a sustained probability of hostile network "
-                "behaviour. "
+                "suggest elevated suspicious network behaviour requiring "
+                "continued analyst observation. "
             )
 
         if coordinated_sources:
@@ -204,9 +204,9 @@ def generate_threat_summary(enriched_threats):
 
         if len(high_risk_sources) >= 5:
             summary += (
-                "Threat density, behavioural coordination and anomaly "
-                "clustering indicate elevated escalation potential across "
-                "multiple monitored network sources. "
+                "Threat density and behavioural coordination currently "
+                "indicate elevated escalation potential across monitored "
+                "network sources. "
             )
 
         if operational_confidence >= 85:

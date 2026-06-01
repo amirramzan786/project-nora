@@ -1,12 +1,10 @@
 
 import os
-import pandas as pd
 import streamlit as st
+import pandas as pd
 from src.icons import get_icon
-from components.ui_helpers import get_detection_severity
+from src.detection_scoring import get_detection_severity
 
-# --- Workspace compatibility fallbacks ---
-dark_mode = True
 
 try:
     from src.feedback import save_feedback
@@ -14,7 +12,7 @@ except Exception:
     def save_feedback(*args, **kwargs):
         pass
 
-def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies, df_anom, pattern_colors):
+def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies):
 
     # --- System Status Banner (premium SOC layout) ---
     status_col = st.container()
@@ -87,7 +85,6 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
     c1, c2, c3, c4, c5, c6 = st.columns(6)
 
     if time_counts:
-        import pandas as pd
 
         df_time = pd.DataFrame(list(time_counts.items()), columns=["TimeStr", "Requests"])
 
@@ -157,7 +154,6 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
                     peak_time = f"{hh}:{mm}:{ss}"
             except Exception:
                 pass
-            peak_value = int(peak_row["Requests"])
 
             with c1:
                 metric_card(
@@ -222,7 +218,6 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
         anomaly_df = None
         try:
             if anomalies:
-                import pandas as pd
                 anomaly_df = pd.DataFrame(anomalies)
                 anomaly_df = anomaly_df.rename(columns={"time": "TimeStr", "requests": "Requests"})
                 anomaly_df["Requests"] = pd.to_numeric(anomaly_df["Requests"], errors="coerce")
@@ -714,8 +709,6 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
                     st.caption("Validate this detection")
                     st.markdown("<div class='nora-confirm-grid'>", unsafe_allow_html=True)
                     col_yes, col_no = st.columns(2)
-                    btn_bg = '#1E293B' if dark_mode else '#FFFFFF'
-                    btn_border = '#334155' if dark_mode else '#E5E7EB'
                     with col_yes:
                         if st.button("👍 Confirm Attack", key="confirm_global"):
                             save_feedback(latest_anomaly, True)
@@ -727,7 +720,6 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
                     # --- Detection Evaluation Section (simplified) ---
                     st.markdown("### 📊 Detection Evaluation")
                     try:
-                        import pandas as pd
                         feedback_path = "data/feedback.csv"
                         if os.path.exists(feedback_path):
                             df_feedback = pd.read_csv(feedback_path, encoding="utf-8")
@@ -767,7 +759,6 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
             # --- Top IPs Bar Chart ---
             try:
                 if ip_totals:
-                    import pandas as pd
                     import altair as alt
 
                     df_ips = pd.DataFrame(list(ip_totals.items()), columns=["IP", "Requests"])
@@ -845,7 +836,6 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
                         )
 
                         try:
-                            import pandas as pd
                             feedback_path = "data/feedback.csv"
 
                             if os.path.exists(feedback_path):
@@ -945,10 +935,26 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
         title_left, title_right = st.columns([1, 1], gap="medium")
 
         with title_left:
-            st.markdown(f"## {get_icon('search')} Traffic Log Analysis", unsafe_allow_html=True)
+            st.markdown(
+                f"""
+                <div class='nora-section-title'>
+                    {get_icon('search')}
+                    <span>Traffic Log Analysis</span>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
         with title_right:
-            st.markdown(f"## {get_icon('shield_alert')} Security Alerts", unsafe_allow_html=True)
+            st.markdown(
+                f"""
+                <div class='nora-section-title'>
+                    {get_icon('shield_alert')}
+                    <span>Security Alerts</span>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
         row1_left, row1_right = st.columns([1, 1], gap="medium")
 
@@ -1127,9 +1133,6 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
                 )
 
                 if remaining_alerts > 0:
-                    st.markdown(f"""
-""", unsafe_allow_html=True)
-
                     st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
 
                     button_label = (
@@ -1140,9 +1143,9 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies,
 
                     if st.button(
                         button_label,
-                        key="open_security_alerts_center"
+                        key="open_log_explorer_alerts"
                     ):
-                        st.session_state.active_page = "threat_intelligence"
+                        st.session_state.active_page = "log_explorer"
                         st.rerun()
 
             else:

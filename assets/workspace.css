@@ -1,0 +1,683 @@
+/* =====================================================
+   DETECTION INTELLIGENCE — TELEMETRY SYSTEMS
+===================================================== */
+
+.nora-timeline-telemetry {
+    position:relative;
+    overflow:hidden;
+
+    background:
+        linear-gradient(135deg,
+            rgba(15,23,42,0.92) 0%,
+            rgba(8,15,28,0.98) 100%);
+
+    border:1px solid rgba(37,150,190,0.14);
+    border-radius:16px;
+
+    min-height:82px;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+
+    padding:14px 16px;
+    margin-bottom:4px;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 8px 18px rgba(2,6,23,0.26),
+        0 0 12px rgba(37,150,190,0.06);
+}
+
+.nora-timeline-telemetry-label {
+    display:flex;
+    align-items:center;
+    gap:8px;
+
+    color:#94A3B8;
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:0.8px;
+    text-transform:uppercase;
+    margin-bottom:6px;
+    line-height:1;
+}
+
+.nora-timeline-telemetry-label img,
+.nora-timeline-telemetry-label svg {
+    width:16px;
+    height:16px;
+    flex-shrink:0;
+}
+
+.nora-timeline-telemetry-value {
+    font-size:24px;
+    font-weight:800;
+    line-height:1.1;
+    color:#F8FAFC;
+}
+
+/* =====================================================
+   VISUAL INTELLIGENCE META
+===================================================== */
+
+.nora-visual-intel-meta {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+
+    margin-top:12px;
+}
+
+.nora-visual-intel-meta-item {
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+
+.nora-visual-intel-meta-label {
+    color:#94A3B8;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.6px;
+    text-transform:uppercase;
+}
+
+.nora-visual-intel-meta-value {
+    color:#F8FAFC;
+    font-size:15px;
+    font-weight:700;
+}
+
+/* =====================================================
+   THREAT DISTRIBUTION SYSTEM
+===================================================== */
+
+.nora-threat-distribution {
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+
+    margin-top:12px;
+}
+
+.nora-threat-distribution-item {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:10px 12px;
+
+    border-radius:12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(15,23,42,0.92) 0%,
+            rgba(8,15,28,0.98) 100%
+        );
+
+    border:1px solid rgba(37,150,190,0.12);
+}
+
+.nora-threat-distribution-label {
+    display:flex;
+    align-items:center;
+    gap:10px;
+
+    color:#E2E8F0;
+    font-size:13px;
+    font-weight:700;
+}
+
+.nora-threat-distribution-dot {
+    width:10px;
+    height:10px;
+
+    border-radius:999px;
+
+    flex-shrink:0;
+}
+
+.nora-threat-distribution-value {
+    color:#F8FAFC;
+    font-size:14px;
+    font-weight:800;
+}
+
+/* =====================================================
+   INTELLIGENCE SUMMARY SYSTEM
+===================================================== */
+
+.nora-intelligence-summary {
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+
+    padding:24px;
+
+    border-radius:16px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(15,23,42,0.92) 0%,
+            rgba(8,15,28,0.98) 100%
+        );
+
+    border:1px solid rgba(37,150,190,0.12);
+
+    margin-top:14px;
+}
+
+.nora-intelligence-summary-header {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+}
+
+.nora-intelligence-summary-title {
+    color:#F8FAFC;
+    font-size:16px;
+    font-weight:800;
+}
+
+.nora-intelligence-summary-badge {
+    padding:6px 10px;
+
+    border-radius:999px;
+
+    background:rgba(37,150,190,0.14);
+
+    color:#7DD3FC;
+
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+}
+
+.nora-intelligence-summary-content {
+    color:#CBD5E1;
+    font-size:14px;
+    line-height:1.7;
+}
+
+.nora-intelligence-summary-grid {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+}
+
+.nora-intelligence-summary-stat {
+    padding:10px 12px;
+
+    border-radius:12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(2,6,23,0.92) 0%,
+            rgba(15,23,42,0.92) 100%
+        );
+
+    border:1px solid rgba(37,150,190,0.10);
+}
+
+.nora-intelligence-summary-stat-label {
+    color:#94A3B8;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.6px;
+    text-transform:uppercase;
+
+    margin-bottom:4px;
+}
+
+.nora-intelligence-summary-stat-value {
+    color:#F8FAFC;
+    font-size:16px;
+    font-weight:800;
+}
+
+/* =====================================================
+   INTELLIGENCE SUMMARY — MIGRATED CARD STYLES
+===================================================== */
+
+.nora-intelligence-summary-card {
+    padding:16px 16px 28px 16px;
+    border-radius:20px;
+    border:1px solid rgba(0,170,255,0.14);
+
+    background:
+        radial-gradient(circle at top left, rgba(37,150,190,0.08) 0%, transparent 30%),
+        linear-gradient(
+            135deg,
+            rgba(1,10,28,0.98),
+            rgba(0,8,24,1)
+        );
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 0 28px rgba(0,0,0,0.24);
+
+    color:white;
+    min-height:auto;
+}
+
+.nora-intelligence-summary-body {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-bottom:18px;
+}
+
+.nora-intel-summary-line {
+    padding:12px 14px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,0.06);
+    background:rgba(255,255,255,0.025);
+
+    font-size:13px;
+    line-height:1.6;
+    color:rgba(255,255,255,0.88);
+}
+
+.nora-intel-summary-line strong {
+    display:block;
+    margin-bottom:4px;
+    color:#7dd3fc;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.8px;
+}
+
+.nora-intelligence-summary-meta {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+
+    font-size:12px;
+    line-height:1.8;
+    color:rgba(255,255,255,0.72);
+
+    border-top:1px solid rgba(255,255,255,0.06);
+    padding-top:16px;
+}
+
+.nora-intelligence-summary-meta strong {
+    display:block;
+    margin-bottom:5px;
+    color:rgba(255,255,255,0.92);
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.7px;
+}
+
+.nora-intelligence-meta-card {
+    position:relative;
+    overflow:hidden;
+
+    padding:10px 14px;
+    min-height:auto;
+
+    border-radius:16px;
+
+    background:
+        radial-gradient(circle at top left, rgba(37,150,190,0.08) 0%, transparent 32%),
+        linear-gradient(
+            135deg,
+            rgba(15,23,42,0.92) 0%,
+            rgba(8,15,28,0.98) 100%
+        );
+
+    border:1px solid rgba(37,150,190,0.14);
+
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 8px 18px rgba(2,6,23,0.26),
+        0 0 12px rgba(37,150,190,0.06);
+
+    overflow-wrap:break-word;
+    gap:2px;
+    line-height:1.45;
+}
+
+.nora-intelligence-meta-card strong {
+    font-size:11px;
+    font-weight:800;
+    display:block;
+    text-transform:uppercase;
+    letter-spacing:0.8px;
+    color:#94A3B8;
+}
+
+.nora-intelligence-card-header {
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:8px;
+}
+
+.nora-intelligence-card-icon {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    width:16px;
+    height:16px;
+
+    color:#94A3B8;
+    flex-shrink:0;
+}
+
+.nora-intelligence-card-icon img,
+.nora-intelligence-card-icon svg {
+    width:16px;
+    height:16px;
+}
+
+.nora-intelligence-card-label {
+    color:#94A3B8;
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:0.8px;
+    text-transform:uppercase;
+    line-height:1;
+}
+
+.nora-intelligence-meta-value {
+    color:#F8FAFC;
+    font-size:13px;
+    font-weight:600;
+    line-height:1.5;
+    margin-top:4px;
+}
+
+.nora-intelligence-meta-card-compact {
+    min-height:auto;
+    padding:10px 14px;
+}
+
+.nora-intelligence-metric-card {
+    align-items:center;
+    text-align:center;
+}
+
+.nora-intelligence-metric-value {
+    color:#F8FAFC;
+    font-size:26px;
+    font-weight:700;
+    line-height:1;
+    letter-spacing:-0.5px;
+    margin-top:6px;
+}
+
+.nora-intelligence-metric-value-similarity {
+    color:#60A5FA;
+}
+
+.nora-intelligence-metric-value-confidence {
+    color:#A78BFA;
+}
+
+.nora-intelligence-meta-card-indicators {
+    min-height:auto;
+    padding-top:2px;
+}
+
+.nora-intelligence-indicator-badge {
+    display:inline-block;
+    margin:0 6px 4px 0;
+    padding:4px 10px;
+
+    border-radius:999px;
+
+    background:rgba(37,150,190,0.18);
+    border:1px solid rgba(37,150,190,0.25);
+
+    color:#CFEFFF;
+    font-size:10px;
+    font-weight:700;
+    white-space:nowrap;
+}
+
+.nora-intelligence-meta-card-indicators .nora-intelligence-indicator-badge {
+    margin-top:0;
+    margin-bottom:2px;
+}
+
+.nora-intelligence-meta-card-indicators strong {
+    margin-bottom:2px;
+}
+
+.nora-intelligence-summary-card .nora-intelligence-meta-card {
+    height:auto !important;
+}
+
+.nora-intelligence-summary-card .nora-intelligence-meta-card strong {
+    margin-bottom:2px;
+}
+
+.nora-intelligence-summary-card {
+    gap:10px;
+}
+
+.nora-intelligence-summary-card .nora-intelligence-meta-card {
+    margin-bottom:10px;
+}
+
+.nora-intelligence-summary-card .nora-intelligence-meta-card-indicators {
+    padding-top:4px;
+}
+
+
+/* =====================================================
+   DETECTION IMPACT CARD SYSTEM
+===================================================== */
+
+.nora-impact-card-wrapper {
+    padding:16px;
+    border-radius:16px;
+    border:1px solid rgba(0,170,255,0.10);
+    background:linear-gradient(
+        135deg,
+        rgba(1,10,28,0.96),
+        rgba(0,8,24,0.98)
+    );
+    min-height:188px;
+}
+
+.nora-impact-section-title {
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.8px;
+    color:rgba(255,255,255,0.72);
+    margin-bottom:14px;
+}
+
+.nora-impact-risk-row {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:8px 0;
+    border-bottom:1px solid rgba(255,255,255,0.05);
+    font-size:13px;
+    color:rgba(255,255,255,0.88);
+}
+
+.nora-impact-risk-state {
+    color:#22c55e;
+    font-weight:700;
+    font-size:12px;
+}
+
+.nora-impact-footer {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:14px;
+    padding-top:10px;
+    border-top:1px solid rgba(255,255,255,0.06);
+    font-size:13px;
+    color:rgba(255,255,255,0.82);
+}
+
+/* =====================================================
+   DETECTION INTELLIGENCE — HEADER RECOVERY
+===================================================== */
+
+.nora-workspace-title,
+.nora-page-title,
+.nora-detection-title {
+    color:#F8FAFC;
+    font-size:34px;
+    font-weight:800;
+    line-height:1.1;
+    letter-spacing:-0.02em;
+}
+
+.nora-workspace-subtitle,
+.nora-page-subtitle,
+.nora-detection-subtitle {
+    color:#CBD5E1;
+    font-size:15px;
+    line-height:1.6;
+}
+
+/* =====================================================
+   CORRELATED THREAT SUMMARY FALLBACK STYLING
+===================================================== */
+
+.nora-threat-summary,
+.nora-correlation-summary {
+    color:#E2E8F0;
+    font-size:14px;
+    line-height:1.7;
+}
+
+.nora-threat-summary strong,
+.nora-correlation-summary strong {
+    color:#7DD3FC;
+    font-weight:800;
+}
+
+/* =====================================================
+   DETECTION INTELLIGENCE — LAYOUT GOVERNANCE
+===================================================== */
+
+.nora-detection-intel-panel {
+    height:100%;
+}
+
+.nora-detection-intel-panel .element-container,
+.nora-detection-intel-panel [data-testid="stPlotlyChart"] {
+    height:100%;
+}
+
+.nora-visual-intelligence-panel,
+.nora-correlation-panel,
+.nora-timeline-panel,
+.nora-notification-panel {
+    display:flex;
+    flex-direction:column;
+    height:100%;
+}
+
+/* Updated correlation queue styles */
+
+.nora-correlation-queue-row {
+    display:flex;
+    align-items:center;
+    gap:14px;
+
+    padding:10px 14px;
+    margin-bottom:10px;
+
+    border-radius:14px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(15,23,42,0.92) 0%,
+            rgba(8,15,28,0.98) 100%
+        );
+
+    border:1px solid rgba(37,150,190,0.12);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 8px 18px rgba(2,6,23,0.20);
+}
+
+.nora-correlation-priority {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    min-width:42px;
+    height:28px;
+
+    padding:0 10px;
+
+    border-radius:999px;
+
+    background:rgba(37,150,190,0.12);
+    border:1px solid rgba(37,150,190,0.22);
+
+    color:#E2E8F0;
+    font-size:12px;
+    font-weight:800;
+
+    flex-shrink:0;
+}
+
+.nora-correlation-pattern {
+    flex:1;
+    min-width:0;
+}
+
+.nora-correlation-pattern-title {
+    color:#F8FAFC;
+    font-size:14px;
+    font-weight:800;
+    margin-bottom:4px;
+}
+
+.nora-correlation-pattern-meta {
+    color:#94A3B8;
+    font-size:11px;
+    line-height:1.4;
+}
+
+.nora-correlation-confidence,
+.nora-correlation-lifecycle,
+.nora-correlation-severity {
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+
+    min-width:90px;
+
+    color:#E2E8F0;
+    font-size:12px;
+    font-weight:700;
+}
+
+.nora-correlation-confidence strong,
+.nora-correlation-lifecycle strong,
+.nora-correlation-severity strong {
+    color:#94A3B8;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:0.6px;
+    text-transform:uppercase;
+    margin-bottom:3px;
+}

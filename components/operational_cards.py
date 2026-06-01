@@ -2,380 +2,17 @@ import streamlit as st
 import streamlit.components.v1 as components
 from components.icons import render_operational_icon
 
-CARD_STYLE = """
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-
-html, body {
-    font-family:'Inter', sans-serif;
-    margin:0;
-    padding:0;
-    background:transparent;
-    color:#F8FAFC;
-}
-
-* {
-    font-family:'Inter', sans-serif;
-    box-sizing:border-box;
-}
-.nora-operational-card {
-    margin-bottom:10px;
-    padding:18px 18px 18px 18px;
-
-    border-radius:22px;
-    border:1px solid rgba(37,150,190,0.14);
-
-    background:
-        radial-gradient(circle at top left, rgba(37,150,190,0.08) 0%, transparent 32%),
-        linear-gradient(180deg, rgba(7,14,28,0.98) 0%, rgba(2,6,18,1) 100%);
-
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.02),
-        0 0 24px rgba(0,0,0,0.22);
-
-    min-height: 340px;
-    display:flex;
-    flex-direction:column;
-    justify-content:space-between;
-}
-
-.nora-operational-hero {
-    display:flex;
-    align-items:center;
-    gap:24px;
-
-    padding:22px 26px;
-    border-radius:24px;
-
-    border:1px solid rgba(37,150,190,0.16);
-
-    background:
-        radial-gradient(circle at top left, rgba(124,58,237,0.16) 0%, transparent 32%),
-        linear-gradient(180deg, rgba(10,18,34,0.98) 0%, rgba(4,8,18,1) 100%);
-
-    color:#F8FAFC;
-    font-family:Inter,sans-serif;
-
-    margin-bottom:14px;
-}
-
-.nora-operational-hero-icon {
-    width:92px;
-    min-width:92px;
-    height:92px;
-
-    display:flex;
-    align-items:center;
-    justify-content:center;
-
-    border-radius:26px;
-
-    background:linear-gradient(180deg, rgba(239,68,68,0.18) 0%, rgba(127,29,29,0.18) 100%);
-    border:1px solid rgba(239,68,68,0.24);
-
-    color:#EF4444;
-
-    box-shadow:0 0 32px rgba(239,68,68,0.16);
-}
-
-.nora-operational-hero-content {
-    flex:1;
-}
-
-.nora-operational-hero-title {
-    font-size:26px;
-    font-weight:900;
-    line-height:1.2;
-    margin-bottom:10px;
-}
-
-.nora-operational-hero-text {
-    color:#CBD5E1;
-    font-size:16px;
-    line-height:1.6;
-}
-
-.nora-operational-label {
-    color:#94A3B8;
-    font-size:11px;
-    font-weight:800;
-    letter-spacing:0.8px;
-    text-transform:uppercase;
-    margin-bottom:6px;
-}
-
-.nora-operational-value {
-    font-size:18px;
-    font-weight:800;
-    line-height:1.3;
-    margin-bottom:0;
-}
-
-.nora-operational-subtext {
-    color:#CBD5E1;
-    font-size:13px;
-    line-height:1.45;
-    margin-top:6px;
-}
-
-.nora-operational-divider {
-    height:1px;
-    background:rgba(148,163,184,0.12);
-    margin:14px 0 12px 0;
-}
-
-.nora-operational-grid {
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-    align-items:start;
-}
-
-.nora-operational-module {
-    display:flex;
-    align-items:flex-start;
-    gap:20px;
-    margin-top:8px;
-    flex:1;
-}
-
-.nora-operational-zone-icon {
-    width:56px;
-    min-width:56px;
-    height:56px;
-
-    display:flex;
-    align-items:center;
-    justify-content:center;
-
-    border-radius:16px;
-
-    background:linear-gradient(180deg, rgba(37,150,190,0.16) 0%, rgba(37,150,190,0.08) 100%);
-    border:1px solid rgba(37,150,190,0.22);
-
-    font-size:24px;
-}
-
-.nora-operational-zone-main {
-    flex:1;
-    display:flex;
-    align-items:flex-start;
-    gap:28px;
-}
-
-.nora-operational-zone-top {
-    display:flex;
-    flex-direction:column;
-    align-items:flex-start;
-    justify-content:flex-start;
-    gap:6px;
-    min-width:170px;
-    padding-top:4px;
-}
-
-.nora-operational-state-large {
-    font-size:22px;
-    font-weight:900;
-    letter-spacing:0.4px;
-    line-height:1;
-}
-
-.nora-operational-state-subtitle {
-    font-size:13px;
-    font-weight:600;
-    color:#E2E8F0;
-    line-height:1.2;
-}
-
-.nora-operational-guidance-panel {
-    flex:1;
-    padding-left:22px;
-    border-left:1px solid rgba(148,163,184,0.18);
-    min-height:120px;
-    display:flex;
-    align-items:flex-start;
-}
-
-.nora-notification-grid {
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:22px;
-    margin-top:10px;
-}
-
-.nora-notification-module {
-    display:flex;
-    align-items:center;
-    gap:22px;
-
-    padding:18px 20px;
-    border-radius:22px;
-
-    border:1px solid rgba(37,150,190,0.14);
-
-    background:
-        radial-gradient(circle at top left, rgba(37,150,190,0.08) 0%, transparent 32%),
-        linear-gradient(180deg, rgba(7,14,28,0.98) 0%, rgba(2,6,18,1) 100%);
-}
-
-.nora-notification-state {
-    min-width:210px;
-}
-
-.nora-notification-title {
-    font-size:18px;
-    font-weight:800;
-    color:#60A5FA;
-    margin-bottom:6px;
-}
-
-.nora-notification-subtitle {
-    font-size:15px;
-    font-weight:500;
-    color:#E2E8F0;
-    line-height:1.4;
-}
-
-.nora-notification-divider {
-    width:1px;
-    align-self:stretch;
-    background:rgba(148,163,184,0.16);
-}
-
-
-.nora-notification-text {
-    flex:1;
-    color:#E2E8F0;
-    font-size:15px;
-    line-height:1.7;
-}
-
-.nora-analyst-grid {
-    display:grid;
-    grid-template-columns:repeat(4, 1fr);
-    gap:18px;
-    margin-top:14px;
-}
-
-.nora-analyst-module {
-    padding:18px;
-    padding-bottom:24px;
-    border-radius:22px;
-
-    border:1px solid rgba(37,150,190,0.14);
-
-    background:
-        radial-gradient(circle at top left, rgba(37,150,190,0.08) 0%, transparent 32%),
-        linear-gradient(180deg, rgba(7,14,28,0.98) 0%, rgba(2,6,18,1) 100%);
-
-    min-height:220px;
-}
-
-.nora-analyst-header {
-    display:flex;
-    align-items:center;
-    gap:14px;
-    margin-bottom:18px;
-}
-
-.nora-analyst-title {
-    font-size:17px;
-    font-weight:800;
-    color:#F8FAFC;
-}
-
-.nora-analyst-description {
-    color:#CBD5E1;
-    font-size:14px;
-    line-height:1.6;
-    margin-bottom:18px;
-}
-
-
-.nora-analyst-status {
-    color:#60A5FA;
-    font-size:13px;
-    font-weight:700;
-    margin-bottom:18px;
-}
-
-.nora-analyst-action-button {
-    margin-top:8px;
-    padding:14px 16px;
-
-    border-radius:14px;
-    border:1px solid rgba(37,150,190,0.18);
-
-    background:linear-gradient(180deg, rgba(15,23,42,0.96) 0%, rgba(2,6,18,1) 100%);
-
-    color:#F8FAFC;
-    font-size:14px;
-    font-weight:700;
-    text-align:center;
-
-    box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);
-}
-
-.nora-operational-state {
-    font-size:20px;
-    font-weight:800;
-    line-height:1.2;
-    color:#F8FAFC;
-}
-
-.nora-operational-guidance {
-    color:#CBD5E1;
-    font-size:13px;
-    line-height:1.65;
-    padding-top:2px;
-}
-
-.nora-status-pill {
-    padding:6px 12px;
-    border-radius:999px;
-    font-size:11px;
-    font-weight:700;
-}
-
-.nora-status-pill.low {
-    background:rgba(34,197,94,0.15);
-    color:#22C55E;
-}
-
-.nora-status-pill.medium {
-    background:rgba(245,158,11,0.15);
-    color:#F59E0B;
-}
-
-.nora-status-pill.high {
-    background:rgba(239,68,68,0.15);
-    color:#EF4444;
-}
-
-.nora-status-pill.critical {
-    background:rgba(239,68,68,0.22);
-    color:#FCA5A5;
-    border:1px solid rgba(239,68,68,0.28);
-    box-shadow:0 0 14px rgba(239,68,68,0.14);
-}
-
-.nora-status-pill.investigating {
-    background:rgba(245,158,11,0.16);
-    color:#FCD34D;
-}
-
-.nora-status-pill.monitoring {
-    background:rgba(34,197,94,0.16);
-    color:#86EFAC;
-}
-</style>
-"""
+from pathlib import Path
+
+OPERATIONAL_IFRAME_CSS = Path(
+    "assets/operational_cards.css"
+).read_text()
 
 def render_operational_hero_card(overall_severity="HIGH"):
 
     components.html(
         f"""
-        {CARD_STYLE}
+        <style>{OPERATIONAL_IFRAME_CSS}</style>
 
         <div class='nora-operational-hero'>
 
@@ -457,7 +94,7 @@ def render_threat_assessment_card(
 
     components.html(
         f"""
-        {CARD_STYLE}
+        <style>{OPERATIONAL_IFRAME_CSS}</style>
         <div class='nora-operational-card'>
 
             <div class='nora-operational-label' style='margin-bottom:8px;'>
@@ -580,7 +217,7 @@ def render_escalation_guidance_card(escalation_summary):
 
     components.html(
         f"""
-        {CARD_STYLE}
+        <style>{OPERATIONAL_IFRAME_CSS}</style>
         <div class='nora-operational-card'>
 
             <div class='nora-operational-label' style='margin-bottom:8px;'>
@@ -677,35 +314,82 @@ def render_notification_workflow_card(notification_summary):
         'workflow_stages',
         [
             'Detection',
-            'Passive Monitoring'
+            'Behaviour Analysis',
+            'Pattern Correlation',
+            'Threat Assessment',
+            'Analyst Review'
         ]
     )
 
     workflow_progress = (
-        'Containment & Incident Response Active'
+        'Analyst review active. Behavioural indicators have exceeded escalation thresholds and require validation before response recommendations are issued.'
         if notification_summary['notification_priority'] == 'Critical'
-        else 'Escalation Review & Threat Validation Active'
+        else 'Threat assessment in progress. Correlated indicators suggest elevated behavioural risk requiring analyst evaluation.'
         if notification_summary['notification_priority'] == 'High'
-        else 'Analyst Investigation & Correlation Active'
+        else 'Pattern correlation underway. Current anomalies are being compared against observed behavioural activity.'
         if notification_summary['notification_priority'] == 'Medium'
-        else 'Passive Monitoring Active'
+        else 'Behaviour analysis active. Telemetry is being evaluated for deviations from established baseline behaviour.'
     )
 
     workflow_status = (
-        'CONTAINMENT ACTIVE'
+        'ANALYST REVIEW'
         if notification_summary['notification_priority'] == 'Critical'
-        else 'ESCALATED'
+        else 'THREAT ASSESSMENT'
         if notification_summary['notification_priority'] == 'High'
-        else 'INVESTIGATING'
+        else 'PATTERN CORRELATION'
         if notification_summary['notification_priority'] == 'Medium'
-        else 'MONITORING'
+        else 'BEHAVIOUR ANALYSIS'
+    )
+
+    # =====================================================
+    # Phase 2.5F — Workflow operational realism diversification
+    # =====================================================
+
+    analyst_owner = {
+        'Critical': 'Lead Security Analyst',
+        'High': 'Threat Analyst',
+        'Medium': 'Detection Analyst',
+        'Low': 'Behaviour Monitor'
+    }.get(
+        notification_summary['notification_priority'],
+        'Detection Analyst'
+    )
+
+    workflow_eta = {
+        'Critical': '< 5 min',
+        'High': '15 min',
+        'Medium': '30 min',
+        'Low': 'Passive'
+    }.get(
+        notification_summary['notification_priority'],
+        '30 min'
+    )
+
+    workflow_completion = {
+        'Critical': 'Analyst review remains active while behavioural evidence is validated and response recommendations are prepared.',
+        'High': 'Threat assessment remains active pending completion of correlation and analyst review activities.',
+        'Medium': 'Pattern correlation is progressing as anomalous activity is compared against historical observations.',
+        'Low': 'Behaviour analysis remains active while telemetry continues to be assessed against baseline conditions.'
+    }.get(
+        notification_summary['notification_priority'],
+        'Pattern correlation is progressing as anomalous activity is compared against historical observations.'
+    )
+
+    queue_state = {
+        'Critical': 'Analyst Review Queue',
+        'High': 'Threat Assessment Queue',
+        'Medium': 'Pattern Correlation Queue',
+        'Low': 'Behaviour Analysis Queue'
+    }.get(
+        notification_summary['notification_priority'],
+        'Pattern Correlation Queue'
     )
 
     active_stage_map = {
-        'Critical': 'Containment',
-        'High': 'Threat Validation',
-        'Medium': 'Analyst Investigation',
-        'Low': 'Passive Monitoring'
+        'Critical': 'Analyst Review',
+        'High': 'Threat Assessment',
+        'Medium': 'Pattern Correlation',
+        'Low': 'Behaviour Analysis'
     }
 
     active_stage = active_stage_map.get(
@@ -732,91 +416,44 @@ def render_notification_workflow_card(notification_summary):
 
     workflow_pipeline = ''.join([
         f'''
-        <div style="display:flex; align-items:center; gap:8px;">
+        <div style="
+            display:flex;
+            align-items:center;
+            gap:8px;
+        ">
 
             <div style="
-                padding:10px 14px;
-                border-radius:14px;
+                padding:8px 12px;
+                border-radius:12px;
+                min-width:130px;
+                text-align:center;
 
-                border:{
-                    '1px solid rgba(96,165,250,0.42)'
-                    if index == active_index
-                    else '1px solid rgba(37,150,190,0.20)'
-                    if index < active_index
-                    else '1px solid rgba(148,163,184,0.08)'
-                };
+                border:{'1px solid rgba(96,165,250,0.45)' if index == active_index else '1px solid rgba(37,150,190,0.18)' if index < active_index else '1px solid rgba(148,163,184,0.08)'};
 
-                background:{
-                    'linear-gradient(180deg, rgba(59,130,246,0.24) 0%, rgba(37,99,235,0.18) 100%)'
-                    if index == active_index
-                    else 'linear-gradient(180deg, rgba(37,150,190,0.12) 0%, rgba(15,23,42,0.46) 100%)'
-                    if index < active_index
-                    else 'rgba(15,23,42,0.26)'
-                };
+                background:{'linear-gradient(180deg, rgba(59,130,246,0.20) 0%, rgba(37,99,235,0.14) 100%)' if index == active_index else 'rgba(15,23,42,0.36)' if index < active_index else 'rgba(15,23,42,0.18)'};
 
-                color:{
-                    '#F8FAFC'
-                    if index == active_index
-                    else '#CBD5E1'
-                    if index < active_index
-                    else 'rgba(148,163,184,0.58)'
-                };
-
+                color:{'#F8FAFC' if index <= active_index else 'rgba(148,163,184,0.55)'};
                 font-size:12px;
-                font-weight:{'800' if index == active_index else '700'};
-                min-width:148px;
-
-                opacity:{
-                    '1'
-                    if index <= active_index
-                    else '0.58'
-                };
-
-                box-shadow:{
-                    '0 0 18px rgba(59,130,246,0.24)'
-                    if index == active_index
-                    else 'none'
-                };
+                font-weight:700;
+                opacity:{'1' if index <= active_index else '0.55'};
             ">
 
-                <div style="
-                    margin-bottom:6px;
-                    white-space:nowrap;
-                    display:flex;
-                    align-items:center;
-                    justify-content:space-between;
-                    gap:10px;
-                ">
-
-                    <span>{step}</span>
-
-                    {
-                        '<span style="color:#7DD3FC; font-size:11px;">✔</span>'
-                        if index < active_index
-                        else '<span style="color:#60A5FA; font-size:11px;">●</span>'
-                        if index == active_index
-                        else ''
-                    }
-
+                <div>
+                    {step}
                 </div>
 
                 <div style="
+                    margin-top:4px;
                     font-size:10px;
-                    letter-spacing:0.4px;
-                    color:{
-                        '#BFDBFE'
-                        if index == active_index
-                        else 'rgba(148,163,184,0.72)'
-                    };
-                    font-weight:700;
+                    color:{'#93C5FD' if index == active_index else 'rgba(148,163,184,0.60)'};
                 ">
-                    {workflow_timestamps[index]}
+                    {'ACTIVE' if index == active_index else 'COMPLETE' if index < active_index else 'PENDING'}
                 </div>
 
             </div>
 
             {
-                '<div style="color:rgba(96,165,250,0.22); font-size:14px;">→</div>'
+                '<div style="color:rgba(96,165,250,0.25);font-size:12px;">→</div>'
                 if step != workflow_steps[-1]
                 else ''
             }
@@ -828,7 +465,7 @@ def render_notification_workflow_card(notification_summary):
 
     components.html(
         f"""
-        {CARD_STYLE}
+        <style>{OPERATIONAL_IFRAME_CSS}</style>
 
         <div class='nora-operational-card'>
 
@@ -836,7 +473,7 @@ def render_notification_workflow_card(notification_summary):
                 Notification Workflow
             </div>
 
-            <div style='display:flex; gap:14px; flex-wrap:wrap; margin-bottom:20px;'>
+            <div class='nora-workflow-status-row'>
 
                 <div class='nora-status-pill {notification_priority}'>
                     Workflow: {workflow_status}
@@ -856,53 +493,59 @@ def render_notification_workflow_card(notification_summary):
 
             </div>
 
-            <div style='
-                display:flex;
-                align-items:center;
-                gap:10px;
-                flex-wrap:wrap;
-                margin-bottom:22px;
-            '>
+            <div class='nora-workflow-pipeline-wrapper'>
                 {workflow_pipeline}
             </div>
 
-            <div style='
-                margin-bottom:18px;
-                padding:14px 16px;
-                border-radius:16px;
-                border:1px solid rgba(37,150,190,0.14);
-                background:rgba(15,23,42,0.42);
-            '>
+            <div class='nora-workflow-info-grid'>
 
-                <div class='nora-operational-label' style='margin-bottom:6px;'>
-                    Workflow Progression
-                </div>
+    <div class='nora-workflow-info-card'>
+        <div class='nora-operational-label'>Analyst Owner</div>
+        <div class='nora-operational-value' style='font-size:16px;color:#F8FAFC;'>
+            {analyst_owner}
+        </div>
+    </div>
 
-                <div class='nora-operational-guidance'>
-                    {workflow_progress}
-                </div>
+    <div class='nora-workflow-info-card'>
+        <div class='nora-operational-label'>Queue State</div>
+        <div class='nora-operational-value' style='font-size:16px;color:#F8FAFC;'>
+            {queue_state}
+        </div>
+    </div>
 
-            </div>
+    <div class='nora-workflow-info-card'>
+        <div class='nora-operational-label'>Response ETA</div>
+        <div class='nora-operational-value' style='font-size:18px;font-weight:800;color:#93C5FD;'>
+            {workflow_eta}
+        </div>
+    </div>
 
-            <div style='
-                padding:18px;
-                border-radius:18px;
-                border:1px solid rgba(37,150,190,0.14);
-                background:
-                    radial-gradient(circle at top left, rgba(37,150,190,0.08) 0%, transparent 32%),
-                    linear-gradient(180deg, rgba(7,14,28,0.98) 0%, rgba(2,6,18,1) 100%);
-                margin-bottom:18px;
-            '>
+    <div class='nora-workflow-info-card'>
+        <div class='nora-operational-label'>Workflow State</div>
+        <div class='nora-operational-value' style='font-size:16px;color:#F8FAFC;'>
+            {workflow_status.title()}
+        </div>
+    </div>
 
-                <div class='nora-operational-label' style='margin-bottom:8px;'>
-                    Operational Notification
-                </div>
+</div>
 
-                <div class='nora-operational-guidance'>
-                    {notification_summary['message']}
-                </div>
+            <div class='nora-investigation-lifecycle-panel'>
 
-            </div>
+    <div class='nora-operational-label' style='margin-bottom:8px;'>
+        Investigation Lifecycle
+    </div>
+
+    <div class='nora-operational-guidance' style='margin-bottom:12px;'>
+        {workflow_progress}
+    </div>
+
+    <div class='nora-investigation-lifecycle-divider'></div>
+
+    <div class='nora-operational-guidance'>
+        {workflow_completion}
+    </div>
+
+</div>
 
             <div class='nora-notification-grid'>
 
@@ -958,10 +601,9 @@ def render_notification_workflow_card(notification_summary):
 
         </div>
         """,
-        height=500,
+        height=705,
         scrolling=False
     )
-
 
 # =========================
 # Analyst Action Card Renderer (Reusable)

@@ -103,6 +103,8 @@ def query_abuseipdb(ip_address):
 ENRICHED_IP_TEMPLATE = {
     "ip_address": "",
     "country": "Unknown",
+    "country_code": "UN",
+    "country_flag": "🏳️",
     "city": "Unknown",
     "region": "Unknown",
     "asn": "Unknown",
@@ -123,6 +125,29 @@ ENRICHED_IP_TEMPLATE = {
     "intel_sources": []
 }
 
+
+# =====================================================
+# Helper: Country flag from ISO code
+# =====================================================
+
+def get_country_flag(country_code):
+    """
+    Convert ISO country code into emoji flag.
+
+    This lightweight helper supports early
+    operational geolocation realism for
+    Log Explorer intelligence rendering.
+    """
+
+    if not country_code or len(country_code) != 2:
+        return "🏳️"
+
+    try:
+        return chr(ord(country_code[0].upper()) + 127397) + chr(
+            ord(country_code[1].upper()) + 127397
+        )
+    except Exception:
+        return "🏳️"
 
 # =====================================================
 # MOCK ENRICHMENT ENGINE
@@ -278,8 +303,29 @@ def enrich_ip(
             enriched_ip["abuse_score"] >= 75
         )
 
-        enriched_ip["country"] = abuseipdb_data.get(
+        country_code = abuseipdb_data.get(
             "countryCode",
+            enriched_ip["country_code"]
+        )
+
+        enriched_ip["country_code"] = country_code
+        enriched_ip["country_flag"] = get_country_flag(country_code)
+
+        COUNTRY_NAME_MAP = {
+            "GB": "United Kingdom",
+            "US": "United States",
+            "DE": "Germany",
+            "RU": "Russia",
+            "FR": "France",
+            "CN": "China",
+            "HK": "Hong Kong",
+            "NL": "Netherlands",
+            "SG": "Singapore",
+            "JP": "Japan"
+        }
+
+        enriched_ip["country"] = COUNTRY_NAME_MAP.get(
+            country_code,
             enriched_ip["country"]
         )
 
@@ -314,11 +360,10 @@ def enrich_ip(
             or enriched_ip["abuse_score"] >= 75
         )
 
-        enriched_ip["country"] = (
-            enriched_ip["country"]
-            if enriched_ip["country"] != "Unknown"
-            else "Russia"
-        )
+        if enriched_ip["country"] == "Unknown":
+            enriched_ip["country"] = "Russia"
+            enriched_ip["country_code"] = "RU"
+            enriched_ip["country_flag"] = get_country_flag("RU")
         enriched_ip["city"] = (
             enriched_ip["city"]
             if enriched_ip["city"] != "Unknown"
@@ -387,11 +432,10 @@ def enrich_ip(
             61
         )
 
-        enriched_ip["country"] = (
-            enriched_ip["country"]
-            if enriched_ip["country"] != "Unknown"
-            else "Germany"
-        )
+        if enriched_ip["country"] == "Unknown":
+            enriched_ip["country"] = "Germany"
+            enriched_ip["country_code"] = "DE"
+            enriched_ip["country_flag"] = get_country_flag("DE")
         enriched_ip["city"] = (
             enriched_ip["city"]
             if enriched_ip["city"] != "Unknown"
@@ -450,11 +494,10 @@ def enrich_ip(
             18
         )
 
-        enriched_ip["country"] = (
-            enriched_ip["country"]
-            if enriched_ip["country"] != "Unknown"
-            else "United Kingdom"
-        )
+        if enriched_ip["country"] == "Unknown":
+            enriched_ip["country"] = "United Kingdom"
+            enriched_ip["country_code"] = "GB"
+            enriched_ip["country_flag"] = get_country_flag("GB")
         enriched_ip["city"] = (
             enriched_ip["city"]
             if enriched_ip["city"] != "Unknown"

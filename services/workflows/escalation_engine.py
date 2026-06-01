@@ -80,12 +80,18 @@ def generate_escalation_recommendation(enriched_threat):
     # -------------------------------------------------
 
     if (
-        threat_level == "High"
-        or (
-            similarity_score >= 85
-            and confidence_score >= 70
+        (
+            threat_level == "High"
+            and confidence_score >= 78
         )
-        or correlation_strength == "High"
+        or (
+            similarity_score >= 88
+            and confidence_score >= 75
+        )
+        or (
+            correlation_strength == "High"
+            and confidence_score >= 72
+        )
     ):
 
         return {
@@ -93,14 +99,14 @@ def generate_escalation_recommendation(enriched_threat):
             "response_priority": "P2",
             "containment_required": False,
             "recommended_action": (
-                "Escalation review and behavioural threat "
-                "correlation analysis recommended."
+                "Continue escalation assessment and behavioural "
+                "correlation analysis."
             ),
             "analyst_guidance": (
-                "Behavioural indicators correlate with "
-                "known coordinated attack patterns. "
-                "Validate escalation progression, traffic "
-                "distribution and infrastructure impact."
+                "Behavioural indicators show elevated traffic "
+                "coordination patterns. Validate escalation "
+                "progression, traffic distribution and "
+                "operational impact."
             )
         }
 

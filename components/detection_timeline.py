@@ -2,8 +2,6 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 
-from src.icons import get_icon
-
 def render_detection_timeline(
     time_counts,
     anomalies,
@@ -61,6 +59,95 @@ def render_detection_timeline(
             opacity=0.55,
             hoverinfo='skip'
         ))
+
+        # =====================================================
+        # Phase 2.5E — Operational timeline intelligence overlays
+        # =====================================================
+
+        escalation_x = []
+        escalation_y = []
+
+        investigation_x = []
+        investigation_y = []
+
+        monitoring_x = []
+        monitoring_y = []
+
+        peak_value = timeline_data["Requests"].max()
+
+        for _, row in timeline_data.iterrows():
+
+            timestamp = row["Time Window"]
+            value = row["Requests"]
+
+            if value >= peak_value * 0.85:
+                escalation_x.append(timestamp)
+                escalation_y.append(value)
+
+            elif value >= peak_value * 0.55:
+                investigation_x.append(timestamp)
+                investigation_y.append(value)
+
+            else:
+                monitoring_x.append(timestamp)
+                monitoring_y.append(value)
+
+        # --- Escalation markers ---
+        if escalation_x:
+            fig.add_trace(go.Scatter(
+                x=escalation_x,
+                y=escalation_y,
+                mode='markers',
+                name='Escalation Events',
+                marker=dict(
+                    size=11,
+                    color='#EF4444',
+                    symbol='diamond'
+                ),
+                hovertemplate=(
+                    '<b>Escalation Event</b><br>'
+                    'Time: %{x}<br>'
+                    'Traffic: %{y}<extra></extra>'
+                )
+            ))
+
+        # --- Investigation markers ---
+        if investigation_x:
+            fig.add_trace(go.Scatter(
+                x=investigation_x,
+                y=investigation_y,
+                mode='markers',
+                name='Investigation Triggers',
+                marker=dict(
+                    size=8,
+                    color='#F59E0B',
+                    symbol='circle'
+                ),
+                hovertemplate=(
+                    '<b>Investigation Trigger</b><br>'
+                    'Time: %{x}<br>'
+                    'Traffic: %{y}<extra></extra>'
+                )
+            ))
+
+        # --- Monitoring markers ---
+        if monitoring_x:
+            fig.add_trace(go.Scatter(
+                x=monitoring_x,
+                y=monitoring_y,
+                mode='markers',
+                name='Monitoring States',
+                marker=dict(
+                    size=6,
+                    color='#22C55E',
+                    symbol='circle-open'
+                ),
+                hovertemplate=(
+                    '<b>Monitoring State</b><br>'
+                    'Time: %{x}<br>'
+                    'Traffic: %{y}<extra></extra>'
+                )
+            ))
 
         if anomalies:
 
@@ -171,6 +258,60 @@ def render_detection_timeline(
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
             hovermode='x unified',
+            shapes=[
+                {
+                    'type': 'line',
+                    'xref': 'paper',
+                    'x0': 0,
+                    'x1': 1,
+                    'y0': peak_value * 0.85,
+                    'y1': peak_value * 0.85,
+                    'line': {
+                        'color': 'rgba(239,68,68,0.30)',
+                        'width': 1,
+                        'dash': 'dot'
+                    }
+                },
+                {
+                    'type': 'line',
+                    'xref': 'paper',
+                    'x0': 0,
+                    'x1': 1,
+                    'y0': peak_value * 0.55,
+                    'y1': peak_value * 0.55,
+                    'line': {
+                        'color': 'rgba(245,158,11,0.26)',
+                        'width': 1,
+                        'dash': 'dot'
+                    }
+                }
+            ],
+            annotations=[
+                {
+                    'x': 1,
+                    'xref': 'paper',
+                    'y': peak_value * 0.85,
+                    'yref': 'y',
+                    'text': 'Escalation Threshold',
+                    'showarrow': False,
+                    'font': {
+                        'size': 10,
+                        'color': 'rgba(239,68,68,0.82)'
+                    }
+                },
+                {
+                    'x': 1,
+                    'xref': 'paper',
+                    'y': peak_value * 0.55,
+                    'yref': 'y',
+                    'text': 'Investigation Threshold',
+                    'showarrow': False,
+                    'font': {
+                        'size': 10,
+                        'color': 'rgba(245,158,11,0.82)'
+                    }
+                }
+            ],
             showlegend=True,
             font=dict(
                 color='#CBD5E1',
