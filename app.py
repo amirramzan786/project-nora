@@ -2,6 +2,7 @@ import streamlit as st
 from workspaces.detection_intel import render_detection_intelligence
 from workspaces.adaptive_intel import render_adaptive_intelligence
 from workspaces.log_explorer import render_log_explorer
+from workspaces.threat_intel import render_threat_intelligence
 from components.navigation import render_navigation
 
 from workspaces.overview import render_dashboard
@@ -12,7 +13,8 @@ def load_css():
         "assets/operational_cards.css",
         "assets/workspace.css",
         "assets/navigation.css",
-        "assets/severity_queue.css"
+        "assets/severity_queue.css",
+        "assets/threat_intel.css"
     ]
 
     combined_css = ""
@@ -189,8 +191,12 @@ with shell_main:
         )
 
     elif active_page == "threat_intelligence":
-        st.markdown("# Threat Intelligence Center")
-        st.info("Threat enrichment and reputation analysis workspace coming online.")
+        render_threat_intelligence(
+            ip_totals,
+            alerts,
+            normal_activity,
+            anomalies
+        )
 
     elif active_page == "network_traffic":
         st.markdown("# Network Traffic Analysis")

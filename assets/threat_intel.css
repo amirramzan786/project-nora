@@ -1,0 +1,466 @@
+/* =====================================================
+   PROJECT N.O.R.A — THREAT INTELLIGENCE WORKSPACE
+   Phase 3.1B Visual Foundation
+===================================================== */
+
+/* Workspace shell */
+.nora-threat-intel-shell {
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+}
+
+.nora-threat-intel-header {
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:24px;
+    margin-bottom:6px;
+}
+
+.nora-threat-intel-title {
+    font-size:32px;
+    font-weight:900;
+    letter-spacing:-0.8px;
+    color:#F8FAFC;
+    margin-bottom:4px;
+}
+
+.nora-threat-intel-subtitle {
+    color:#CBD5E1;
+    font-size:14px;
+    font-weight:500;
+}
+
+.nora-threat-intel-window {
+    padding:10px 14px;
+    border-radius:12px;
+    border:1px solid rgba(37,150,190,0.22);
+    background:rgba(7,14,28,0.72);
+    color:#E2E8F0;
+    font-size:12px;
+    font-weight:700;
+    white-space:nowrap;
+}
+
+/* Telemetry grid */
+.nora-threat-telemetry-grid {
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0, 1fr));
+    gap:16px;
+}
+
+.nora-threat-telemetry-card {
+    position:relative;
+    min-height:118px;
+    padding:18px;
+    border-radius:16px;
+    border:1px solid rgba(37,150,190,0.18);
+    background:
+        radial-gradient(circle at top right, rgba(37,150,190,0.12) 0%, transparent 32%),
+        linear-gradient(180deg, rgba(15,23,42,0.86) 0%, rgba(7,14,28,0.96) 100%);
+    box-shadow:0 14px 34px rgba(0,0,0,0.28);
+}
+
+.nora-threat-telemetry-label-row {
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:14px;
+}
+
+.nora-threat-telemetry-label {
+    color:#F8FAFC;
+    font-size:13px;
+    font-weight:800;
+}
+
+.nora-threat-info-dot {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:16px;
+    height:16px;
+    border-radius:999px;
+    border:1px solid rgba(147,197,253,0.45);
+    color:#93C5FD;
+    font-size:10px;
+    font-weight:900;
+}
+
+.nora-threat-telemetry-value {
+    color:#F8FAFC;
+    font-size:28px;
+    font-weight:900;
+    line-height:1;
+    margin-bottom:8px;
+}
+
+.nora-threat-telemetry-value.red { color:#FF4D4D; }
+.nora-threat-telemetry-value.orange { color:#F59E0B; }
+.nora-threat-telemetry-value.green { color:#22C55E; }
+.nora-threat-telemetry-value.blue { color:#60A5FA; }
+.nora-threat-telemetry-value.purple { color:#A78BFA; }
+
+.nora-threat-telemetry-meta {
+    color:#CBD5E1;
+    font-size:12px;
+    font-weight:600;
+}
+
+.nora-threat-telemetry-icon {
+    position:absolute;
+    right:18px;
+    top:34px;
+    width:58px;
+    height:58px;
+    border-radius:999px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid rgba(96,165,250,0.22);
+    background:rgba(15,23,42,0.68);
+    color:#60A5FA;
+    font-size:28px;
+}
+
+.nora-threat-progress-ring {
+    position:absolute;
+    right:20px;
+    top:36px;
+    width:54px;
+    height:54px;
+    border-radius:999px;
+    background:conic-gradient(#22C55E 0 100%, rgba(37,150,190,0.14) 100%);
+}
+
+.nora-threat-progress-ring::after {
+    content:"";
+    width:36px;
+    height:36px;
+    border-radius:999px;
+    background:#07111f;
+    display:block;
+    margin:9px;
+}
+
+/* Layout grids */
+.nora-threat-grid-two {
+    display:grid;
+    grid-template-columns:1.15fr 0.85fr;
+    gap:16px;
+}
+
+.nora-threat-grid-equal {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+}
+
+.nora-threat-card {
+    border-radius:16px;
+    border:1px solid rgba(37,150,190,0.18);
+    background:
+        linear-gradient(180deg, rgba(7,14,28,0.92) 0%, rgba(2,6,18,0.98) 100%);
+    padding:18px;
+}
+
+.nora-threat-card-title {
+    color:#38BDF8;
+    font-size:13px;
+    font-weight:900;
+    text-transform:uppercase;
+    margin-bottom:14px;
+    border-bottom:1px solid rgba(37,150,190,0.16);
+    padding-bottom:10px;
+}
+
+/* Profile */
+.nora-threat-profile-body {
+    display:grid;
+    grid-template-columns:150px 1fr;
+    gap:20px;
+}
+
+.nora-threat-radar-orb {
+    width:150px;
+    height:150px;
+    border-radius:999px;
+    border:1px solid rgba(248,113,113,0.34);
+    background:
+        repeating-radial-gradient(circle, rgba(248,113,113,0.22) 0 1px, transparent 1px 34px),
+        radial-gradient(circle, rgba(239,68,68,0.20) 0%, transparent 68%);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+/* Table */
+.nora-threat-source-table {
+    width:100%;
+    border-collapse:collapse;
+}
+
+.nora-threat-source-table th {
+    text-align:left;
+    font-size:12px;
+    color:#94A3B8;
+    padding:10px;
+}
+
+.nora-threat-source-table td {
+    padding:10px;
+    border-top:1px solid rgba(148,163,184,0.08);
+}
+
+.nora-threat-table-pill {
+    padding:4px 10px;
+    border-radius:8px;
+    font-size:11px;
+    font-weight:900;
+}
+
+.nora-threat-table-pill.critical { background:#ff4d4d22; color:#FF6B6B; }
+.nora-threat-table-pill.high { background:#f59e0b22; color:#F59E0B; }
+.nora-threat-table-pill.medium { background:#60a5fa22; color:#60A5FA; }
+.nora-threat-table-pill.low { background:#22c55e22; color:#4ADE80; }
+
+/* PANEL (SLIDE OUT DRAWER) */
+.nora-threat-intel-panel {
+    position:fixed;
+    right:24px;
+    top:120px;
+    width:390px;
+    max-height:calc(100vh - 160px);
+    overflow-y:auto;
+    z-index:999;
+
+    border-radius:18px;
+    border:1px solid rgba(37,150,190,0.26);
+    background:
+        linear-gradient(180deg, rgba(7,14,28,0.97), rgba(2,6,18,0.99));
+
+    box-shadow:-18px 0 42px rgba(0,0,0,0.36);
+
+    padding:18px;
+    backdrop-filter:blur(14px);
+
+    transform:translateX(110%);
+    opacity:0;
+    transition:all 0.28s ease;
+    pointer-events:none;
+}
+
+.nora-threat-intel-panel--open {
+    transform:translateX(0);
+    opacity:1;
+    pointer-events:auto;
+}
+
+.nora-threat-panel-header {
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    border-bottom:1px solid rgba(37,150,190,0.16);
+    padding-bottom:12px;
+    margin-bottom:12px;
+}
+
+.nora-threat-panel-title {
+    font-size:18px;
+    font-weight:900;
+    color:#F8FAFC;
+}
+
+.nora-threat-panel-status {
+    font-size:10px;
+    color:#4ADE80;
+}
+
+.nora-threat-panel-summary {
+    color:#CBD5E1;
+    font-size:13px;
+    margin-bottom:12px;
+}
+
+.nora-threat-panel-grid {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.nora-threat-panel-row {
+    padding:10px;
+    border-radius:10px;
+    background:rgba(15,23,42,0.6);
+}
+
+.nora-threat-panel-label {
+    font-size:11px;
+    color:#94A3B8;
+}
+
+.nora-threat-panel-value {
+    font-size:13px;
+    color:#F8FAFC;
+}
+
+/* =====================================================
+   Component Recovery: Detail Rows, Mini Rows, Confidence Bars
+===================================================== */
+
+.nora-threat-detail-list {
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+.nora-threat-detail-row {
+    display:grid;
+    grid-template-columns:180px 1fr;
+    gap:18px;
+    align-items:center;
+    padding-bottom:10px;
+    border-bottom:1px solid rgba(148,163,184,0.08);
+}
+
+.nora-threat-detail-label {
+    color:#94A3B8;
+    font-size:12px;
+    font-weight:700;
+}
+
+.nora-threat-detail-value {
+    color:#F8FAFC;
+    font-size:13px;
+    font-weight:800;
+}
+
+.nora-threat-detail-value.red {
+    color:#FF6B6B;
+}
+
+.nora-threat-pill {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:4px 10px;
+    border-radius:8px;
+    font-size:11px;
+    font-weight:900;
+    text-transform:uppercase;
+    border:1px solid rgba(248,113,113,0.32);
+    background:rgba(239,68,68,0.14);
+    color:#FF6B6B;
+    width:max-content;
+}
+
+.nora-threat-confidence-bars {
+    display:flex;
+    gap:5px;
+    align-items:center;
+    padding:2px 0;
+}
+
+.nora-threat-confidence-bar {
+    width:26px;
+    height:6px;
+    border-radius:2px;
+    background:#38BDF8;
+    border:1px solid rgba(56,189,248,0.28);
+    box-shadow:0 0 8px rgba(56,189,248,0.22);
+}
+
+.nora-threat-assessment-list {
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+}
+
+.nora-threat-mini-row {
+    display:grid;
+    grid-template-columns:170px 1fr;
+    gap:12px;
+    padding:8px 0;
+    border-bottom:1px solid rgba(148,163,184,0.08);
+}
+
+.nora-threat-mini-label {
+    color:#94A3B8;
+    font-size:12px;
+    font-weight:700;
+}
+
+.nora-threat-mini-value {
+    color:#F8FAFC;
+    font-size:13px;
+    font-weight:700;
+}
+
+.nora-threat-mini-note {
+    margin-top:12px;
+    color:#CBD5E1;
+    font-size:12px;
+    line-height:1.45;
+}
+
+.nora-threat-behaviour-wrap {
+    display:grid;
+    grid-template-columns:1fr 118px;
+    gap:16px;
+    align-items:center;
+}
+
+.nora-threat-fingerprint {
+    width:112px;
+    height:112px;
+    border-radius:18px;
+    border:1px solid rgba(59,130,246,0.22);
+    background:
+        radial-gradient(circle at center, rgba(59,130,246,0.16) 0%, transparent 64%),
+        rgba(7,14,28,0.72);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#38BDF8;
+    font-size:54px;
+}
+
+.nora-threat-table-card {
+    border-radius:16px;
+    border:1px solid rgba(37,150,190,0.18);
+    background:rgba(7,14,28,0.72);
+    padding:16px;
+}
+
+.nora-threat-summary-card {
+    display:grid;
+    grid-template-columns:1fr 110px;
+    gap:18px;
+    align-items:center;
+    border-radius:16px;
+    border:1px solid rgba(37,150,190,0.18);
+    background:
+        radial-gradient(circle at bottom right, rgba(59,130,246,0.11) 0%, transparent 35%),
+        linear-gradient(180deg, rgba(7,14,28,0.92) 0%, rgba(2,6,18,0.98) 100%);
+    padding:18px;
+}
+
+.nora-threat-summary-text {
+    color:#E2E8F0;
+    font-size:13px;
+    line-height:1.7;
+}
+
+.nora-threat-summary-icon {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:88px;
+    height:88px;
+    border-radius:22px;
+    border:1px solid rgba(56,189,248,0.24);
+    color:#38BDF8;
+    font-size:46px;
+    background:rgba(15,23,42,0.58);
+}
