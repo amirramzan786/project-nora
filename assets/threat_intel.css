@@ -52,27 +52,45 @@
 
 .nora-threat-telemetry-card {
     position:relative;
-    min-height:118px;
+    overflow:hidden;
+    min-height:124px;
     padding:18px;
-    border-radius:16px;
-    border:1px solid rgba(37,150,190,0.18);
+    border-radius:18px;
+    border:1px solid rgba(37,150,190,0.20);
     background:
-        radial-gradient(circle at top right, rgba(37,150,190,0.12) 0%, transparent 32%),
-        linear-gradient(180deg, rgba(15,23,42,0.86) 0%, rgba(7,14,28,0.96) 100%);
-    box-shadow:0 14px 34px rgba(0,0,0,0.28);
+        radial-gradient(circle at top right, rgba(37,150,190,0.16) 0%, transparent 34%),
+        radial-gradient(circle at bottom left, rgba(96,165,250,0.08) 0%, transparent 36%),
+        linear-gradient(180deg, rgba(15,23,42,0.92) 0%, rgba(7,14,28,0.98) 100%);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.04),
+        0 16px 34px rgba(0,0,0,0.30),
+        0 0 22px rgba(37,150,190,0.06);
+}
+
+.nora-threat-telemetry-card::before {
+    content:"";
+    position:absolute;
+    left:0;
+    top:0;
+    width:100%;
+    height:3px;
+    background:linear-gradient(90deg, rgba(56,189,248,0.72), rgba(167,139,250,0.46), transparent);
+    opacity:0.8;
 }
 
 .nora-threat-telemetry-label-row {
     display:flex;
     align-items:center;
     gap:8px;
-    margin-bottom:14px;
+    margin-bottom:13px;
 }
 
 .nora-threat-telemetry-label {
     color:#F8FAFC;
-    font-size:13px;
-    font-weight:800;
+    font-size:12px;
+    font-weight:900;
+    letter-spacing:0.45px;
+    text-transform:uppercase;
 }
 
 .nora-threat-info-dot {
@@ -90,10 +108,12 @@
 
 .nora-threat-telemetry-value {
     color:#F8FAFC;
-    font-size:28px;
-    font-weight:900;
+    font-size:31px;
+    font-weight:950;
     line-height:1;
     margin-bottom:8px;
+    letter-spacing:-0.7px;
+    text-shadow:0 0 18px rgba(248,250,252,0.08);
 }
 
 .nora-threat-telemetry-value.red { color:#FF4D4D; }
@@ -104,34 +124,43 @@
 
 .nora-threat-telemetry-meta {
     color:#CBD5E1;
-    font-size:12px;
-    font-weight:600;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.15px;
+    line-height:1.45;
+    max-width:72%;
 }
 
 .nora-threat-telemetry-icon {
     position:absolute;
-    right:18px;
-    top:34px;
-    width:58px;
-    height:58px;
-    border-radius:999px;
+    right:16px;
+    top:38px;
+    width:56px;
+    height:56px;
+    border-radius:18px;
     display:flex;
     align-items:center;
     justify-content:center;
-    border:1px solid rgba(96,165,250,0.22);
-    background:rgba(15,23,42,0.68);
+    border:1px solid rgba(96,165,250,0.28);
+    background:
+        radial-gradient(circle at center, rgba(96,165,250,0.14) 0%, transparent 66%),
+        rgba(15,23,42,0.72);
     color:#60A5FA;
-    font-size:28px;
+    font-size:27px;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.04),
+        0 0 18px rgba(96,165,250,0.10);
 }
 
 .nora-threat-progress-ring {
     position:absolute;
-    right:20px;
-    top:36px;
+    right:18px;
+    top:40px;
     width:54px;
     height:54px;
     border-radius:999px;
     background:conic-gradient(#22C55E 0 100%, rgba(37,150,190,0.14) 100%);
+    box-shadow:0 0 18px rgba(34,197,94,0.12);
 }
 
 .nora-threat-progress-ring::after {
@@ -139,7 +168,7 @@
     width:36px;
     height:36px;
     border-radius:999px;
-    background:#07111f;
+    background:#07101f;
     display:block;
     margin:9px;
 }
@@ -224,38 +253,6 @@
 .nora-threat-table-pill.high { background:#f59e0b22; color:#F59E0B; }
 .nora-threat-table-pill.medium { background:#60a5fa22; color:#60A5FA; }
 .nora-threat-table-pill.low { background:#22c55e22; color:#4ADE80; }
-
-/* PANEL (SLIDE OUT DRAWER) */
-.nora-threat-intel-panel {
-    position:fixed;
-    right:24px;
-    top:120px;
-    width:390px;
-    max-height:calc(100vh - 160px);
-    overflow-y:auto;
-    z-index:999;
-
-    border-radius:18px;
-    border:1px solid rgba(37,150,190,0.26);
-    background:
-        linear-gradient(180deg, rgba(7,14,28,0.97), rgba(2,6,18,0.99));
-
-    box-shadow:-18px 0 42px rgba(0,0,0,0.36);
-
-    padding:18px;
-    backdrop-filter:blur(14px);
-
-    transform:translateX(110%);
-    opacity:0;
-    transition:all 0.28s ease;
-    pointer-events:none;
-}
-
-.nora-threat-intel-panel--open {
-    transform:translateX(0);
-    opacity:1;
-    pointer-events:auto;
-}
 
 .nora-threat-panel-header {
     display:flex;
@@ -463,4 +460,136 @@
     color:#38BDF8;
     font-size:46px;
     background:rgba(15,23,42,0.58);
+}
+
+/* =====================================================
+   CSS Drawer System (No Streamlit Reloads)
+===================================================== */
+
+.nora-threat-panel-toggle {
+    display:none;
+}
+
+.nora-threat-drawer-backdrop {
+    position:fixed;
+    inset:0;
+    z-index:998;
+    background:rgba(2,6,18,0.42);
+    backdrop-filter:blur(3px);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.24s ease;
+}
+
+.nora-threat-css-drawer {
+    position:fixed;
+    top:90px;
+    right:0;
+    width:540px;
+    height:calc(100vh - 90px);
+    overflow-y:auto;
+    z-index:1000;
+
+    border-left:1px solid rgba(37,150,190,0.24);
+    background:
+        linear-gradient(180deg, rgba(7,14,28,0.98) 0%, rgba(2,6,18,0.99) 100%);
+
+    box-shadow:
+        -24px 0 50px rgba(0,0,0,0.45),
+        -2px 0 22px rgba(56,189,248,0.14);
+    padding:20px;
+
+    transform:translateX(100%);
+    opacity:0;
+    pointer-events:none;
+    transition:transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease;
+}
+
+.nora-threat-panel-close {
+    cursor:pointer;
+    color:#94A3B8;
+    font-size:22px;
+    font-weight:900;
+    line-height:1;
+}
+
+.nora-threat-panel-close:hover {
+    color:#F8FAFC;
+}
+
+#nora-panel-reputation:checked ~ .nora-threat-css-drawer-reputation,
+#nora-panel-asn:checked ~ .nora-threat-css-drawer-asn,
+#nora-panel-geographic:checked ~ .nora-threat-css-drawer-geographic,
+#nora-panel-coverage:checked ~ .nora-threat-css-drawer-coverage {
+    transform:translateX(0);
+    opacity:1;
+    pointer-events:auto;
+}
+
+#nora-panel-reputation:checked ~ .nora-threat-drawer-backdrop,
+#nora-panel-asn:checked ~ .nora-threat-drawer-backdrop,
+#nora-panel-geographic:checked ~ .nora-threat-drawer-backdrop,
+#nora-panel-coverage:checked ~ .nora-threat-drawer-backdrop {
+    opacity:1;
+    pointer-events:auto;
+}
+
+.nora-threat-info-dot {
+    cursor:pointer;
+
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease,
+        color 0.18s ease;
+}
+
+.nora-threat-info-dot:hover {
+    color:#E0F2FE;
+
+    background:rgba(56,189,248,0.16);
+
+    border-color:rgba(147,197,253,0.85);
+
+    box-shadow:
+        0 0 10px rgba(56,189,248,0.35),
+        0 0 20px rgba(56,189,248,0.18);
+
+    transform:translateY(-1px) scale(1.08);
+}
+
+/* Drawer future enrichment components */
+.nora-threat-panel-section {
+    margin-top:16px;
+    padding-top:14px;
+    border-top:1px solid rgba(37,150,190,0.14);
+}
+
+.nora-threat-panel-badge {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:5px 10px;
+    border-radius:999px;
+    border:1px solid rgba(56,189,248,0.24);
+    background:rgba(56,189,248,0.10);
+    color:#38BDF8;
+    font-size:11px;
+    font-weight:900;
+    text-transform:uppercase;
+}
+
+.nora-threat-panel-metric {
+    border-radius:12px;
+    border:1px solid rgba(148,163,184,0.10);
+    background:rgba(15,23,42,0.58);
+    padding:12px;
+}
+
+.nora-threat-panel-confidence {
+    display:flex;
+    align-items:center;
+    gap:5px;
+    margin-top:8px;
 }

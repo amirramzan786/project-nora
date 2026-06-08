@@ -4,12 +4,12 @@
 
 .nora-sidebar {
     position: sticky;
-    top: 0.75rem;
+    top: 0.5rem;
 
     width: 100%;
-    min-height: calc(100vh - 1.5rem);
+    min-height: calc(100vh - 1rem);
 
-    padding: 10px 4px;
+    padding: 14px 10px;
 
     background:
         linear-gradient(180deg,
@@ -18,7 +18,7 @@
 
     border: 1px solid rgba(37,150,190,0.16);
     border-radius: 22px;
-    margin-right:14px;
+    margin-right:30px;
 
     box-shadow:
         0 0 28px rgba(2,6,23,0.45),
@@ -85,8 +85,8 @@
 }
 
 .nora-sidebar-header {
-    margin-bottom: 14px;
-    padding-bottom: 14px;
+    margin-bottom: 12px;
+    padding: 2px 6px 14px 6px;
 
     border-bottom: 1px solid rgba(37,150,190,0.12);
 
@@ -112,13 +112,13 @@
 
     width:100%;
 
-    margin-top:2px;
-    margin-bottom:6px;
+    margin-top:6px;
+    margin-bottom:10px;
 }
 
 .nora-sidebar-logo {
     width:100%;
-    max-width:108px;
+    max-width:104px;
     height:auto;
 
     object-fit:contain;
@@ -136,47 +136,47 @@
 
 .nora-sidebar-subtitle {
     color: #94A3B8;
-    font-size: 8px;
-    line-height: 1.6;
+    font-size: 8.5px;
+    line-height: 1.7;
     font-weight: 700;
     letter-spacing: 0.35px;
     text-transform: uppercase;
     text-align: center;
-    margin-top: 10px;
-    margin-bottom: 22px;
+    margin-top: 6px;
+    margin-bottom: 12px;
     padding: 0 6px;
 }
 
 .nora-nav-section {
     position:relative;
-
-    color:#5cc6ee;
-    font-size:7px;
-    font-weight:800;
-    letter-spacing:1.4px;
+    color:rgba(148,163,184,0.70);
+    font-size:7.5px;
+    font-weight:900;
+    letter-spacing:1.1px;
     text-transform:uppercase;
+    text-align:center;
 
-    margin-top:8px;
+    margin-top:10px;
     margin-bottom:6px;
-    padding:0 6px 6px 6px;
-
-    opacity:0.82;
+    padding:0 8px 3px 8px;
+    opacity:0.85;
 }
 
 .nora-nav-section::after {
     content:"";
 
     position:absolute;
-    left:8px;
-    right:8px;
+    left:22px;
+    right:22px;
     bottom:0;
 
     height:1px;
 
     background:
         linear-gradient(90deg,
-            rgba(92,198,238,0.22) 0%,
-            rgba(92,198,238,0.06) 100%);
+            rgba(92,198,238,0) 0%,
+            rgba(92,198,238,0.14) 50%,
+            rgba(92,198,238,0) 100%);
 }
 
 .nora-sidebar .stButton {
@@ -199,47 +199,44 @@
 }
 
 .nora-sidebar .stButton > button {
-    width: 86px !important;
-    max-width: 86px !important;
-    min-width: 86px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
 
-    margin: 0 auto !important;
+    margin: 0 0 6px 0 !important;
 
-    min-height: 68px;
+    min-height: 54px;
 
-    border-radius: 14px !important;
+    border-radius: 0 !important;
 
-    border: 1px solid rgba(37,150,190,0.10) !important;
+    border: 0 !important;
 
-    background:
-        linear-gradient(135deg,
-            rgba(15,23,42,0.82) 0%,
-            rgba(7,14,26,0.92) 100%) !important;
+    background:transparent !important;
 
-    color: #CBD5E1 !important;
+    color: rgba(226,232,240,0.82) !important;
 
-    font-size: 6.5px !important;
+    font-size: 8px !important;
     font-weight: 700 !important;
 
     display:flex !important;
-    flex-direction:column !important;
+    flex-direction:row !important;
 
-    justify-content:center !important;
+    justify-content:flex-start !important;
     align-items:center !important;
 
-    text-align:center !important;
+    text-align:left !important;
     word-break:break-word !important;
     overflow-wrap:anywhere !important;
 
     white-space:normal !important;
     line-height:1.05 !important;
 
-    padding: 8px 3px !important;
+    padding: 10px 14px !important;
 
     position: relative;
     overflow: hidden;
 
-    gap: 0px;
+    gap: 10px;
 
     letter-spacing: 0.15px;
     text-transform: uppercase;
@@ -247,14 +244,11 @@
     transition: all 0.18s ease !important;
     backdrop-filter:blur(8px);
 
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.03),
-        0 6px 14px rgba(2,6,23,0.26),
-        inset 0 0 0 1px rgba(255,255,255,0.015);
+    box-shadow:none !important;
 }
 
 .nora-sidebar .stButton > button p {
-    text-align:center !important;
+    text-align:left !important;
 
     width:100%;
 
@@ -264,55 +258,62 @@
     overflow-wrap:anywhere !important;
     word-break:break-word !important;
 
-    line-height:1.18 !important;
+    line-height:1.32 !important;
 
-    font-size:6px !important;
+    font-size:12px !important;
 
     text-transform:uppercase;
-    font-weight:700 !important;
-    letter-spacing:0.35px;
-    max-width:72px;
+    font-weight:850 !important;
+    letter-spacing:0.05px;
+    max-width:100%;
     display:flex !important;
-    flex-direction:column !important;
+    flex-direction:row !important;
     align-items:center !important;
-    justify-content:center !important;
-    gap:5px;
+    justify-content:flex-start !important;
+    gap:8px;
     padding:0 !important;
 }
 
 
 .nora-sidebar .stButton > button:hover {
-    border-color: rgba(92,198,238,0.28) !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    margin-left:0 !important;
+    margin-right:0 !important;
 
-    transform:translateX(3px);
-
-    box-shadow:
-        0 0 18px rgba(37,150,190,0.12),
-        inset 3px 0 0 rgba(92,198,238,0.45);
+    color:#F8FAFC !important;
+    background:rgba(37,150,190,0.10) !important;
+    transform:none;
+    box-shadow:none !important;
 }
 
 .nora-sidebar .stButton > button[kind="primary"] {
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    margin-left:0 !important;
+    margin-right:0 !important;
+
     background:
-        linear-gradient(135deg,
-            rgba(37,150,190,0.26) 0%,
-            rgba(37,150,190,0.10) 100%) !important;
+        linear-gradient(180deg,
+            rgba(37,150,190,0.36) 0%,
+            rgba(37,150,190,0.18) 100%) !important;
 
-    border: 1px solid rgba(92,198,238,0.34) !important;
+    border:0 !important;
+    border-radius:0 !important;
 
-    color: #F8FAFC !important;
-    transform:translateX(2px);
+    color:#F8FAFC !important;
+    transform:none;
 
     box-shadow:
-        inset 4px 0 0 #5cc6ee,
-        0 0 22px rgba(37,150,190,0.14),
-        0 0 32px rgba(37,150,190,0.10),
-        inset 0 1px 0 rgba(255,255,255,0.04) !important;
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 0 18px rgba(37,150,190,0.12) !important;
 }
 
 .nora-sidebar-footer {
     margin-top:auto;
-    padding-top:16px;
-    padding-bottom:2px;
+    padding:10px 8px 2px 8px;
 
     border-top:1px solid rgba(37,150,190,0.10);
 
@@ -323,30 +324,29 @@
     position:relative;
     overflow:hidden;
 
-    margin-top:18px;
-    margin-bottom:14px;
-    padding:14px 14px;
+    margin-top:10px;
+    margin-bottom:8px;
+    padding:9px 8px;
 
-    border-radius:18px;
-    border:1px solid rgba(92,198,238,0.16);
+    border-radius:12px;
+    border:1px solid rgba(92,198,238,0.12);
 
     background:
-        radial-gradient(circle at top left, rgba(37,150,190,0.14), transparent 42%),
         linear-gradient(180deg,
-            rgba(15,23,42,0.92) 0%,
-            rgba(7,14,26,0.98) 100%);
+            rgba(15,23,42,0.82) 0%,
+            rgba(7,14,26,0.94) 100%);
 
     box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.03),
-        0 10px 24px rgba(2,6,23,0.28),
-        0 0 18px rgba(37,150,190,0.08);
+        inset 0 1px 0 rgba(255,255,255,0.025),
+        0 6px 14px rgba(2,6,23,0.20);
 
     color:#5cc6ee;
-    font-size:8px;
+    font-size:6px;
     font-weight:800;
-    letter-spacing:1.2px;
+    letter-spacing:0.9px;
     text-transform:uppercase;
-    line-height:1.7;
+    line-height:1.45;
+    text-align:center;
 }
 
 .nora-active-workspace::before {
@@ -357,7 +357,7 @@
     left:0;
     right:0;
 
-    height:2px;
+    height:1px;
 
     background:
         linear-gradient(90deg,
@@ -369,30 +369,34 @@
 .nora-active-workspace span {
     display:block;
 
-    margin-top:6px;
+    margin-top:4px;
 
     color:#F8FAFC;
-    font-size:11px;
+    font-size:8px;
     font-weight:800;
-    letter-spacing:0.4px;
-    line-height:1.45;
+    letter-spacing:0.25px;
+    line-height:1.25;
 
     word-break:break-word;
     overflow-wrap:anywhere;
 }
 
 .nora-sidebar-status {
-    color: #22C55E;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
+    color:#22C55E;
+    font-size:8px;
+    font-weight:900;
+    letter-spacing:0.8px;
+    margin-bottom:4px;
+    text-align:center;
+    text-transform:uppercase;
 }
 
 .nora-sidebar-version {
-    color: #64748B;
-    font-size: 11px;
-    font-weight: 600;
+    color:#64748B;
+    font-size:9px;
+    font-weight:700;
+    text-align:center;
+    letter-spacing:0.2px;
 }
 
 .nora-sidebar button p {

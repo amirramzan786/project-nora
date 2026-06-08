@@ -6,20 +6,25 @@ from components.icons import (
     render_telemetry_card
 )
 
+from components.ui_helpers import render_workspace_header
+
 
 def render_log_explorer(
     alerts,
-    normal_activity
+    normal_activity,
+    dataset_mode=None,
+    dataset_name=None,
+    on_reset_dataset=None,
 ):
 
-    st.markdown(
-        """
-        <div class='nora-workspace-header'>
-            <h1>Log Explorer</h1>
-            <p>Explore parsed traffic logs and detection events.</p>
-        </div>
-        """,
-        unsafe_allow_html=True
+    render_workspace_header(
+        icon="logs",
+        title="Log Explorer",
+        description="Explore parsed traffic logs and detection events.",
+        dataset_mode=dataset_mode,
+        dataset_name=dataset_name,
+        on_reset_dataset=on_reset_dataset,
+        reset_key="reset_dataset_log_explorer",
     )
 
     st.markdown("<br>", unsafe_allow_html=True)

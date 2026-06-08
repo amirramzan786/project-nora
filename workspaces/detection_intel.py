@@ -2,52 +2,276 @@ import streamlit as st
 import pandas as pd
 
 from src.icons import get_icon
-from components.severity_queue import render_severity_queue
-from components.correlated_threat_summary import render_correlated_threat_summary
-from components.notification_workflow_panel import render_notification_workflow_panel
-from components.analyst_action_panel import render_analyst_action_panel
 
 from components.ui_helpers import (
     render_section_title,
-    render_threat_stat
+    render_threat_stat,
+    render_workspace_header
 )
+
+from components.detection_sources_table import render_detection_sources_table
 
 from src.detection_metrics import get_detection_metrics
-from src.threat_source_intelligence import build_threat_source_rows
 
-from components.operational_cards import (
-    render_operational_hero_card,
+from src.threat_source_intelligence import build_threat_source_rows
+from services.scoring.pattern_similarity import analyse_pattern_similarity
+from services.intelligence.detection_history import (
+    compare_with_detection_history,
+    save_detection_session,
 )
+
+
+def render_detection_info_tooltip(text):
+    st.markdown(
+        f"""
+        <details class='nora-detection-info-tooltip'>
+            <summary class='nora-detection-info-trigger'>i</summary>
+            <div class='nora-detection-info-content'>
+                {text}
+            </div>
+        </details>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+
+def render_detection_summary_panel(
+    detection_classification,
+    overall_severity,
+    primary_source,
+    estimated_confidence,
+    primary_source_requests,
+    ml_anomaly_signal
+):
+    severity_class = str(overall_severity).lower()
+    confidence_class = "high" if estimated_confidence >= 80 else "medium" if estimated_confidence >= 55 else "low"
+
+    panel_html = (
+        f"<div class='nora-detection-custom-panel nora-detection-summary-panel'>"
+        f"<div class='nora-detection-panel-header'>"
+        f"<div class='nora-detection-panel-title'>"
+        f"{get_icon('fc_target')}"
+        f"<span>Detection Summary</span>"
+        f"</div>"
+        f"</div>"
+        f"<div class='nora-detection-summary-classification'>"
+        f"<div class='nora-detection-row-label'>Classification</div>"
+        f"<div class='nora-detection-classification-value'>{detection_classification}</div>"
+        f"</div>"
+        f"<div class='nora-detection-panel-row'>"
+        f"<span>Severity</span>"
+        f"<strong class='nora-detection-pill {severity_class}'>{overall_severity}</strong>"
+        f"</div>"
+        f"<div class='nora-detection-panel-row'>"
+        f"<span>Primary Source</span>"
+        f"<strong>{primary_source}</strong>"
+        f"</div>"
+        f"<div class='nora-detection-panel-row'>"
+        f"<span>Confidence</span>"
+        f"<strong class='nora-detection-confidence {confidence_class}'>{estimated_confidence}%</strong>"
+        f"</div>"
+        f"<div class='nora-detection-panel-row'>"
+        f"<span>Source Requests</span>"
+        f"<strong>{primary_source_requests}</strong>"
+        f"</div>"
+        f"<div class='nora-detection-panel-row'>"
+        f"<span>ML Anomaly Signal</span>"
+        f"<strong>{ml_anomaly_signal}</strong>"
+        f"</div>"
+        f"</div>"
+    )
+
+    st.markdown(panel_html, unsafe_allow_html=True)
+
+
+# Evidence panel helper
+def render_detection_evidence_panel(
+    evidence_level,
+    ml_anomaly_signal,
+    similarity_signal
+):
+    evidence_rows = [
+        ("🟢", "Source Concentration", evidence_level),
+        ("🟢", "Request Burst Activity", evidence_level),
+        ("🟡", "Temporal Behaviour", "MEDIUM"),
+        ("🟡", "ML Anomaly Signal", ml_anomaly_signal),
+        ("🟢", "Historical Similarity", similarity_signal)
+    ]
+
+    rows_html = ""
+
+    for icon, label, level in evidence_rows:
+        level_class = str(level).lower()
+        rows_html += (
+            f"<div class='nora-detection-panel-row nora-detection-evidence-row'>"
+            f"<span><span class='nora-detection-evidence-dot'>{icon}</span>{label}</span>"
+            f"<strong class='nora-detection-pill {level_class}'>{level}</strong>"
+            f"</div>"
+        )
+
+    panel_html = (
+        f"<div class='nora-detection-custom-panel nora-detection-evidence-panel'>"
+        f"<div class='nora-detection-panel-header'>"
+        f"<div class='nora-detection-panel-title'>"
+        f"{get_icon('fc_search')}"
+        f"<span>Detection Evidence</span>"
+        f"</div>"
+        f"</div>"
+        f"{rows_html}"
+        f"</div>"
+    )
+
+    st.markdown(panel_html, unsafe_allow_html=True)
+
+
+# Confidence breakdown panel helper
+def render_confidence_breakdown_panel(
+    confidence_factors,
+    estimated_confidence
+):
+    rows_html = ""
+    positive_total = 0
+
+    for label, value in confidence_factors:
+        value_class = (
+            "positive" if str(value).startswith("+")
+            else "negative" if str(value).startswith("-")
+            else "neutral"
+        )
+        numeric_value = int(str(value).replace("+", "").replace("-", ""))
+
+        if str(value).startswith("+"):
+            positive_total += numeric_value
+
+        rows_html += (
+            f"<div class='nora-detection-confidence-factor-card'>"
+            f"<div class='nora-detection-confidence-factor-top'>"
+            f"<span>{label}</span>"
+            f"<strong class='nora-confidence-factor {value_class}'>{value}</strong>"
+            f"</div>"
+            f"<div class='nora-detection-confidence-track'>"
+            f"<div class='nora-detection-confidence-fill {value_class}' style='width:{min(numeric_value * 4, 100)}%;'></div>"
+            f"</div>"
+            f"</div>"
+        )
+
+    panel_html = (
+        f"<div class='nora-detection-custom-panel nora-detection-confidence-panel'>"
+        f"<div class='nora-detection-panel-header'>"
+        f"<div class='nora-detection-panel-title'>"
+        f"{get_icon('fc_ai')}"
+        f"<span>Confidence Breakdown</span>"
+        f"</div>"
+        f"</div>"
+        f"<div class='nora-detection-panel-divider'></div>"
+        f"<div class='nora-detection-confidence-hero'>"
+        f"<div class='nora-detection-confidence-hero-label'>Detection Confidence</div>"
+        f"<div class='nora-detection-confidence-hero-score'>{estimated_confidence}%</div>"
+        f"</div>"
+        f"{rows_html}"
+        f"<div class='nora-detection-confidence-meta-grid'>"
+        f"<div class='nora-detection-confidence-meta-card'>"
+        f"<span>Positive Signals</span>"
+        f"<strong>{positive_total}</strong>"
+        f"</div>"
+        f"<div class='nora-detection-confidence-meta-card'>"
+        f"<span>Confidence</span>"
+        f"<strong>{estimated_confidence}%</strong>"
+        f"</div>"
+        f"</div>"
+        f"</div>"
+    )
+
+    st.markdown(panel_html, unsafe_allow_html=True)
+
+
+# Historical comparison panel helper
+def render_historical_comparison_panel(historical_matches):
+    rows_html = ""
+
+    highest_match = historical_matches[0][1] if historical_matches else "0%"
+    highest_score = int(highest_match.replace("%", "")) if highest_match else 0
+    closest_pattern = historical_matches[0][0] if historical_matches else "No previous pattern"
+
+    match_strength = "HIGH" if highest_score >= 75 else "MEDIUM" if highest_score >= 55 else "LOW"
+    recurrence_count = len(historical_matches)
+
+    for label, score in historical_matches:
+        score_value = int(score.replace("%", ""))
+        score_class = "high" if score_value >= 75 else "medium" if score_value >= 55 else "low"
+
+        rows_html += (
+            f"<div class='nora-detection-history-row'>"
+            f"<div class='nora-detection-history-row-top'>"
+            f"<span>{label}</span>"
+            f"<strong class='nora-detection-history-score {score_class}'>{score}</strong>"
+            f"</div>"
+            f"<div class='nora-detection-history-track'>"
+            f"<div class='nora-detection-history-fill {score_class}' style='width: {score_value}%;'></div>"
+            f"</div>"
+            f"</div>"
+        )
+
+    panel_html = (
+        f"<div class='nora-detection-custom-panel nora-detection-history-panel'>"
+        f"<div class='nora-detection-panel-header'>"
+        f"<div class='nora-detection-panel-title'>"
+        f"{get_icon('fc_combo_chart')}"
+        f"<span>Historical Comparison</span>"
+        f"</div>"
+        f"</div>"
+        f"<div class='nora-detection-panel-divider'></div>"
+        f"<div class='nora-detection-history-hero'>"
+        f"<div class='nora-detection-history-hero-label'>Highest Similarity Match</div>"
+        f"<div class='nora-detection-history-hero-score'>{highest_match}</div>"
+        f"<div class='nora-detection-history-hero-context'>Closest match: {closest_pattern}</div>"
+        f"</div>"
+        f"<div class='nora-detection-history-meta-grid'>"
+        f"<div class='nora-detection-history-meta-card'>"
+        f"<span>Match Strength</span>"
+        f"<strong>{match_strength}</strong>"
+        f"</div>"
+        f"<div class='nora-detection-history-meta-card'>"
+        f"<span>Compared Patterns</span>"
+        f"<strong>{recurrence_count}</strong>"
+        f"</div>"
+        f"</div>"
+        f"<div class='nora-detection-history-list'>"
+        f"{rows_html}"
+        f"</div>"
+        f"</div>"
+    )
+
+    st.markdown(panel_html, unsafe_allow_html=True)
+
 
 def render_detection_intelligence(
     ip_totals,
     anomalies,
     time_counts,
-    alerts
+    alerts,
+    dataset_mode=None,
+    dataset_name=None,
+    on_reset_dataset=None,
 ):
 
     # =====================================================
     # HEADER
     # =====================================================
 
-    st.markdown(
-        f"""
-        <div class='nora-panel-header'>
-            <div>
-                <div class='nora-workspace-title'>
-                    {get_icon("shield_alert")}
-                    Detection Intelligence Center
-                </div>
-                <div class='nora-workspace-subtitle'>
-                   Live detection operations, anomaly prioritisation and analyst-driven threat escalation
-                </div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
+    render_workspace_header(
+        icon="shield_alert",
+        title="Detection Intelligence Center",
+        description="Behavioural detection analysis, confidence scoring and adaptive intelligence reasoning",
+        dataset_mode=dataset_mode,
+        dataset_name=dataset_name,
+        on_reset_dataset=on_reset_dataset,
+        reset_key="reset_dataset_detection_intelligence",
     )
 
     # (Detection Status Banner section removed)
+
 
     # =====================================================
     # METRIC CARDS (Telemetry-driven)
@@ -70,6 +294,139 @@ def render_detection_intelligence(
     detection_accuracy = detection_metrics["detection_accuracy"]
     telemetry_profile = detection_metrics["telemetry_profile"]
 
+    ml_anomaly_signal = "MEDIUM" if anomalies else "LOW"
+    detection_signals = len(anomalies) + active_alerts
+    validation_status = "Pending"
+
+    primary_source = "N/A"
+    primary_source_requests = 0
+
+    if ip_totals:
+        primary_source, primary_source_requests = max(
+            ip_totals.items(),
+            key=lambda item: item[1]
+        )
+
+    traffic_pattern = None
+
+    if isinstance(telemetry_profile, dict):
+        traffic_pattern = (
+            telemetry_profile.get("traffic_pattern")
+            or telemetry_profile.get("pattern")
+        )
+
+    if not traffic_pattern:
+        traffic_values = list(time_counts.values()) if time_counts else []
+
+        if traffic_values:
+            average_traffic = sum(traffic_values) / len(traffic_values)
+            peak_traffic = max(traffic_values)
+
+            if average_traffic and peak_traffic >= average_traffic * 2:
+                traffic_pattern = "Burst"
+            elif len(traffic_values) >= 4 and average_traffic > 0:
+                traffic_pattern = "Sustained"
+            else:
+                traffic_pattern = "Baseline"
+        else:
+            traffic_pattern = "Baseline"
+
+    activity_profile = {
+        "HIGH": "Distributed Attack Traffic",
+        "MEDIUM": "Suspicious Hosting Traffic",
+        "LOW": "Baseline Drift",
+    }.get(overall_severity, "Baseline Drift")
+
+    threat_tags = []
+
+    if overall_severity == "HIGH":
+        threat_tags = ["DDoS", "Volumetric Attack"]
+    elif overall_severity == "MEDIUM":
+        threat_tags = ["Suspicious Traffic"]
+
+    anomaly_count = len(anomalies)
+    anomaly_ratio = (
+        anomaly_count / total_requests
+        if total_requests
+        else 0
+    )
+    source_concentration = (
+        primary_source_requests / total_requests
+        if total_requests
+        else 0
+    )
+
+    similarity_result = analyse_pattern_similarity({
+        "threat_level": overall_severity,
+        "activity_profile": activity_profile,
+        "threat_tags": threat_tags,
+        "traffic_pattern": traffic_pattern,
+        "total_requests": total_requests,
+        "anomaly_count": anomaly_count,
+        "anomaly_ratio": anomaly_ratio,
+        "source_concentration": source_concentration,
+        "estimated_confidence": estimated_confidence,
+    })
+
+    similarity_score = similarity_result["similarity_score"]
+    similarity_match = f"{similarity_score}%"
+
+    traffic_values = list(time_counts.values()) if time_counts else []
+    peak_requests = max(traffic_values, default=0)
+
+    sorted_time_keys = sorted(time_counts.keys()) if time_counts else []
+    session_time = (
+        f"{str(sorted_time_keys[0])}|{str(sorted_time_keys[-1])}"
+        if sorted_time_keys
+        else "No Time Window"
+    )
+
+    current_session_data = {
+        "session_time": session_time,
+        "total_requests": total_requests,
+        "peak_requests": peak_requests,
+        "average_requests": avg_requests,
+        "anomaly_count": anomaly_count,
+        "anomaly_ratio": anomaly_ratio,
+        "source_concentration": source_concentration,
+        "traffic_pattern": traffic_pattern,
+        "severity": overall_severity,
+        "confidence": estimated_confidence,
+        "matched_pattern": similarity_result["matched_pattern"],
+        "similarity_score": similarity_score,
+        "primary_source": primary_source,
+    }
+
+    save_result = save_detection_session(current_session_data)
+
+    historical_session_matches = compare_with_detection_history(
+        current_session_data,
+        current_session_id=save_result["session_id"],
+        history_limit=100,
+        top_n=3,
+    )
+
+    detection_classification = {
+        "LOW": "Baseline Behavioural Activity",
+        "MEDIUM": "Reconnaissance Activity",
+        "HIGH": "Coordinated Attack Behaviour"
+    }.get(overall_severity, "Behavioural Detection Event")
+
+    evidence_level = {
+        "LOW": "LOW",
+        "MEDIUM": "MEDIUM",
+        "HIGH": "HIGH"
+    }.get(overall_severity, "MEDIUM")
+
+    ml_signal = "MEDIUM" if anomalies else "LOW"
+    similarity_signal = (
+        "HIGH"
+        if similarity_score >= 80
+        else "MEDIUM"
+        if similarity_score >= 55
+        else "LOW"
+    )
+
     st.markdown(
         "<div class='nora-detection-metrics-row'>",
         unsafe_allow_html=True
@@ -79,39 +436,45 @@ def render_detection_intelligence(
 
     with metric1:
         render_threat_stat(
-            "Active Alerts",
-            active_alerts
+            "Detection Confidence",
+            f"{estimated_confidence}%",
+            icon_key="fc_statistics"
         )
 
     with metric2:
         render_threat_stat(
-            "Estimated Confidence",
-            estimated_confidence
+            "Behavioural Risk",
+            overall_severity,
+            severity_class,
+            icon_key="fc_radar_plot"
         )
 
     with metric3:
         render_threat_stat(
-            "Threat Severity",
-            overall_severity,
-            severity_class
+            "ML Anomaly Signal",
+            ml_anomaly_signal,
+            icon_key="fc_brain"
         )
 
     with metric4:
         render_threat_stat(
-            "Requests Analysed",
-            total_requests
+            "Similarity Match",
+            similarity_match,
+            icon_key="fc_combo_chart"
         )
 
     with metric5:
         render_threat_stat(
-            "Detection Accuracy",
-            f"{detection_accuracy}%"
+            "Detection Signals",
+            detection_signals,
+            icon_key="fc_search"
         )
 
     with metric6:
         render_threat_stat(
-            "Escalated Events",
-            escalated_event_count
+            "Validation Status",
+            validation_status,
+            icon_key="fc_approval"
         )
     st.markdown(
         "</div>",
@@ -119,179 +482,96 @@ def render_detection_intelligence(
     )
 
     # =====================================================
-    # PHASE 3 ROADMAP NOTE
+    # PHASE 3.2 ROADMAP NOTE
     # =====================================================
-    # Detection Correlation Engine requires a future realism
-    # and presentation redesign. Current telemetry is valid,
-    # but queue rendering remains text-heavy and should evolve
-    # into a more analyst-centric operational correlation view
-    # during the next Detection Intelligence enhancement phase.
+    # Detection Intelligence now focuses on behavioural reasoning,
+    # evidence presentation, confidence scoring, ML anomaly signals
+    # and historical similarity preparation. Future enhancements
+    # should expand similarity scoring, behavioural memory and
+    # adaptive feedback integration.
     # =====================================================
     # MAIN ANALYSIS PANELS
     # =====================================================
 
-    left_col, right_col = st.columns([1.55, 1])
+    summary_col, evidence_col, confidence_col, history_col = st.columns(4)
 
     # -----------------------------------------------------
-    # LEFT: CORRELATION ENGINE
+    # LEFT: DETECTION SUMMARY
     # -----------------------------------------------------
 
-    with left_col:
+    with summary_col:
+        render_detection_summary_panel(
+            detection_classification,
+            overall_severity,
+            primary_source,
+            estimated_confidence,
+            primary_source_requests,
+            ml_anomaly_signal
+        )
 
-        with st.container(border=True):
+    with evidence_col:
+        render_detection_evidence_panel(
+            evidence_level,
+            ml_anomaly_signal,
+            similarity_signal
+        )
 
-            render_section_title(
-                'bar_chart',
-                'Detection Correlation Engine'
-            )
+    # -----------------------------------------------------
+    # CONFIDENCE BREAKDOWN
+    # -----------------------------------------------------
 
-            correlation_rows = []
+    with confidence_col:
+        confidence_factors = [
+            ("Source concentration", "+18"),
+            ("Request burst activity", "+15"),
+            ("Temporal behaviour", "+12"),
+            ("ML anomaly signal", "+10" if anomalies else "+0"),
+            (
+                "Historical similarity",
+                "+12"
+                if similarity_score >= 80
+                else "+6"
+                if similarity_score >= 55
+                else "+0"
+            ),
+            ("Reducing factors", "-8")
+        ]
 
-            if anomalies:
+        render_confidence_breakdown_panel(
+            confidence_factors,
+            estimated_confidence
+        )
 
-                sorted_anomalies = sorted(
-                    anomalies,
-                    key=lambda x: x.get("requests", 0),
-                    reverse=True
+
+    with history_col:
+        if historical_session_matches:
+            historical_matches = [
+                (
+                    f"Detection {match['session_id'][:8]}",
+                    f"{match['similarity_score']}%"
                 )
+                for match in historical_session_matches
+            ]
+        else:
+            ranked_matches = similarity_result.get("ranked_matches", [])
 
-                for anomaly in sorted_anomalies[:5]:
+            historical_matches = [
+                (
+                    match["matched_pattern"],
+                    f"{match['similarity_score']}%"
+                )
+                for match in ranked_matches
+            ]
 
-                    request_count = anomaly.get("requests", 0)
+        if not historical_matches:
+            historical_matches = [
+                ("No comparable pattern", "0%")
+            ]
 
-                    # --- Phase 2.5 unified realism calibration ---
-                    severity = overall_severity
-                    confidence = estimated_confidence
+        render_historical_comparison_panel(
+            historical_matches
+        )
 
-                    severity_indicator = {
-                        "LOW": "P4",
-                        "MEDIUM": "P2",
-                        "HIGH": "P1"
-                    }.get(severity, "P4")
-
-                    status = {
-                        "LOW": "[MONITORING]",
-                        "MEDIUM": "[INVESTIGATING]",
-                        "HIGH": "[ESCALATED]"
-                    }.get(severity, "[MONITORING]")
-
-                    behavioural_pattern = telemetry_profile[
-                        "correlation_state"
-                    ]
-
-                    correlation_rows.append({
-                        "Priority": severity_indicator,
-                        "Detection Pattern": anomaly.get("pattern", "Traffic Anomaly"),
-                        "Behaviour": behavioural_pattern,
-                        "Requests": request_count,
-                        "Confidence": f"{confidence}%",
-                        "Lifecycle": status,
-                        "Severity": severity
-                    })
-
-            if correlation_rows:
-
-                # --- Phase 2.5E operational correlation diversification ---
-                if overall_severity == "MEDIUM":
-
-                    diversified_correlation_rows = [
-                        {
-                            **correlation_rows[0],
-                            "Priority": "🔴 P1",
-                            "Lifecycle": "[ACTIVE ESCALATION]",
-                            "Severity": "HIGH",
-                            "Confidence": "92%",
-                            "Behaviour": "Sustained Coordinated Activity"
-                        },
-                        {
-                            **correlation_rows[0],
-                            "Priority": "🟠 P2",
-                            "Lifecycle": "[INVESTIGATING]",
-                            "Severity": "MEDIUM",
-                            "Confidence": "81%",
-                            "Behaviour": "Coordinated Burst Pattern"
-                        },
-                        {
-                            **correlation_rows[0],
-                            "Priority": "🟢 P4",
-                            "Lifecycle": "[MONITORING]",
-                            "Severity": "LOW",
-                            "Confidence": "58%",
-                            "Behaviour": "Distributed Probe Behaviour"
-                        }
-                    ]
-
-                    visible_correlation_rows = diversified_correlation_rows
-
-                else:
-                    visible_correlation_rows = correlation_rows[:3]
-
-
-                for row in visible_correlation_rows:
-
-                    severity_glow = {
-                        'HIGH': '#ef4444',
-                        'MEDIUM': '#f59e0b',
-                        'LOW': '#22c55e'
-                    }.get(row['Severity'], '#38bdf8')
-
-                    severity_background = {
-                        'HIGH': 'rgba(239, 68, 68, 0.16)',
-                        'MEDIUM': 'rgba(245, 158, 11, 0.16)',
-                        'LOW': 'rgba(34, 197, 94, 0.16)'
-                    }.get(row['Severity'], 'rgba(56, 189, 248, 0.14)')
-
-                    severity_border = {
-                        'HIGH': 'rgba(239, 68, 68, 0.35)',
-                        'MEDIUM': 'rgba(245, 158, 11, 0.35)',
-                        'LOW': 'rgba(34, 197, 94, 0.35)'
-                    }.get(row['Severity'], 'rgba(56, 189, 248, 0.25)')
-
-                    correlation_card = f"""
-                        <div class='nora-correlation-queue-row'>
-                        <div 
-class='nora-correlation-priority'
-style='
-background:{severity_background};
-border:1px solid {severity_border};
-box-shadow:0 0 18px {severity_background};
-color:{severity_glow};
-'
->
-{row['Priority']}
-</div>
-                        <div class='nora-correlation-pattern'>
-                        <div class='nora-correlation-pattern-title'>{row['Detection Pattern']}</div>
-                        <div class='nora-correlation-pattern-meta'>{row['Behaviour']}</div>
-                        </div>
-                        <div class='nora-correlation-confidence'>{row['Confidence']}</div>
-                        <div class='nora-correlation-lifecycle'>{row['Lifecycle']}</div>
-                        <div class='nora-correlation-severity' style='color:{severity_glow};'>{row['Severity']}</div>
-                        </div>
-                        """
-
-                    st.markdown(correlation_card, unsafe_allow_html=True)
-
-        # (Detection Timeline and Threat Intelligence Visualisation moved below)
-
-    # -----------------------------------------------------
-    # RIGHT: SOC ANALYST QUEUE
-    # -----------------------------------------------------
-
-    with right_col:
-
-        with st.container(border=True):
-
-            render_section_title(
-                'shield',
-                'SOC Severity Routing Queue'
-            )
-
-            render_severity_queue(
-                anomalies,
-                overall_severity=overall_severity,
-                estimated_confidence=estimated_confidence
-            )
 
     st.markdown(
         "<div class='nora-workspace-spacing-sm'></div>",
@@ -312,21 +592,29 @@ color:{severity_glow};
 
         with st.container(border=True):
 
-            render_section_title(
-                'pie_chart',
-                'Threat Intelligence Visualisation'
-            )
-
             st.markdown(
-                "<div class='nora-workspace-spacing-sm'></div>",
+                (
+                    "<div class='nora-detection-visual-marker'></div>"
+                    "<div class='nora-detection-visual-header'>"
+                    "<div class='nora-detection-panel-title'>"
+                    f"{get_icon('fc_statistics')}"
+                    "<span>Detection Intelligence Visualisation</span>"
+                    "</div>"
+                    "<details class='nora-detection-panel-info'>"
+                    "<summary class='nora-detection-info-trigger'>i</summary>"
+                    "<div class='nora-detection-info-content'>Visualises severity distribution, behavioural activity progression and anomaly score movement using the current detection telemetry.</div>"
+                    "</details>"
+                    "</div>"
+                    "<div class='nora-detection-panel-divider'></div>"
+                ),
                 unsafe_allow_html=True
             )
 
-            visual_top_col, visual_bottom_col = st.columns([0.9, 1.3])
+            visual_col1, visual_col2, visual_col3 = st.columns([1, 1.4, 1])
 
-            with visual_top_col:
+            with visual_col1:
 
-                # --- Phase 2.5: Dynamic threat distribution ---
+                # --- Phase 3.2: Dynamic detection severity distribution ---
                 low_count = 0
                 medium_count = 0
                 high_count = 0
@@ -360,8 +648,8 @@ color:{severity_glow};
                     low_count = 1
 
 
-                threat_distribution = pd.DataFrame({
-                    "Threat Type": [
+                detection_distribution = pd.DataFrame({
+                    "Detection Category": [
                         "Low Severity",
                         "Medium Severity",
                         "High Severity"
@@ -373,13 +661,13 @@ color:{severity_glow};
                     ]
                 })
 
-                st.markdown("### Active Threat Distribution")
+                st.markdown("### Detection Severity Distribution")
 
                 st.plotly_chart(
                     {
                         "data": [{
-                            "labels": threat_distribution["Threat Type"],
-                            "values": threat_distribution["Count"],
+                            "labels": detection_distribution["Detection Category"],
+                            "values": detection_distribution["Count"],
                             "type": "pie",
                             "hole": 0.58,
                             "sort": False,
@@ -393,7 +681,7 @@ color:{severity_glow};
                             "font": {"color": "white", "size": 11},
                             "showlegend": False,
                             "annotations": [{
-                                "text": "Threat<br>Telemetry",
+                                "text": "Detection<br>Telemetry",
                                 "showarrow": False,
                                 "font": {
                                     "size": 12,
@@ -405,9 +693,9 @@ color:{severity_glow};
                     use_container_width=True
                 )
 
-            with visual_bottom_col:
+            with visual_col2:
 
-                # --- Phase 2.5: Dynamic behavioural progression ---
+                # --- Phase 3.2: Dynamic behavioural activity progression ---
                 telemetry_rows = []
 
                 if time_counts:
@@ -416,25 +704,25 @@ color:{severity_glow};
                     for timestamp, count in sorted_times:
                         telemetry_rows.append({
                             "Time": str(timestamp)[:5],
-                            "Threat Volume": count
+                            "Detection Volume": count
                         })
 
                 if not telemetry_rows:
                     telemetry_rows.append({
                         "Time": "00:00",
-                        "Threat Volume": 0
+                        "Detection Volume": 0
                     })
 
                 telemetry_placeholder = pd.DataFrame(telemetry_rows)
 
                 # --- Operational progression smoothing ---
-                telemetry_placeholder["Threat Volume"] = (
-                    telemetry_placeholder["Threat Volume"]
+                telemetry_placeholder["Detection Volume"] = (
+                    telemetry_placeholder["Detection Volume"]
                     .rolling(window=2, min_periods=1)
                     .mean()
                 )
 
-                st.markdown("### Behavioural Threat Progression")
+                st.markdown("### Behavioural Activity Progression")
 
                 st.area_chart(
                     telemetry_placeholder.set_index("Time"),
@@ -442,8 +730,44 @@ color:{severity_glow};
                 )
                 # (Escalation state label display removed)
 
+            with visual_col3:
+
+                anomaly_rows = []
+
+                if time_counts:
+                    sorted_times = sorted(time_counts.items())
+
+                    max_count = max(
+                        [count for _, count in sorted_times],
+                        default=1
+                    )
+
+                    for timestamp, count in sorted_times:
+                        anomaly_rows.append({
+                            "Time": str(timestamp)[:5],
+                            "Anomaly Score": round((count / max_count) * estimated_confidence, 1)
+                        })
+
+                if not anomaly_rows:
+                    anomaly_rows = [
+                        {"Time": "00:00", "Anomaly Score": 0}
+                    ]
+
+                anomaly_df = pd.DataFrame(anomaly_rows)
+
+                st.markdown("### Anomaly Score Over Time")
+
+                st.line_chart(
+                    anomaly_df.set_index("Time"),
+                    height=205
+                )
+
+                st.caption(
+                    f"Current Anomaly Score: {estimated_confidence}%"
+                )
+
     # =====================================================
-    # TOP THREAT SOURCES
+    # OBSERVED DETECTION SOURCES
     # =====================================================
 
     enriched_threats = []
@@ -451,8 +775,8 @@ color:{severity_glow};
     with st.container(border=True):
 
         render_section_title(
-            'globe',
-            'Top Threat Sources'
+            'fc_radar_plot',
+            'Detection Sources'
         )
         st.markdown(
             "<div class='nora-workspace-spacing-sm'></div>",
@@ -476,55 +800,10 @@ color:{severity_glow};
                 estimated_confidence
             )
 
-            threat_df = pd.DataFrame(threat_rows)
+            detection_sources_df = pd.DataFrame(threat_rows)
 
-            st.dataframe(
-                threat_df,
-                use_container_width=True,
-                hide_index=True,
-                height=225,
-                column_config={
-                    "Priority": st.column_config.TextColumn(
-                        width="small"
-                    ),
-                    "Threat Source": st.column_config.TextColumn(
-                        width="large"
-                    ),
-                    "Threat Class": st.column_config.TextColumn(
-                        width="medium"
-                    ),
-                    "Infrastructure": st.column_config.TextColumn(
-                        width="large"
-                    ),
-                    "Region": st.column_config.TextColumn(
-                        width="small"
-                    ),
-                    "Requests": st.column_config.NumberColumn(
-                        width="small"
-                    ),
-                    "Threat": st.column_config.TextColumn(
-                        width="small"
-                    ),
-                    "Similarity": st.column_config.TextColumn(
-                        width="small"
-                    ),
-                    "Escalation": st.column_config.TextColumn(
-                        width="medium"
-                    ),
-                    "Traffic Profile": st.column_config.TextColumn(
-                        width="large"
-                    ),
-                    "Confidence": st.column_config.TextColumn(
-                        width="small"
-                    )
-                    ,"Correlation": st.column_config.TextColumn(
-                        width="small"
-                    )
-                }
-            )
-
-            render_correlated_threat_summary(
-                enriched_threats,
+            render_detection_sources_table(
+                detection_sources_df,
                 estimated_confidence
             )
 
@@ -532,38 +811,10 @@ color:{severity_glow};
     # OPERATIONAL RESPONSE CENTER & WORKFLOW ORCHESTRATION (Stacked)
     # -----------------------------------------------------
 
-    render_operational_hero_card(overall_severity)
+    # Phase 3.2: legacy SOC notification workflow removed from Detection Intelligence.
+    # Detection Intelligence now focuses on reasoning, evidence, confidence and validation.
+    # render_notification_workflow_panel(enriched_threats)
 
-    st.markdown(
-        """
-        <style>
-        div[data-testid="stVerticalBlock"]:has(.nora-notification-workflow-anchor) {
-            padding-bottom: 0 !important;
-            margin-bottom: -70px !important;
-            min-height: auto !important;
-            height: auto !important;
-        }
-        </style>
-        <div class='nora-notification-workflow-anchor'></div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    render_notification_workflow_panel(enriched_threats)
-
-    render_analyst_action_panel()
-
-    # =====================================================
-    # FUTURE INTELLIGENCE EXPANSION
-    # =====================================================
-
-    with st.container(border=True):
-
-        render_section_title(
-            'brain',
-            'Future Intelligence Expansion'
-        )
-
-        st.info(
-            "Threat reputation enrichment, AbuseIPDB integration, ASN intelligence and regional attack analysis will integrate into this operational workflow during later intelligence phases."
-        )
+    # Phase 3.2: Analyst Validation & Feedback temporarily removed during Detection Intelligence rebuild.
+    # It will return later as a focused feedback-loop component aligned with adaptive learning.
+    # render_analyst_action_panel()

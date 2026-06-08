@@ -429,9 +429,9 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies)
                     title=None
                 )
 
-                telemetry1, telemetry2, telemetry3, telemetry4, telemetry5, telemetry6, telemetry7 = st.columns(7)
+                telemetry_row1_col1, telemetry_row1_col2, telemetry_row1_col3, telemetry_row1_col4 = st.columns(4)
 
-                with telemetry1:
+                with telemetry_row1_col1:
                     st.markdown(f"""
                     <div class='nora-mini-telemetry'>
                         <div class='nora-mini-label'>{get_icon("activity")} Peak Requests</div>
@@ -439,7 +439,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies)
                     </div>
                     """, unsafe_allow_html=True)
 
-                with telemetry2:
+                with telemetry_row1_col2:
                     avg_requests_display = round(sum(time_counts.values()) / len(time_counts), 1) if time_counts else 0
 
                     st.markdown(f"""
@@ -449,7 +449,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies)
                     </div>
                     """, unsafe_allow_html=True)
 
-                with telemetry3:
+                with telemetry_row1_col3:
                     st.markdown(f"""
                     <div class='nora-mini-telemetry'>
                         <div class='nora-mini-label'>{get_icon("globe")} Unique IPs</div>
@@ -457,7 +457,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies)
                     </div>
                     """, unsafe_allow_html=True)
 
-                with telemetry4:
+                with telemetry_row1_col4:
                     st.markdown(f"""
                     <div class='nora-mini-telemetry'>
                         <div class='nora-mini-label'>{get_icon("brain")} ML Alerts</div>
@@ -465,7 +465,11 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies)
                     </div>
                     """, unsafe_allow_html=True)
 
-                with telemetry5:
+                st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
+
+                telemetry_row2_col1, telemetry_row2_col2, telemetry_row2_col3 = st.columns(3)
+
+                with telemetry_row2_col1:
                     start_time = df_time["TimeStr"].iloc[0] if df_time is not None and not df_time.empty else "N/A"
                     end_time = df_time["TimeStr"].iloc[-1] if df_time is not None and not df_time.empty else "N/A"
 
@@ -476,7 +480,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies)
                     </div>
                     """, unsafe_allow_html=True)
 
-                with telemetry6:
+                with telemetry_row2_col2:
                     if ip_totals:
                         total_records_display = int(sum(ip_totals.values()))
                     else:
@@ -489,7 +493,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies)
                     </div>
                     """, unsafe_allow_html=True)
 
-                with telemetry7:
+                with telemetry_row2_col3:
                     top_ip_display = max(ip_totals, key=ip_totals.get) if ip_totals else "N/A"
 
                     st.markdown(f"""
@@ -635,7 +639,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies)
 
 """, unsafe_allow_html=True)
 
-                            # --- Right-side intelligence modules moved below SOC panel ---
+                            # --- Right-side intelligence modules moved below the overview intelligence panel ---
                             right_side_modules = {
                                 "similarity": similarity,
                                 "z_score": z_score,
@@ -710,11 +714,11 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies)
                     st.markdown("<div class='nora-confirm-grid'>", unsafe_allow_html=True)
                     col_yes, col_no = st.columns(2)
                     with col_yes:
-                        if st.button("👍 Confirm Attack", key="confirm_global"):
+                        if st.button("Confirm Detection", key="confirm_global"):
                             save_feedback(latest_anomaly, True)
                             st.success("Detection feedback recorded")
                     with col_no:
-                        if st.button("👎 False Positive", key="false_global"):
+                        if st.button("False Positive", key="false_global"):
                             save_feedback(latest_anomaly, False)
                             st.success("Detection feedback recorded")
                     # --- Detection Evaluation Section (simplified) ---
@@ -754,7 +758,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies)
         st.markdown("<div style='height:18px;'></div>", unsafe_allow_html=True)
 
         with st.container(border=True):
-            st.markdown(f"<div class='nora-intel-title'>{get_icon('shield')}SOC Threat Intelligence</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='nora-intel-title'>{get_icon('shield')}Threat Source Intelligence</div>", unsafe_allow_html=True)
 
             # --- Top IPs Bar Chart ---
             try:
@@ -831,7 +835,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies)
                             return
 
                         st.markdown(
-                            f"<div class='nora-intel-title'>{get_icon('bar_chart')}Detection Performance Center</div>",
+                            f"<div class='nora-intel-title'>{get_icon('bar_chart')}Detection Evaluation</div>",
                             unsafe_allow_html=True
                         )
 
@@ -891,10 +895,10 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies)
                         except Exception:
                             st.warning("Evaluation data could not be loaded.")
 
-                        with st.expander("Confirm False Positives / Real Threat", expanded=False):
+                        with st.expander("Analyst Feedback", expanded=False):
 
                             st.markdown(
-                                "<div class='nora-panel-sub'>Analyst feedback, validation workflow and adaptive detection evaluation</div>",
+                                "<div class='nora-panel-sub'>Review the current detection outcome and record whether the alert represents a genuine threat or a false positive.</div>",
                                 unsafe_allow_html=True
                             )
 
@@ -903,7 +907,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies)
                             col_yes, col_no = st.columns(2)
 
                             with col_yes:
-                                if st.button("Confirm Threat", key="confirm_global"):
+                                if st.button("Confirm Detection", key="confirm_global"):
                                     save_feedback(latest_anomaly, True)
                                     st.success("Threat validation recorded")
 
@@ -915,8 +919,8 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies)
                             st.markdown(
                                 """
                                 <div class='nora-core-status'>
-                                    <strong>N.O.R.A Core Status:</strong><br>
-                                    Behavioural learning active. Detection confidence improves as additional analyst feedback and traffic history are processed.
+                                    <strong>Adaptive Learning Status:</strong><br>
+                                    Feedback is used to support future confidence scoring and behavioural comparison across analysed traffic patterns.
                                 </div>
                                 """,
                                 unsafe_allow_html=True
@@ -991,7 +995,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies)
             else:
                 st.success("No normal traffic recorded")
 
-        # --- Unified Alerts (Operational SOC Workflow) ---
+        # --- Unified Alerts (Operational Detection Workflow) ---
         with row1_right:
 
             combined_alerts = []
@@ -1009,11 +1013,11 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies)
                     if request_count >= 300:
                         severity = "CRITICAL"
                         severity_class = "critical"
-                        analyst_state = "Immediate analyst escalation required"
+                        analyst_state = "Immediate investigation recommended"
                     elif request_count >= 120:
                         severity = "HIGH"
                         severity_class = "high"
-                        analyst_state = "Threat validation and containment review active"
+                        analyst_state = "ML-assisted threat investigation recommended"
                     elif request_count >= 45:
                         severity = "MEDIUM"
                         severity_class = "medium"
@@ -1052,7 +1056,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies)
                     severity_map = {
                         "HIGH": {
                             "severity_class": "high",
-                            "analyst_state": "ML-assisted threat investigation active"
+                            "analyst_state": "ML-assisted threat investigation recommended"
                         },
                         "MEDIUM": {
                             "severity_class": "medium",
@@ -1095,7 +1099,7 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies)
                 reverse=True
             )
 
-            # --- Operational SOC View ---
+            # --- Operational Detection View ---
             visible_alerts_limit = 4
             visible_alerts = combined_alerts[:visible_alerts_limit]
 

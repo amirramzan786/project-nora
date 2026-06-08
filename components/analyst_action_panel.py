@@ -11,10 +11,10 @@ def render_analyst_action_panel():
     
     # --- Analyst Action section moved to a new bordered container ---
     with st.container(border=True):
-        st.markdown("### Analyst Action")
+        st.markdown("### Analyst Validation & Feedback")
 
         st.caption(
-            "Operational response actions, escalation routing and analyst-assisted workflow controls."
+            "Analyst validation workflow supporting detection verification, review decisions and adaptive learning feedback."
         )
 
         analyst_col1, analyst_col2, analyst_col3, analyst_col4 = st.columns(4)
@@ -27,10 +27,10 @@ def render_analyst_action_panel():
                 {render_analyst_action_card(
                     'shield',
                     'high',
-                    'Escalation',
-                    'Route suspicious detection activity into the SOC escalation workflow.',
-                    'Priority Escalation Path',
-                    'Escalate Detection'
+                    'Confirm Detection',
+                    'Validate the detection as legitimate suspicious behavioural activity.',
+                    'Detection Confirmed',
+                    'Confirm Detection'
                 )}
                 """,
                 height=270,
@@ -45,10 +45,10 @@ def render_analyst_action_panel():
                 {render_analyst_action_card(
                     'search',
                     'medium',
-                    'Investigation',
-                    'Initiate source telemetry analysis and operational investigation workflow.',
-                    'Investigation Workflow Active',
-                    'Investigate Source IP'
+                    'Needs Review',
+                    'Detection requires additional investigation before final classification.',
+                    'Review Assessment Pending',
+                    'Flag For Review'
                 )}
                 """,
                 height=270,
@@ -63,8 +63,8 @@ def render_analyst_action_panel():
                 {render_analyst_action_card(
                     'activity',
                     'low',
-                    'Classification',
-                    'Classify traffic behaviour and operational detection legitimacy.',
+                    'False Positive',
+                    'Detection determined to be benign or non-malicious activity.',
                     'Benign Classification Available',
                     'Mark As Benign'
                 )}
@@ -81,10 +81,10 @@ def render_analyst_action_panel():
                 {render_analyst_action_card(
                     'brain',
                     'medium',
-                    'Learning Engine',
-                    'Submit telemetry into the adaptive intelligence learning pipeline.',
-                    'Adaptive Learning Queue',
-                    'Add To Learning Engine'
+                    'Learning Feedback',
+                    'Submit analyst assessment to the adaptive intelligence feedback engine.',
+                    'Adaptive Learning Available',
+                    'Submit Feedback'
                 )}
                 """,
                 height=270,
@@ -108,5 +108,5 @@ def render_analyst_action_panel():
             success_placeholder.empty()
 
         st.caption(
-            "Adaptive ML-assisted detection classification (Placeholder) scheduled for Phase 4 intelligence expansion."
+            "Future adaptive learning integration will use analyst validation outcomes to support confidence reinforcement, similarity scoring and behavioural memory analysis."
         )

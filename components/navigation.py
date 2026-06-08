@@ -16,12 +16,6 @@ NAV_ITEMS = [
             ("adaptive_intelligence", "⬡", "Adaptive Intel", "Adaptive behavioural analysis"),
         ]
     },
-    {
-        "section": "Operations",
-        "items": [
-            ("detection_performance", "◭", "Validation", "Detection validation & scoring"),
-        ]
-    }
 ]
 
 def render_navigation():
@@ -58,33 +52,20 @@ def render_navigation():
         for key, icon, label, tooltip in section_group["items"]:
 
             is_active = key == current_page
-
             button_type = "primary" if is_active else "secondary"
-
-            button_label = (
-                f"{icon}\n{label}"
-            )
+            button_label = f"{icon}\n{label}"
 
             if st.button(
                 button_label,
                 key=f"nav_{key}",
                 use_container_width=True,
                 type=button_type,
-                help=tooltip
+                help=tooltip,
             ):
                 st.query_params.clear()
                 st.query_params["page"] = key
                 st.rerun()
 
-    st.markdown(
-        f"""
-        <div class='nora-active-workspace'>
-            ACTIVE WORKSPACE<br>
-            <span>{current_page.replace('_', ' ').upper()}</span>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
 
     st.markdown(
         """

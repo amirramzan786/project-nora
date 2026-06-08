@@ -34,7 +34,11 @@ from services.workflows.notification_engine import generate_notification_workflo
 # =====================================================
 
 
-def render_adaptive_intelligence():
+def render_adaptive_intelligence(
+    dataset_mode=None,
+    dataset_name=None,
+    on_reset_dataset=None,
+):
     """
     Render Adaptive Intelligence validation workspace.
     """
@@ -42,7 +46,11 @@ def render_adaptive_intelligence():
     render_workspace_header(
         "brain",
         "Adaptive Intelligence",
-        "Operational intelligence validation, orchestration inspection and behavioural analysis workspace."
+        "Operational intelligence validation, orchestration inspection and behavioural analysis workspace.",
+        dataset_mode=dataset_mode,
+        dataset_name=dataset_name,
+        on_reset_dataset=on_reset_dataset,
+        reset_key="reset_dataset_adaptive_intelligence",
     )
 
     st.markdown(

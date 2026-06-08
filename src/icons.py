@@ -23,6 +23,8 @@ SVG_ICONS = {
     "globe": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/globe.svg' />",
     "clock": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/clock-3.svg' />",
     "folder": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/folder.svg' />",
+    "logs": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/file-text.svg' />",
+    "threat": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/radar.svg' />",
     "search": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/search.svg' />",
     "crosshair": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/crosshair.svg' />",
     "target": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/crosshair.svg' />",
@@ -32,7 +34,20 @@ SVG_ICONS = {
     "siren": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/siren.svg' />",
     "triangle_alert": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/triangle-alert.svg' />",
     "notifications": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/bell-ring.svg' />",
-    "pie_chart": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/chart-pie.svg' />"
+    "pie_chart": "<img class='nora-inline-svg' src='https://api.iconify.design/lucide/chart-pie.svg' />",
+
+    # -----------------------------------------------------
+    # Flat Colour (FC) Experiment Icons
+    # Detection Intelligence / AI-focused telemetry
+    # -----------------------------------------------------
+    "fc_brain": "<img class='nora-inline-svg' src='https://api.iconify.design/flat-color-icons/idea.svg' />",
+    "fc_combo_chart": "<img class='nora-inline-svg' src='https://api.iconify.design/flat-color-icons/combo-chart.svg' />",
+    "fc_radar_plot": "<img class='nora-inline-svg' src='https://api.iconify.design/flat-color-icons/radar-plot.svg' />",
+    "fc_statistics": "<img class='nora-inline-svg' src='https://api.iconify.design/flat-color-icons/statistics.svg' />",
+    "fc_search": "<img class='nora-inline-svg' src='https://api.iconify.design/flat-color-icons/search.svg' />",
+    "fc_approval": "<img class='nora-inline-svg' src='https://api.iconify.design/flat-color-icons/approval.svg' />"
+    ,"fc_target": "<img class='nora-inline-svg' src='https://api.iconify.design/flat-color-icons/bullish.svg' />",
+    "fc_ai": "<img class='nora-inline-svg' src='https://api.iconify.design/flat-color-icons/workflow.svg' />"
 }
 
 

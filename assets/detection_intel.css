@@ -1,0 +1,627 @@
+/* =====================================================
+   DETECTION INTELLIGENCE WORKSPACE
+   ===================================================== */
+
+/* Reasoning cards */
+
+.nora-detection-card-marker {
+    height: 0 !important;
+    width: 0 !important;
+    opacity: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 0 !important;
+    font-size: 0 !important;
+}
+
+/* Marker bridge: use the Streamlit vertical block as a hook, but style only the real bordered card inside it */
+div[data-testid="stVerticalBlock"]:has(.nora-detection-card-marker) div[data-testid="stVerticalBlockBorderWrapper"] {
+    border-radius: 26px !important;
+    border: 1px solid rgba(14,165,233,0.24) !important;
+    background:
+        radial-gradient(circle at 8% 16%, rgba(56,189,248,0.10), transparent 32%),
+        radial-gradient(circle at 92% 88%, rgba(30,64,175,0.13), transparent 42%),
+        linear-gradient(180deg, rgba(3,10,24,0.98), rgba(2,6,18,0.99)) !important;
+    box-shadow:
+        0 22px 48px rgba(0,0,0,0.32),
+        inset 0 1px 0 rgba(255,255,255,0.035),
+        0 0 0 1px rgba(56,189,248,0.045) !important;
+    overflow: hidden !important;
+}
+
+/* Avoid styling nested sub-cards too aggressively */
+div[data-testid="stVerticalBlock"]:has(.nora-detection-card-marker) div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stVerticalBlockBorderWrapper"] {
+    border-radius: 14px !important;
+    background: rgba(2,6,18,0.38) !important;
+    box-shadow: none !important;
+}
+
+div[data-testid="stVerticalBlock"]:has(.nora-detection-card-marker) > div[data-testid="stVerticalBlockBorderWrapper"] {
+    min-height: 420px;
+    border-radius: 26px !important;
+    border: 1px solid rgba(14,165,233,0.20) !important;
+
+    background:
+        radial-gradient(
+            circle at top left,
+            rgba(56,189,248,0.08),
+            transparent 34%
+        ),
+        radial-gradient(
+            circle at bottom right,
+            rgba(15,23,42,0.55),
+            transparent 42%
+        ),
+        linear-gradient(
+            180deg,
+            rgba(3,10,24,0.98),
+            rgba(2,6,18,0.99)
+        ) !important;
+
+    box-shadow:
+        0 20px 46px rgba(0,0,0,0.30),
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 0 0 1px rgba(56,189,248,0.035);
+
+    overflow: hidden;
+}
+
+/* Threat Profile inspired section hierarchy */
+
+.nora-detection-reasoning-card {
+    padding: 6px 2px 2px 2px;
+}
+
+.nora-detection-reasoning-card .nora-section-title,
+.nora-detection-reasoning-card h3,
+.nora-detection-reasoning-card h4 {
+    color: #38bdf8 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.075em;
+    font-size: 0.95rem !important;
+    font-weight: 900 !important;
+}
+
+.nora-detection-reasoning-card .nora-section-title {
+    padding-bottom: 18px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid rgba(56,189,248,0.16);
+}
+
+.nora-detection-reasoning-card p,
+.nora-detection-reasoning-card span,
+.nora-detection-reasoning-card div {
+    font-weight: 650;
+}
+
+.nora-detection-summary-card,
+.nora-detection-evidence-card,
+.nora-detection-confidence-card,
+.nora-detection-history-card {
+    color: rgba(226,232,240,0.94);
+}
+
+.nora-detection-summary-card [data-testid="stMarkdownContainer"],
+.nora-detection-evidence-card [data-testid="stMarkdownContainer"],
+.nora-detection-confidence-card [data-testid="stMarkdownContainer"],
+.nora-detection-history-card [data-testid="stMarkdownContainer"] {
+    line-height: 1.55;
+}
+
+.nora-detection-reasoning-card hr {
+    border: none;
+    border-top: 1px solid rgba(148,163,184,0.12);
+    margin: 16px 0;
+}
+
+/* Summary */
+
+div[data-testid="stVerticalBlockBorderWrapper"]:has(.nora-detection-summary-card.nora-detection-card-marker) {
+    border-color: rgba(56,189,248,0.22) !important;
+    box-shadow:
+        0 20px 46px rgba(0,0,0,0.30),
+        0 0 26px rgba(56,189,248,0.045);
+}
+
+/* Evidence */
+
+div[data-testid="stVerticalBlockBorderWrapper"]:has(.nora-detection-evidence-card.nora-detection-card-marker) {
+    border-color: rgba(34,197,94,0.22) !important;
+    box-shadow:
+        0 20px 46px rgba(0,0,0,0.30),
+        0 0 26px rgba(34,197,94,0.035);
+}
+
+/* Confidence */
+
+div[data-testid="stVerticalBlockBorderWrapper"]:has(.nora-detection-confidence-card.nora-detection-card-marker) {
+    border-color: rgba(168,85,247,0.24) !important;
+    box-shadow:
+        0 20px 46px rgba(0,0,0,0.30),
+        0 0 26px rgba(168,85,247,0.04);
+}
+
+/* Historical */
+
+div[data-testid="stVerticalBlockBorderWrapper"]:has(.nora-detection-history-card.nora-detection-card-marker) {
+    border-color: rgba(56,189,248,0.22) !important;
+    box-shadow:
+        0 20px 46px rgba(0,0,0,0.30),
+        0 0 26px rgba(56,189,248,0.04);
+}
+
+/* Progress bars */
+
+div[data-testid="stVerticalBlockBorderWrapper"]:has(.nora-detection-history-card)
+div[role="progressbar"] > div {
+    background:
+        linear-gradient(
+            90deg,
+            #2563eb,
+            #38bdf8
+        ) !important;
+}
+
+
+/* =====================================================
+   Detection Intelligence Info Tooltip
+   ===================================================== */
+
+.nora-detection-info-tooltip {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: -44px;
+    margin-right: -10px;
+    margin-bottom: 16px;
+}
+
+.nora-detection-info-tooltip summary {
+    list-style: none;
+}
+
+.nora-detection-info-tooltip summary::-webkit-details-marker {
+    display: none;
+}
+
+.nora-detection-info-trigger {
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1;
+    color: rgba(125, 211, 252, 0.95);
+    background: rgba(14, 165, 233, 0.10);
+    border: 1px solid rgba(125, 211, 252, 0.35);
+    box-shadow: 0 0 10px rgba(14, 165, 233, 0.14);
+    transition: all 0.18s ease;
+}
+
+.nora-detection-info-trigger:hover {
+    color: #e0f2fe;
+    background: rgba(14, 165, 233, 0.18);
+    border-color: rgba(125, 211, 252, 0.62);
+    box-shadow: 0 0 18px rgba(14, 165, 233, 0.28);
+}
+
+.nora-detection-info-content {
+    position: absolute;
+    top: 26px;
+    right: 0;
+    z-index: 30;
+    width: min(260px, 70vw);
+    padding: 11px 13px;
+    border-radius: 12px;
+    color: rgba(226, 232, 240, 0.92);
+    background: linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.98));
+    border: 1px solid rgba(125, 211, 252, 0.22);
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.42), 0 0 22px rgba(14, 165, 233, 0.12);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+/* =====================================================
+   Detection Intelligence Premium Panel Polish
+   ===================================================== */
+
+div[data-testid="stVerticalBlock"]:has(.nora-detection-card-marker) > div[data-testid="stVerticalBlockBorderWrapper"] {
+    padding: 1.15rem 1.1rem 1.2rem 1.1rem !important;
+}
+
+div[data-testid="stVerticalBlockBorderWrapper"]:has(.nora-detection-card-marker) [data-testid="stMarkdownContainer"] p {
+    color: rgba(226,232,240,0.92);
+}
+
+div[data-testid="stVerticalBlockBorderWrapper"]:has(.nora-detection-card-marker) [data-testid="stCaptionContainer"] {
+    color: rgba(148,163,184,0.78) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    font-size: 0.66rem !important;
+    font-weight: 800 !important;
+}
+
+div[data-testid="stVerticalBlockBorderWrapper"]:has(.nora-detection-card-marker) div[data-testid="column"] {
+    padding-top: 0.18rem;
+    padding-bottom: 0.18rem;
+}
+
+div[data-testid="stVerticalBlockBorderWrapper"]:has(.nora-detection-card-marker) .stDivider {
+    margin-top: 0.7rem;
+    margin-bottom: 0.7rem;
+}
+
+div[data-testid="stVerticalBlockBorderWrapper"]:has(.nora-detection-card-marker) .nora-inline-svg {
+    filter: drop-shadow(0 0 8px rgba(56,189,248,0.22));
+}
+
+
+/* Strong visible title treatment for Detection Intelligence cards */
+div[data-testid="stVerticalBlockBorderWrapper"]:has(.nora-detection-card-marker) [data-testid="stMarkdownContainer"] h3,
+div[data-testid="stVerticalBlockBorderWrapper"]:has(.nora-detection-card-marker) [data-testid="stMarkdownContainer"] h4 {
+    color: #38bdf8 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.075em !important;
+    font-size: 0.98rem !important;
+    font-weight: 900 !important;
+    padding-bottom: 18px !important;
+    margin-bottom: 16px !important;
+    border-bottom: 1px solid rgba(56,189,248,0.18) !important;
+}
+/* =====================================================
+   Detection Intelligence Direct Card Styling Override
+   Targets visible Streamlit bordered cards on this workspace
+   ===================================================== */
+
+/* Main analysis cards only: stronger Threat Intelligence style */
+div[data-testid="stVerticalBlockBorderWrapper"]:not(:has(.nora-threat-stat)) {
+    border-radius: 24px !important;
+    border: 1px solid rgba(14, 165, 233, 0.24) !important;
+    background:
+        radial-gradient(circle at 8% 14%, rgba(56, 189, 248, 0.11), transparent 32%),
+        radial-gradient(circle at 92% 88%, rgba(30, 64, 175, 0.14), transparent 42%),
+        linear-gradient(180deg, rgba(3, 10, 24, 0.98), rgba(2, 6, 18, 0.99)) !important;
+    box-shadow:
+        0 22px 48px rgba(0, 0, 0, 0.34),
+        inset 0 1px 0 rgba(255, 255, 255, 0.035),
+        0 0 0 1px rgba(56, 189, 248, 0.045) !important;
+}
+
+/* Keep top telemetry cards separate from main analysis card treatment */
+div[data-testid="stVerticalBlockBorderWrapper"]:has(.nora-threat-stat) {
+    border-radius: 18px !important;
+}
+
+/* Card title treatment closer to Threat Profile */
+div[data-testid="stVerticalBlockBorderWrapper"]:not(:has(.nora-threat-stat)) [data-testid="stMarkdownContainer"] h3,
+div[data-testid="stVerticalBlockBorderWrapper"]:not(:has(.nora-threat-stat)) [data-testid="stMarkdownContainer"] h4 {
+    color: #38bdf8 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.075em !important;
+    font-size: 0.98rem !important;
+    font-weight: 900 !important;
+    padding-bottom: 16px !important;
+    margin-bottom: 16px !important;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.18) !important;
+}
+
+/* More premium internal text spacing */
+div[data-testid="stVerticalBlockBorderWrapper"]:not(:has(.nora-threat-stat)) [data-testid="stMarkdownContainer"] p {
+    color: rgba(226, 232, 240, 0.94) !important;
+    line-height: 1.58 !important;
+}
+
+/* Subtle row separation for content-heavy cards */
+div[data-testid="stVerticalBlockBorderWrapper"]:not(:has(.nora-threat-stat)) hr {
+    border: none !important;
+    border-top: 1px solid rgba(148, 163, 184, 0.14) !important;
+    margin: 16px 0 !important;
+}
+
+/* =====================================================
+   Detection Intelligence Custom HTML Panels
+   ===================================================== */
+
+.nora-detection-custom-panel {
+    height: 420px;
+    min-height: 420px;
+    padding: 1.55rem 1.45rem;
+    box-sizing: border-box;
+    border-radius: 26px;
+    border: 1px solid rgba(14, 165, 233, 0.24);
+    background:
+        radial-gradient(circle at 9% 16%, rgba(56, 189, 248, 0.10), transparent 33%),
+        radial-gradient(circle at 88% 92%, rgba(30, 64, 175, 0.14), transparent 43%),
+        linear-gradient(180deg, rgba(3, 10, 24, 0.98), rgba(2, 6, 18, 0.99));
+    box-shadow:
+        0 22px 48px rgba(0, 0, 0, 0.34),
+        inset 0 1px 0 rgba(255, 255, 255, 0.035),
+        0 0 0 1px rgba(56, 189, 248, 0.045);
+}
+
+.nora-detection-summary-panel,
+.nora-detection-evidence-panel,
+.nora-detection-confidence-panel,
+.nora-detection-history-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.nora-detection-confidence-panel .nora-detection-final-confidence,
+.nora-detection-history-panel .nora-detection-history-footer {
+    margin-top: auto;
+}
+
+.nora-detection-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nora-detection-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    color: #38bdf8;
+    text-transform: uppercase;
+    letter-spacing: 0.075em;
+    font-size: 0.95rem;
+    font-weight: 900;
+}
+
+.nora-detection-panel-title .nora-inline-svg {
+    width: 18px;
+    height: 18px;
+    filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.25));
+}
+
+.nora-detection-panel-divider {
+    height: 1px;
+    margin: 1.3rem 0 1.35rem;
+    background: linear-gradient(90deg, rgba(56,189,248,0.18), rgba(148,163,184,0.07), transparent);
+}
+
+.nora-detection-summary-classification {
+    margin-bottom: 1.1rem;
+}
+
+.nora-detection-row-label {
+    color: rgba(148, 163, 184, 0.86);
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    font-size: 0.68rem;
+    font-weight: 800;
+    margin-bottom: 0.45rem;
+}
+
+.nora-detection-classification-value {
+    color: rgba(248, 250, 252, 0.96);
+    font-size: 1rem;
+    font-weight: 850;
+    line-height: 1.35;
+}
+
+.nora-detection-panel-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    min-height: 2.6rem;
+    padding: 0.68rem 0;
+    border-top: 1px solid rgba(148, 163, 184, 0.11);
+}
+
+.nora-detection-panel-row span {
+    color: rgba(148, 163, 184, 0.88);
+    font-weight: 800;
+}
+
+.nora-detection-panel-row strong {
+    color: rgba(248, 250, 252, 0.96);
+    font-weight: 900;
+    text-align: right;
+}
+
+.nora-detection-pill {
+    padding: 0.28rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    letter-spacing: 0.04em;
+}
+
+.nora-detection-pill.high {
+    color: #fecaca;
+    background: rgba(239, 68, 68, 0.16);
+    border: 1px solid rgba(248, 113, 113, 0.42);
+}
+
+.nora-detection-pill.medium {
+    color: #fde68a;
+    background: rgba(245, 158, 11, 0.14);
+    border: 1px solid rgba(251, 191, 36, 0.34);
+}
+
+.nora-detection-pill.low {
+    color: #bbf7d0;
+    background: rgba(34, 197, 94, 0.13);
+    border: 1px solid rgba(74, 222, 128, 0.34);
+}
+
+.nora-detection-confidence.high,
+.nora-detection-confidence.medium,
+.nora-detection-confidence.low {
+    color: #4ade80 !important;
+}
+
+/* Detection Evidence custom panel refinements */
+.nora-detection-evidence-row span:first-child {
+    display: flex;
+    align-items: center;
+    font-size: 0.92rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.nora-detection-evidence-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    min-width: 22px;
+    margin-right: 0.65rem;
+    filter: drop-shadow(0 0 7px rgba(34, 197, 94, 0.35));
+}
+
+.nora-detection-panel-header .nora-detection-panel-info {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+}
+
+.nora-detection-panel-header .nora-detection-panel-info summary {
+    list-style: none;
+}
+
+.nora-detection-panel-header .nora-detection-panel-info summary::-webkit-details-marker {
+    display: none;
+}
+
+.nora-detection-panel-header .nora-detection-panel-info .nora-detection-info-trigger {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+    transform: translateY(-1px);
+}
+
+.nora-detection-panel-header .nora-detection-panel-info .nora-detection-info-content {
+    top: 34px;
+    right: 0;
+}
+.nora-detection-history-row {
+    padding: 0.72rem 0;
+    border-top: 1px solid rgba(148, 163, 184, 0.11);
+}
+
+.nora-detection-history-row:first-of-type {
+    border-top: none;
+}
+
+.nora-detection-history-row-top {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.55rem;
+}
+
+.nora-detection-history-row-top span {
+    color: rgba(148, 163, 184, 0.88);
+    font-size: 0.92rem;
+    font-weight: 800;
+}
+
+.nora-detection-history-row-top strong {
+    color: rgba(248, 250, 252, 0.96);
+    font-size: 0.9rem;
+    font-weight: 900;
+}
+
+.nora-detection-history-track {
+    height: 8px;
+    width: 100%;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(15, 23, 42, 0.92);
+    border: 1px solid rgba(56, 189, 248, 0.12);
+}
+
+.nora-detection-history-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #2563eb, #38bdf8);
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.32);
+}
+
+.nora-detection-history-footer {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.2rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(56, 189, 248, 0.18);
+}
+
+.nora-detection-history-footer span {
+    color: rgba(148, 163, 184, 0.88);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.72rem;
+}
+
+.nora-detection-history-footer strong {
+    color: #38bdf8;
+    font-size: 1.35rem;
+    font-weight: 950;
+    letter-spacing: -0.03em;
+}
+
+/* =====================================================
+   Detection Intelligence Visualisation Panel
+   ===================================================== */
+
+.nora-detection-visual-marker {
+    height: 0 !important;
+    width: 0 !important;
+    opacity: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+div[data-testid="stVerticalBlockBorderWrapper"]:has(.nora-detection-visual-marker) {
+    padding: 1.55rem 1.45rem 1.35rem 1.45rem !important;
+    border-radius: 26px !important;
+    border: 1px solid rgba(14, 165, 233, 0.24) !important;
+    background:
+        radial-gradient(circle at 9% 16%, rgba(56, 189, 248, 0.10), transparent 33%),
+        radial-gradient(circle at 88% 92%, rgba(30, 64, 175, 0.14), transparent 43%),
+        linear-gradient(180deg, rgba(3, 10, 24, 0.98), rgba(2, 6, 18, 0.99)) !important;
+    box-shadow:
+        0 22px 48px rgba(0, 0, 0, 0.34),
+        inset 0 1px 0 rgba(255, 255, 255, 0.035),
+        0 0 0 1px rgba(56, 189, 248, 0.045) !important;
+    overflow: hidden !important;
+}
+
+.nora-detection-visual-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+div[data-testid="stVerticalBlockBorderWrapper"]:has(.nora-detection-visual-marker) h3 {
+    color: rgba(226, 232, 240, 0.94) !important;
+    font-size: 0.92rem !important;
+    font-weight: 850 !important;
+    letter-spacing: 0.01em !important;
+    margin-bottom: 0.75rem !important;
+}
+
+div[data-testid="stVerticalBlockBorderWrapper"]:has(.nora-detection-visual-marker) [data-testid="stPlotlyChart"],
+div[data-testid="stVerticalBlockBorderWrapper"]:has(.nora-detection-visual-marker) [data-testid="stVegaLiteChart"],
+div[data-testid="stVerticalBlockBorderWrapper"]:has(.nora-detection-visual-marker) [data-testid="stArrowVegaLiteChart"] {
+    border-radius: 18px !important;
+    overflow: hidden !important;
+}

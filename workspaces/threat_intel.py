@@ -1,6 +1,8 @@
 import textwrap
 
+
 import streamlit as st
+from components.ui_helpers import render_workspace_header
 
 
 def render_html(html: str) -> None:
@@ -8,55 +10,84 @@ def render_html(html: str) -> None:
     st.html(textwrap.dedent(html).strip())
 
 
-# --- Intelligence Panel Helper ---
-def render_intelligence_panel(panel_name: str, panel_data: dict) -> None:
-    """Render a native Streamlit intelligence detail panel."""
-    if not panel_name:
-        return
+# Internal source-context mapping for IPs (deterministic placeholder for future enrichment)
+def get_internal_source_enrichment(ip_address: str) -> dict:
+    """Return deterministic internal enrichment context for a source IP."""
 
-    title = panel_data.get("title", "Threat Intelligence Detail")
-    summary = panel_data.get("summary", "No intelligence summary available.")
-    rows = panel_data.get("rows", [])
+    enrichment_profiles = [
+        {
+            "asn": "AS14061",
+            "provider": "DigitalOcean LLC",
+            "country": "Germany",
+            "city": "Frankfurt",
+            "infrastructure_class": "Cloud Hosting Infrastructure",
+        },
+        {
+            "asn": "AS14618",
+            "provider": "Amazon AWS",
+            "country": "Ireland",
+            "city": "Dublin",
+            "infrastructure_class": "Public Cloud Infrastructure",
+        },
+        {
+            "asn": "AS8075",
+            "provider": "Microsoft Azure",
+            "country": "United Kingdom",
+            "city": "London",
+            "infrastructure_class": "Enterprise Cloud Infrastructure",
+        },
+        {
+            "asn": "AS16276",
+            "provider": "OVH SAS",
+            "country": "France",
+            "city": "Roubaix",
+            "infrastructure_class": "European Hosting Infrastructure",
+        },
+        {
+            "asn": "AS13335",
+            "provider": "Cloudflare Inc.",
+            "country": "United States",
+            "city": "San Francisco",
+            "infrastructure_class": "Edge Network Infrastructure",
+        },
+    ]
 
-    row_html = ""
-    for label, value in rows:
-        row_html += f"""
-        <div class='nora-threat-panel-row'>
-            <div class='nora-threat-panel-label'>{label}</div>
-            <div class='nora-threat-panel-value'>{value}</div>
-        </div>
-        """
+    if not ip_address or ip_address == "No Data":
+        return {
+            "asn": "N/A",
+            "provider": "No enrichment available",
+            "country": "Unknown",
+            "city": "Unknown",
+            "infrastructure_class": "Unclassified Source Infrastructure",
+        }
 
-    render_html(f"""
-        <div class='nora-threat-intel-panel nora-threat-intel-panel--open'>
-            <div class='nora-threat-panel-header'>
-                <div>
-                    <div class='nora-threat-panel-kicker'>INTELLIGENCE DETAIL</div>
-                    <div class='nora-threat-panel-title'>{title}</div>
-                </div>
-                <div class='nora-threat-panel-status'>ACTIVE</div>
-                <a class='nora-threat-panel-close' href='?page=threat_intelligence'>×</a>
-            </div>
-            <div class='nora-threat-panel-summary'>{summary}</div>
-            <div class='nora-threat-panel-grid'>
-                {row_html}
-            </div>
-        </div>
-    """)
+    profile_index = sum(ord(character) for character in str(ip_address)) % len(enrichment_profiles)
+    return enrichment_profiles[profile_index]
 
 
 
-def render_threat_intelligence(ip_totals, alerts, normal_activity, anomalies):
+
+
+def render_threat_intelligence(
+    ip_totals,
+    alerts,
+    normal_activity,
+    anomalies,
+    dataset_mode=None,
+    dataset_name=None,
+    on_reset_dataset=None,
+):
     """Phase 3.1 Threat Intelligence Workspace"""
 
-    render_html("""
-    <div class='nora-workspace-header'>
-        <div class='nora-workspace-title'>Threat Intelligence</div>
-        <div class='nora-workspace-subtitle'>
-            Threat profiling, infrastructure analysis and external intelligence enrichment
-        </div>
-    </div>
-    """)
+    render_workspace_header(
+        icon="threat",
+        title="Threat Intelligence",
+        description="Source context, infrastructure indicators and behavioural evidence supporting DDoS detection analysis",
+        dataset_mode=dataset_mode,
+        dataset_name=dataset_name,
+        on_reset_dataset=on_reset_dataset,
+        reset_key="reset_dataset_threat_intelligence",
+    )
 
     threat_count = len(alerts) if alerts else 0
     anomaly_count = len(anomalies) if anomalies else 0
@@ -124,11 +155,14 @@ def render_threat_intelligence(ip_totals, alerts, normal_activity, anomalies):
 
     provider_context = "Internal Traffic Analysis"
 
-    # Phase 3.1B enrichment placeholders (to be replaced by live ASN/Geo data)
-    asn_value = "AS14061"
-    asn_provider = "DigitalOcean LLC"
-    geo_country = "Germany"
-    geo_city = "Frankfurt"
+    # Phase 3.1B internal source-context placeholder
+    # Later phases can replace this deterministic mapping with live ASN/Geo/API lookups.
+    primary_enrichment = get_internal_source_enrichment(top_ip)
+    asn_value = primary_enrichment["asn"]
+    asn_provider = primary_enrichment["provider"]
+    geo_country = primary_enrichment["country"]
+    geo_city = primary_enrichment["city"]
+    enriched_infrastructure_class = primary_enrichment["infrastructure_class"]
 
     assessment_summary = (
         f"Analysis identified {threat_count} detection events and "
@@ -145,7 +179,7 @@ def render_threat_intelligence(ip_totals, alerts, normal_activity, anomalies):
     intelligence_panels = {
         "Reputation": {
             "title": "Reputation Intelligence",
-            "summary": "Reputation assessment is derived from internal detection volume, observed source behaviour and current threat severity.",
+            "summary": "Reputation context is derived from request volume, observed source behaviour and current detection severity.",
             "rows": [
                 ("Threat Rating", threat_rating),
                 ("Detection Events", threat_count),
@@ -155,17 +189,17 @@ def render_threat_intelligence(ip_totals, alerts, normal_activity, anomalies):
         },
         "ASN": {
             "title": "ASN Infrastructure Intelligence",
-            "summary": "ASN intelligence provides infrastructure ownership and hosting context for the observed source.",
+            "summary": "ASN context provides infrastructure ownership and hosting information for the observed traffic source.",
             "rows": [
                 ("ASN", asn_value),
                 ("Provider", asn_provider),
-                ("Infrastructure Class", infrastructure_type),
+                ("Infrastructure Class", enriched_infrastructure_class),
                 ("Observed Usage", observed_usage),
             ],
         },
         "Geographic": {
             "title": "Geographic Intelligence",
-            "summary": "Geographic enrichment provides regional context for the observed threat source and supports source concentration analysis.",
+            "summary": "Geographic context supports source concentration analysis by identifying where observed traffic sources are mapped.",
             "rows": [
                 ("Country", geo_country),
                 ("City / Region", geo_city),
@@ -175,7 +209,7 @@ def render_threat_intelligence(ip_totals, alerts, normal_activity, anomalies):
         },
         "Coverage": {
             "title": "Intelligence Coverage",
-            "summary": "Coverage indicates how much of the current assessment is supported by available internal intelligence and enrichment context.",
+            "summary": "Coverage indicates how much of the current detection assessment is supported by available source-context signals.",
             "rows": [
                 ("Coverage", f"{intelligence_coverage}%"),
                 ("Internal Signals", threat_count),
@@ -234,19 +268,51 @@ def render_threat_intelligence(ip_totals, alerts, normal_activity, anomalies):
     if "active_threat_panel" not in st.session_state:
         st.session_state["active_threat_panel"] = None
 
-    selected_panel = st.query_params.get("threat_panel")
-    if selected_panel in intelligence_panels:
-        st.session_state["active_threat_panel"] = selected_panel
+    drawer_panels_html = ""
+    for panel_key, panel_data in intelligence_panels.items():
+        panel_id = panel_key.lower()
+        panel_rows_html = ""
+
+        for label, value in panel_data.get("rows", []):
+            panel_rows_html += f"""
+            <div class='nora-threat-panel-row'>
+                <div class='nora-threat-panel-label'>{label}</div>
+                <div class='nora-threat-panel-value'>{value}</div>
+            </div>
+            """
+
+        drawer_panels_html += f"""
+        <div class='nora-threat-css-drawer nora-threat-css-drawer-{panel_id}'>
+            <div class='nora-threat-panel-header'>
+                <div>
+                    <div class='nora-threat-panel-kicker'>SOURCE CONTEXT</div>
+                    <div class='nora-threat-panel-title'>{panel_data.get("title")}</div>
+                </div>
+                <div class='nora-threat-panel-status'>ACTIVE</div>
+                <label class='nora-threat-panel-close' for='nora-panel-none'>×</label>
+            </div>
+            <div class='nora-threat-panel-summary'>{panel_data.get("summary")}</div>
+            <div class='nora-threat-panel-grid'>
+                {panel_rows_html}
+            </div>
+        </div>
+        """
 
     # Enrichment Telemetry
     render_html(f"""
         <div class='nora-threat-intel-shell'>
+            <input class='nora-threat-panel-toggle' type='radio' name='nora-threat-panel' id='nora-panel-none' checked>
+            <input class='nora-threat-panel-toggle' type='radio' name='nora-threat-panel' id='nora-panel-reputation'>
+            <input class='nora-threat-panel-toggle' type='radio' name='nora-threat-panel' id='nora-panel-asn'>
+            <input class='nora-threat-panel-toggle' type='radio' name='nora-threat-panel' id='nora-panel-geographic'>
+            <input class='nora-threat-panel-toggle' type='radio' name='nora-threat-panel' id='nora-panel-coverage'>
+            <label class='nora-threat-drawer-backdrop' for='nora-panel-none'></label>
 
             <div class='nora-threat-telemetry-grid'>
                 <div class='nora-threat-telemetry-card reputation'>
                     <div class='nora-threat-telemetry-label-row'>
                         <span class='nora-threat-telemetry-label'>Reputation</span>
-                        <a class='nora-threat-info-dot' href='?page=threat_intelligence&threat_panel=Reputation'>i</a>
+                        <label class='nora-threat-info-dot' for='nora-panel-reputation'>i</label>
                     </div>
                     <div class='nora-threat-telemetry-value red'>{threat_rating}</div>
                     <div class='nora-threat-telemetry-meta'>{threat_count} detection events</div>
@@ -256,7 +322,7 @@ def render_threat_intelligence(ip_totals, alerts, normal_activity, anomalies):
                 <div class='nora-threat-telemetry-card asn'>
                     <div class='nora-threat-telemetry-label-row'>
                         <span class='nora-threat-telemetry-label'>ASN</span>
-                        <a class='nora-threat-info-dot' href='?page=threat_intelligence&threat_panel=ASN'>i</a>
+                        <label class='nora-threat-info-dot' for='nora-panel-asn'>i</label>
                     </div>
                     <div class='nora-threat-telemetry-value purple'>{asn_value}</div>
                     <div class='nora-threat-telemetry-meta'>{asn_provider}</div>
@@ -266,7 +332,7 @@ def render_threat_intelligence(ip_totals, alerts, normal_activity, anomalies):
                 <div class='nora-threat-telemetry-card geo'>
                     <div class='nora-threat-telemetry-label-row'>
                         <span class='nora-threat-telemetry-label'>Geographic</span>
-                        <a class='nora-threat-info-dot' href='?page=threat_intelligence&threat_panel=Geographic'>i</a>
+                        <label class='nora-threat-info-dot' for='nora-panel-geographic'>i</label>
                     </div>
                     <div class='nora-threat-telemetry-value blue'>{geo_country}</div>
                     <div class='nora-threat-telemetry-meta'>{geo_city}</div>
@@ -276,13 +342,15 @@ def render_threat_intelligence(ip_totals, alerts, normal_activity, anomalies):
                 <div class='nora-threat-telemetry-card coverage'>
                     <div class='nora-threat-telemetry-label-row'>
                         <span class='nora-threat-telemetry-label'>Coverage</span>
-                        <a class='nora-threat-info-dot' href='?page=threat_intelligence&threat_panel=Coverage'>i</a>
+                        <label class='nora-threat-info-dot' for='nora-panel-coverage'>i</label>
                     </div>
                     <div class='nora-threat-telemetry-value green'>{intelligence_coverage}%</div>
                     <div class='nora-threat-telemetry-meta'>internal intelligence coverage</div>
                     <div class='nora-threat-progress-ring'></div>
                 </div>
             </div>
+
+            {drawer_panels_html}
 
             <div class='nora-threat-grid-two'>
                 <div class='nora-threat-card'>
@@ -300,7 +368,7 @@ def render_threat_intelligence(ip_totals, alerts, normal_activity, anomalies):
                             </div>
                             <div class='nora-threat-detail-row'>
                                 <div class='nora-threat-detail-label'>Infrastructure Type</div>
-                                <div class='nora-threat-detail-value'>{infrastructure_type}</div>
+                                <div class='nora-threat-detail-value'>{enriched_infrastructure_class}</div>
                             </div>
                             <div class='nora-threat-detail-row'>
                                 <div class='nora-threat-detail-label'>Threat Rating</div>
@@ -367,7 +435,7 @@ def render_threat_intelligence(ip_totals, alerts, normal_activity, anomalies):
                     </div>
                     <div class='nora-threat-mini-row'>
                         <div class='nora-threat-mini-label'>Infrastructure Class</div>
-                        <div class='nora-threat-mini-value'>{infrastructure_type}</div>
+                        <div class='nora-threat-mini-value'>{enriched_infrastructure_class}</div>
                     </div>
                     <div class='nora-threat-mini-note'>{infrastructure_assessment}</div>
                 </div>
@@ -400,9 +468,6 @@ def render_threat_intelligence(ip_totals, alerts, normal_activity, anomalies):
         </div>
         """)
 
-    active_panel = st.session_state.get("active_threat_panel")
-    if active_panel:
-        render_intelligence_panel(active_panel, intelligence_panels[active_panel])
 
     # Evidence Section
     threat_rows = []
@@ -428,11 +493,13 @@ def render_threat_intelligence(ip_totals, alerts, normal_activity, anomalies):
                 risk_level = "Low"
                 reputation_score = "37 / 100"
 
+            source_enrichment = get_internal_source_enrichment(ip)
+
             threat_rows.append({
                 "IP Address": ip,
                 "Risk Level": risk_level,
-                "ASN / Provider": f"{asn_value} {asn_provider}",
-                "Country": geo_country,
+                "ASN / Provider": f"{source_enrichment['asn']} {source_enrichment['provider']}",
+                "Country": source_enrichment["country"],
                 "Reputation Score": reputation_score,
                 "Confidence": f"{intelligence_coverage}%"
             })
@@ -478,7 +545,7 @@ def render_threat_intelligence(ip_totals, alerts, normal_activity, anomalies):
     render_html(f"""
         <div class='nora-threat-summary-card'>
             <div>
-                <div class='nora-threat-card-title'>Threat Intelligence Summary</div>
+                <div class='nora-threat-card-title'>Source Context Summary</div>
                 <div class='nora-threat-summary-text'>{summary_text}</div>
             </div>
             <div class='nora-threat-summary-icon'>◎</div>
