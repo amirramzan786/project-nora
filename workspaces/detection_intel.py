@@ -87,14 +87,16 @@ def render_detection_summary_panel(
 
 # Evidence panel helper
 def render_detection_evidence_panel(
-    evidence_level,
+    source_concentration_signal,
+    request_burst_signal,
+    temporal_behaviour_signal,
     ml_anomaly_signal,
     similarity_signal
 ):
     evidence_rows = [
-        ("🟢", "Source Concentration", evidence_level),
-        ("🟢", "Request Burst Activity", evidence_level),
-        ("🟡", "Temporal Behaviour", "MEDIUM"),
+        ("🟢", "Source Concentration", source_concentration_signal),
+        ("🟢", "Request Burst Activity", request_burst_signal),
+        ("🟡", "Temporal Behaviour", temporal_behaviour_signal),
         ("🟡", "ML Anomaly Signal", ml_anomaly_signal),
         ("🟢", "Historical Similarity", similarity_signal)
     ]
@@ -296,7 +298,6 @@ def render_detection_intelligence(
 
     ml_anomaly_signal = "MEDIUM" if anomalies else "LOW"
     detection_signals = len(anomalies) + active_alerts
-    validation_status = "Pending"
 
     primary_source = "N/A"
     primary_source_requests = 0
@@ -370,6 +371,15 @@ def render_detection_intelligence(
 
     similarity_score = similarity_result["similarity_score"]
     similarity_match = f"{similarity_score}%"
+    validation_status = (
+        "Validated Pattern"
+        if similarity_score >= 80
+        else "Correlated"
+        if estimated_confidence >= 80
+        else "Under Analysis"
+        if estimated_confidence >= 55
+        else "Needs Review"
+    )
 
     traffic_values = list(time_counts.values()) if time_counts else []
     peak_requests = max(traffic_values, default=0)
@@ -412,11 +422,29 @@ def render_detection_intelligence(
         "HIGH": "Coordinated Attack Behaviour"
     }.get(overall_severity, "Behavioural Detection Event")
 
-    evidence_level = {
-        "LOW": "LOW",
-        "MEDIUM": "MEDIUM",
-        "HIGH": "HIGH"
-    }.get(overall_severity, "MEDIUM")
+    source_concentration_signal = (
+        "HIGH"
+        if source_concentration >= 0.60
+        else "MEDIUM"
+        if source_concentration >= 0.35
+        else "LOW"
+    )
+
+    request_burst_signal = (
+        "HIGH"
+        if anomaly_ratio >= 0.18
+        else "MEDIUM"
+        if anomaly_ratio >= 0.08
+        else "LOW"
+    )
+
+    temporal_behaviour_signal = (
+        "HIGH"
+        if traffic_pattern in ["Burst", "Sustained"] and overall_severity == "HIGH"
+        else "MEDIUM"
+        if traffic_pattern not in ["Baseline", "Unknown", None]
+        else "LOW"
+    )
 
     ml_signal = "MEDIUM" if anomalies else "LOW"
     similarity_signal = (
@@ -511,7 +539,9 @@ def render_detection_intelligence(
 
     with evidence_col:
         render_detection_evidence_panel(
-            evidence_level,
+            source_concentration_signal,
+            request_burst_signal,
+            temporal_behaviour_signal,
             ml_anomaly_signal,
             similarity_signal
         )
@@ -521,20 +551,69 @@ def render_detection_intelligence(
     # -----------------------------------------------------
 
     with confidence_col:
+        source_concentration_score = (
+            18
+            if source_concentration >= 0.60
+            else 12
+            if source_concentration >= 0.35
+            else 6
+            if source_concentration > 0
+            else 0
+        )
+
+        request_burst_score = (
+            15
+            if anomaly_ratio >= 0.18
+            else 10
+            if anomaly_ratio >= 0.08
+            else 5
+            if anomaly_ratio > 0
+            else 0
+        )
+
+        temporal_behaviour_score = (
+            12
+            if traffic_pattern in ["Burst", "Sustained"]
+            else 6
+            if traffic_pattern not in ["Baseline", "Unknown", None]
+            else 2
+        )
+
+        ml_signal_score = (
+            12
+            if anomalies and overall_severity == "HIGH"
+            else 8
+            if anomalies
+            else 0
+        )
+
+        historical_similarity_score = (
+            14
+            if similarity_score >= 85
+            else 10
+            if similarity_score >= 70
+            else 6
+            if similarity_score >= 55
+            else 0
+        )
+
+        reducing_factor_score = (
+            -12
+            if estimated_confidence < 45
+            else -8
+            if estimated_confidence < 65
+            else -4
+            if estimated_confidence < 85
+            else 0
+        )
+
         confidence_factors = [
-            ("Source concentration", "+18"),
-            ("Request burst activity", "+15"),
-            ("Temporal behaviour", "+12"),
-            ("ML anomaly signal", "+10" if anomalies else "+0"),
-            (
-                "Historical similarity",
-                "+12"
-                if similarity_score >= 80
-                else "+6"
-                if similarity_score >= 55
-                else "+0"
-            ),
-            ("Reducing factors", "-8")
+            ("Source concentration", f"+{source_concentration_score}"),
+            ("Request burst activity", f"+{request_burst_score}"),
+            ("Temporal behaviour", f"+{temporal_behaviour_score}"),
+            ("ML anomaly signal", f"+{ml_signal_score}"),
+            ("Historical similarity", f"+{historical_similarity_score}"),
+            ("Reducing factors", str(reducing_factor_score))
         ]
 
         render_confidence_breakdown_panel(

@@ -29,6 +29,114 @@ def render_log_explorer(
 
     st.markdown("<br>", unsafe_allow_html=True)
 
+    st.markdown(
+        "<div class='nora-log-explorer-telemetry'>",
+        unsafe_allow_html=True
+    )
+    telemetry_col1, telemetry_col2, telemetry_col3, telemetry_col4 = st.columns(4)
+
+    suspicious_count = 0
+    elevated_count = 0
+
+    max_requests = max(
+        [
+            int(entry.get("count", 0))
+            for entry in normal_activity[:250]
+            if str(entry.get("count", "0")).isdigit()
+        ],
+        default=1
+    )
+
+    high_threshold = max(5, int(max_requests * 0.7))
+    medium_threshold = max(3, int(max_requests * 0.4))
+
+    for entry in normal_activity[:250]:
+
+        try:
+            request_count = int(entry.get("count", 0))
+        except:
+            request_count = 0
+
+        if request_count >= high_threshold:
+            suspicious_count += 1
+        elif request_count >= medium_threshold:
+            elevated_count += 1
+
+    with telemetry_col1:
+
+        st.markdown(
+            f"""
+            <div class='nora-log-explorer-telemetry-card'>
+                {render_telemetry_card(
+                    title="PARSED LOG ENTRIES",
+                    value=len(normal_activity[:250]),
+                    subtext="processed telemetry records",
+                    icon_html=render_operational_icon('logs', 'low'),
+                    extra_class="nora-log-explorer-stat"
+                )}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with telemetry_col2:
+
+        st.markdown(
+            f"""
+            <div class='nora-log-explorer-telemetry-card'>
+                {render_telemetry_card(
+                    title="DETECTION EVENTS",
+                    value=len(alerts),
+                    subtext="behavioural anomalies detected",
+                    icon_html=render_operational_icon('alerts', 'high'),
+                    extra_class="nora-log-explorer-stat"
+                )}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with telemetry_col3:
+
+        st.markdown(
+            f"""
+            <div class='nora-log-explorer-telemetry-card'>
+                {render_telemetry_card(
+                    title="SUSPICIOUS ACTIVITY",
+                    value=suspicious_count,
+                    subtext="high-risk traffic patterns",
+                    icon_html=render_operational_icon('warning', 'medium'),
+                    extra_class="nora-log-explorer-stat"
+                )}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with telemetry_col4:
+
+        st.markdown(
+            f"""
+            <div class='nora-log-explorer-telemetry-card'>
+                {render_telemetry_card(
+                    title="ELEVATED ACTIVITY",
+                    value=elevated_count,
+                    subtext="monitored behavioural spikes",
+                    icon_html=render_operational_icon('elevated', 'low'),
+                    extra_class="nora-log-explorer-stat"
+                )}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    st.markdown(
+        "</div>",
+        unsafe_allow_html=True
+    )
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
     filter_col1, filter_col2, filter_col3, filter_col4, filter_col5 = st.columns([2, 2, 2, 2, 1])
 
     with filter_col1:
@@ -83,85 +191,6 @@ def render_log_explorer(
             time_range_filter = "All Activity"
             classification_filter = "All Classifications"
             severity_filter = "All Severities"
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    telemetry_col1, telemetry_col2, telemetry_col3, telemetry_col4 = st.columns(4)
-
-    suspicious_count = 0
-    elevated_count = 0
-
-    max_requests = max(
-        [
-            int(entry.get("count", 0))
-            for entry in normal_activity[:250]
-            if str(entry.get("count", "0")).isdigit()
-        ],
-        default=1
-    )
-
-    high_threshold = max(5, int(max_requests * 0.7))
-    medium_threshold = max(3, int(max_requests * 0.4))
-
-    for entry in normal_activity[:250]:
-
-        try:
-            request_count = int(entry.get("count", 0))
-        except:
-            request_count = 0
-
-        if request_count >= high_threshold:
-            suspicious_count += 1
-        elif request_count >= medium_threshold:
-            elevated_count += 1
-
-    with telemetry_col1:
-
-        st.markdown(
-            render_telemetry_card(
-                title="PARSED LOG ENTRIES",
-                value=len(normal_activity[:250]),
-                subtext="processed telemetry records",
-                icon_html=render_operational_icon('logs', 'low')
-            ),
-            unsafe_allow_html=True
-        )
-
-    with telemetry_col2:
-
-        st.markdown(
-            render_telemetry_card(
-                title="DETECTION EVENTS",
-                value=len(alerts),
-                subtext="behavioural anomalies detected",
-                icon_html=render_operational_icon('alerts', 'high')
-            ),
-            unsafe_allow_html=True
-        )
-
-    with telemetry_col3:
-
-        st.markdown(
-            render_telemetry_card(
-                title="SUSPICIOUS ACTIVITY",
-                value=suspicious_count,
-                subtext="high-risk traffic patterns",
-                icon_html=render_operational_icon('warning', 'medium')
-            ),
-            unsafe_allow_html=True
-        )
-
-    with telemetry_col4:
-
-        st.markdown(
-            render_telemetry_card(
-                title="ELEVATED ACTIVITY",
-                value=elevated_count,
-                subtext="monitored behavioural spikes",
-                icon_html=render_operational_icon('elevated', 'low')
-            ),
-            unsafe_allow_html=True
-        )
 
     st.markdown("<br>", unsafe_allow_html=True)
 

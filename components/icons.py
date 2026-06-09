@@ -149,11 +149,12 @@ def render_telemetry_card(
     title,
     value,
     subtext,
-    icon_html=""
+    icon_html="",
+    extra_class=""
 ):
 
     return (
-        f'<div class="nora-threat-stat">'
+        f'<div class="nora-threat-stat {extra_class}">'
         f'<div class="nora-threat-stat-label" style="display:flex;align-items:center;gap:10px;">{icon_html}<span>{title}</span></div>'
         f'<div class="nora-threat-stat-value">{value}</div>'
         f'<div class="nora-threat-stat-subtext">{subtext}</div>'
