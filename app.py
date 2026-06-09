@@ -20,6 +20,8 @@ def load_css():
         "assets/severity_queue.css",
         "assets/threat_intel.css",
         "assets/detection_intel.css",
+        "assets/header.css",
+        "assets/adaptive_intel.css",
     ]
 
     combined_css = ""
@@ -264,6 +266,15 @@ def render_active_dataset_status():
 
 
 ensure_active_log()
+
+# Global dataset reset handler used by header reset links.
+if st.query_params.get("reset_dataset") == "1":
+    stop_using_uploaded_log()
+
+    if "reset_dataset" in st.query_params:
+        del st.query_params["reset_dataset"]
+
+    st.rerun()
 
 from src.theme import DARK_MODE
 import datetime

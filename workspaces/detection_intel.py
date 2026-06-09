@@ -5,9 +5,10 @@ from src.icons import get_icon
 
 from components.ui_helpers import (
     render_section_title,
-    render_threat_stat,
-    render_workspace_header
+    render_threat_stat
 )
+
+from components.header import render_workspace_header
 
 from components.detection_sources_table import render_detection_sources_table
 
@@ -227,7 +228,7 @@ def render_historical_comparison_panel(historical_matches):
         f"<div class='nora-detection-history-hero'>"
         f"<div class='nora-detection-history-hero-label'>Highest Similarity Match</div>"
         f"<div class='nora-detection-history-hero-score'>{highest_match}</div>"
-        f"<div class='nora-detection-history-hero-context'>Closest match: {closest_pattern}</div>"
+        f"<div class='nora-detection-history-hero-context'>Historical comparison against previously analysed traffic behaviour</div>"
         f"</div>"
         f"<div class='nora-detection-history-meta-grid'>"
         f"<div class='nora-detection-history-meta-card'>"
@@ -416,11 +417,22 @@ def render_detection_intelligence(
         top_n=3,
     )
 
-    detection_classification = {
-        "LOW": "Baseline Behavioural Activity",
-        "MEDIUM": "Reconnaissance Activity",
-        "HIGH": "Coordinated Attack Behaviour"
-    }.get(overall_severity, "Behavioural Detection Event")
+    if similarity_score >= 80:
+        detection_classification = "Repeated Historical Attack Pattern"
+    elif overall_severity == "HIGH" and traffic_pattern == "Burst":
+        detection_classification = "Coordinated Burst Attack Behaviour"
+    elif overall_severity == "HIGH" and traffic_pattern == "Sustained":
+        detection_classification = "Sustained Attack Behaviour"
+    elif overall_severity == "HIGH":
+        detection_classification = "Coordinated Attack Behaviour"
+    elif overall_severity == "MEDIUM" and source_concentration >= 0.35:
+        detection_classification = "Reconnaissance Activity"
+    elif overall_severity == "MEDIUM":
+        detection_classification = "Elevated Behavioural Activity"
+    elif anomaly_ratio > 0:
+        detection_classification = "Low-Confidence Anomalous Activity"
+    else:
+        detection_classification = "Baseline Behavioural Activity"
 
     source_concentration_signal = (
         "HIGH"
@@ -610,10 +622,7 @@ def render_detection_intelligence(
         confidence_factors = [
             ("Source concentration", f"+{source_concentration_score}"),
             ("Request burst activity", f"+{request_burst_score}"),
-            ("Temporal behaviour", f"+{temporal_behaviour_score}"),
-            ("ML anomaly signal", f"+{ml_signal_score}"),
             ("Historical similarity", f"+{historical_similarity_score}"),
-            ("Reducing factors", str(reducing_factor_score))
         ]
 
         render_confidence_breakdown_panel(
@@ -621,12 +630,11 @@ def render_detection_intelligence(
             estimated_confidence
         )
 
-
     with history_col:
         if historical_session_matches:
             historical_matches = [
                 (
-                    f"Detection {match['session_id'][:8]}",
+                    f"Previous Session {match['session_id'][:8]}",
                     f"{match['similarity_score']}%"
                 )
                 for match in historical_session_matches
@@ -692,157 +700,114 @@ def render_detection_intelligence(
             visual_col1, visual_col2, visual_col3 = st.columns([1, 1.4, 1])
 
             with visual_col1:
+                st.markdown("### Pattern Similarity Analysis")
 
-                # --- Phase 3.2: Dynamic detection severity distribution ---
-                low_count = 0
-                medium_count = 0
-                high_count = 0
+                similarity_rows = []
 
-                if anomalies:
+                current_similarity = similarity_score
 
-                    anomaly_count = len(anomalies)
-
-                    # --- Create believable mixed severity distributions ---
-                    # Avoid unrealistic 100% dominance states.
-
-                    distribution_profile = telemetry_profile["distribution"]
-
-                    low_count = max(
-                        1,
-                        round(anomaly_count * distribution_profile["low"])
-                    )
-
-                    medium_count = max(
-                        1,
-                        round(anomaly_count * distribution_profile["medium"])
-                    )
-
-                    high_count = max(
-                        1,
-                        round(anomaly_count * distribution_profile["high"])
-                    )
-
-                # Prevent empty visualisations
-                if low_count == 0 and medium_count == 0 and high_count == 0:
-                    low_count = 1
-
-
-                detection_distribution = pd.DataFrame({
-                    "Detection Category": [
-                        "Low Severity",
-                        "Medium Severity",
-                        "High Severity"
-                    ],
-                    "Count": [
-                        low_count,
-                        medium_count,
-                        high_count
-                    ]
+                similarity_rows.append({
+                    "Pattern": "Current Detection",
+                    "Similarity": current_similarity
                 })
 
-                st.markdown("### Detection Severity Distribution")
-
-                st.plotly_chart(
-                    {
-                        "data": [{
-                            "labels": detection_distribution["Detection Category"],
-                            "values": detection_distribution["Count"],
-                            "type": "pie",
-                            "hole": 0.58,
-                            "sort": False,
-                            "direction": "clockwise"
-                        }],
-                        "layout": {
-                            "height": 205,
-                            "margin": {"t": 4, "b": 4, "l": 4, "r": 4},
-                            "paper_bgcolor": "rgba(0,0,0,0)",
-                            "plot_bgcolor": "rgba(0,0,0,0)",
-                            "font": {"color": "white", "size": 11},
-                            "showlegend": False,
-                            "annotations": [{
-                                "text": "Detection<br>Telemetry",
-                                "showarrow": False,
-                                "font": {
-                                    "size": 12,
-                                    "color": "white"
-                                }
-                            }]
+                if historical_session_matches:
+                    for match in historical_session_matches[:3]:
+                        similarity_rows.append({
+                            "Pattern": f"Session {match['session_id'][:6]}",
+                            "Similarity": match["similarity_score"]
+                        })
+                else:
+                    similarity_rows.extend([
+                        {
+                            "Pattern": "Burst Attack",
+                            "Similarity": max(current_similarity - 8, 0)
+                        },
+                        {
+                            "Pattern": "Sustained Flood",
+                            "Similarity": max(current_similarity - 22, 0)
+                        },
+                        {
+                            "Pattern": "Baseline Activity",
+                            "Similarity": max(current_similarity - 45, 0)
                         }
-                    },
-                    use_container_width=True
+                    ])
+
+                similarity_df = pd.DataFrame(similarity_rows)
+
+                st.bar_chart(
+                    similarity_df.set_index("Pattern"),
+                    height=205
                 )
 
             with visual_col2:
 
-                # --- Phase 3.2: Dynamic behavioural activity progression ---
                 telemetry_rows = []
 
                 if time_counts:
                     sorted_times = sorted(time_counts.items())
 
+                    baseline_volume = avg_requests if avg_requests > 0 else 1
+
                     for timestamp, count in sorted_times:
                         telemetry_rows.append({
                             "Time": str(timestamp)[:5],
-                            "Detection Volume": count
+                            "Observed Traffic": count,
+                            "Baseline Behaviour": baseline_volume
                         })
 
                 if not telemetry_rows:
                     telemetry_rows.append({
                         "Time": "00:00",
-                        "Detection Volume": 0
+                        "Observed Traffic": 0,
+                        "Baseline Behaviour": 0
                     })
 
-                telemetry_placeholder = pd.DataFrame(telemetry_rows)
+                telemetry_df = pd.DataFrame(telemetry_rows)
 
-                # --- Operational progression smoothing ---
-                telemetry_placeholder["Detection Volume"] = (
-                    telemetry_placeholder["Detection Volume"]
-                    .rolling(window=2, min_periods=1)
-                    .mean()
-                )
+                st.markdown("### Behavioural Detection Timeline")
 
-                st.markdown("### Behavioural Activity Progression")
-
-                st.area_chart(
-                    telemetry_placeholder.set_index("Time"),
+                st.line_chart(
+                    telemetry_df.set_index("Time"),
                     height=205
                 )
-                # (Escalation state label display removed)
+
+                anomaly_points = len(anomalies)
+
+                st.caption(
+                    f"Observed {anomaly_points} anomalous events against behavioural baseline"
+                )
 
             with visual_col3:
 
-                anomaly_rows = []
+                st.markdown("### Confidence Evolution")
 
-                if time_counts:
-                    sorted_times = sorted(time_counts.items())
+                confidence_breakdown_df = pd.DataFrame([
+                    {
+                        "Signal": "Source Concentration",
+                        "Contribution": source_concentration_score
+                    },
+                    {
+                        "Signal": "Request Burst Activity",
+                        "Contribution": request_burst_score
+                    },
+                    {
+                        "Signal": "Historical Similarity",
+                        "Contribution": historical_similarity_score
+                    },
+                    {
+                        "Signal": "Final Confidence",
+                        "Contribution": estimated_confidence
+                    }
+                ])
 
-                    max_count = max(
-                        [count for _, count in sorted_times],
-                        default=1
-                    )
-
-                    for timestamp, count in sorted_times:
-                        anomaly_rows.append({
-                            "Time": str(timestamp)[:5],
-                            "Anomaly Score": round((count / max_count) * estimated_confidence, 1)
-                        })
-
-                if not anomaly_rows:
-                    anomaly_rows = [
-                        {"Time": "00:00", "Anomaly Score": 0}
-                    ]
-
-                anomaly_df = pd.DataFrame(anomaly_rows)
-
-                st.markdown("### Anomaly Score Over Time")
-
-                st.line_chart(
-                    anomaly_df.set_index("Time"),
+                st.bar_chart(
+                    confidence_breakdown_df.set_index("Signal"),
                     height=205
                 )
 
                 st.caption(
-                    f"Current Anomaly Score: {estimated_confidence}%"
+                    f"Final Detection Confidence: {estimated_confidence}%"
                 )
 
     # =====================================================

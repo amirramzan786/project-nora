@@ -1,0 +1,328 @@
+
+
+/* =====================================================
+   ADAPTIVE INTELLIGENCE DESIGN SYSTEM
+   ===================================================== */
+
+.nora-adaptive-card {
+    background: rgba(12, 18, 24, 0.92);
+    border: 1px solid rgba(0, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 18px;
+}
+
+.nora-adaptive-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.nora-adaptive-metric {
+    background: rgba(0, 255, 255, 0.03);
+    border: 1px solid rgba(0, 255, 255, 0.10);
+    border-radius: 12px;
+    padding: 14px;
+}
+
+.nora-adaptive-metric-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(140, 220, 255, 0.75);
+    margin-bottom: 8px;
+}
+
+.nora-adaptive-metric-value {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #e8fbff;
+}
+
+.nora-adaptive-insight-panel,
+.nora-adaptive-learning-panel,
+.nora-adaptive-confidence-panel {
+    background: rgba(0, 255, 255, 0.03);
+    border: 1px solid rgba(0, 255, 255, 0.10);
+    border-radius: 12px;
+    padding: 18px;
+    margin-top: 14px;
+}
+
+.nora-adaptive-panel-title {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(140, 220, 255, 0.75);
+    margin-bottom: 10px;
+}
+
+.nora-adaptive-panel-content {
+    color: #dff9ff;
+    line-height: 1.7;
+}
+
+/* =====================================================
+   LEARNING PIPELINE
+   ===================================================== */
+
+.nora-adaptive-pipeline {
+    display: grid;
+    grid-template-columns: 1fr 26px 1fr 26px 1fr 26px 1fr 26px 1fr;
+    gap: 8px;
+    align-items: center;
+}
+
+.nora-adaptive-stage {
+    border-radius: 14px;
+    padding: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    min-height: 135px;
+    transition: all 0.2s ease;
+}
+
+.nora-adaptive-stage.blue {
+    background: rgba(80,140,255,0.08);
+}
+
+.nora-adaptive-stage.cyan {
+    background: rgba(0,255,255,0.08);
+}
+
+.nora-adaptive-stage.purple {
+    background: rgba(180,120,255,0.08);
+}
+
+.nora-adaptive-stage.amber {
+    background: rgba(255,190,90,0.08);
+}
+
+.nora-adaptive-stage.green {
+    background: rgba(80,220,140,0.08);
+}
+
+.nora-adaptive-stage-number {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #e8fbff;
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.12);
+    margin-bottom: 12px;
+}
+
+.nora-adaptive-stage-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #e8fbff;
+    margin-bottom: 8px;
+}
+
+.nora-adaptive-stage-copy {
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: rgba(220,245,255,0.8);
+}
+
+.nora-adaptive-stage-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: rgba(140,220,255,0.68);
+}
+
+.nora-adaptive-stage.blue {
+    box-shadow: 0 0 18px rgba(80,140,255,0.08);
+}
+
+.nora-adaptive-stage.cyan {
+    box-shadow: 0 0 18px rgba(0,255,255,0.08);
+}
+
+.nora-adaptive-stage.purple {
+    box-shadow: 0 0 18px rgba(180,120,255,0.08);
+}
+
+.nora-adaptive-stage.amber {
+    box-shadow: 0 0 18px rgba(255,190,90,0.08);
+}
+
+.nora-adaptive-stage.green {
+    box-shadow: 0 0 18px rgba(80,220,140,0.08);
+}
+
+/* =====================================================
+   MEMORY REPOSITORY
+   ===================================================== */
+
+.nora-adaptive-memory-row {
+    display: grid;
+    grid-template-columns: 140px 1fr 50px;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.nora-adaptive-memory-row span {
+    color: #dff9ff;
+}
+
+.nora-adaptive-memory-row strong {
+    color: #e8fbff;
+}
+
+.nora-adaptive-memory-bar {
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.08);
+    overflow: hidden;
+}
+
+.nora-adaptive-memory-bar span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #00d4ff, #60ffb0);
+}
+
+/* =====================================================
+   LEARNING OUTCOME
+   ===================================================== */
+
+.nora-adaptive-outcome-card {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+}
+
+.nora-adaptive-outcome-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    background: rgba(80,220,140,0.15);
+    color: #7cffb4;
+    flex-shrink: 0;
+}
+
+.nora-adaptive-outcome-list {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+}
+
+.nora-adaptive-outcome-list span {
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(0,255,255,0.06);
+    border: 1px solid rgba(0,255,255,0.12);
+    color: #dff9ff;
+    font-size: 0.75rem;
+}
+
+/* =====================================================
+   CONFIDENCE REINFORCEMENT ENGINE
+   ===================================================== */
+
+.nora-adaptive-confidence-flow {
+    display: grid;
+    grid-template-columns: 1fr 40px 1fr 40px 1fr 40px 1fr;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.nora-adaptive-confidence-step {
+    background: rgba(0,255,255,0.03);
+    border: 1px solid rgba(0,255,255,0.10);
+    border-radius: 12px;
+    padding: 16px;
+    min-height: 125px;
+}
+
+.nora-adaptive-confidence-step.final {
+    background: rgba(80,220,140,0.08);
+    border-color: rgba(80,220,140,0.18);
+}
+
+.nora-adaptive-confidence-operator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: rgba(140,220,255,0.75);
+}
+
+.nora-adaptive-confidence-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #e8fbff;
+    margin: 8px 0;
+}
+
+.nora-adaptive-confidence-copy {
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: rgba(220,245,255,0.78);
+}
+.nora-adaptive-confidence-copy {
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: rgba(220,245,255,0.78);
+}
+
+/* =====================================================
+   BEHAVIOURAL MEMORY CENTRE POLISH
+   ===================================================== */
+
+.nora-adaptive-memory-hero {
+    display: grid;
+    grid-template-columns: 42% 58%;
+    gap: 18px;
+}
+
+.nora-adaptive-memory-match {
+    background: rgba(0,255,255,0.03);
+    border: 1px solid rgba(0,255,255,0.10);
+    border-radius: 14px;
+    padding: 18px;
+}
+
+.nora-adaptive-memory-repository {
+    background: rgba(0,255,255,0.03);
+    border: 1px solid rgba(0,255,255,0.10);
+    border-radius: 14px;
+    padding: 18px;
+}
+
+.nora-adaptive-memory-match .nora-adaptive-metric {
+    margin-bottom: 12px;
+}
+
+.nora-adaptive-memory-match .nora-adaptive-metric:last-child {
+    margin-bottom: 0;
+}
+
+.nora-adaptive-memory-row {
+    margin-bottom: 18px;
+}
+
+.nora-adaptive-memory-bar {
+    height: 10px;
+}
+
+.nora-adaptive-memory-bar span {
+    box-shadow: 0 0 10px rgba(0,212,255,0.35);
+}

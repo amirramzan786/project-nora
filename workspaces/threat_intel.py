@@ -65,6 +65,51 @@ def get_internal_source_enrichment(ip_address: str) -> dict:
     return enrichment_profiles[profile_index]
 
 
+# Threat Source Classification Engine
+def classify_threat_source(provider: str, requests: int, anomaly_count: int):
+    """Simple intelligence classification engine used by Threat Intelligence."""
+
+    provider_lower = provider.lower()
+
+    if "aws" in provider_lower or "azure" in provider_lower:
+        source_type = "Public Cloud Infrastructure"
+    elif "cloudflare" in provider_lower:
+        source_type = "Edge Network Infrastructure"
+    elif "ovh" in provider_lower:
+        source_type = "Hosting Infrastructure"
+    else:
+        source_type = "Virtual Private Infrastructure"
+
+    if requests > 1000:
+        behaviour_classification = "High-Volume Distributed Source"
+        threat_likelihood = "Elevated"
+        assessment_confidence = 90
+    elif requests > 500:
+        behaviour_classification = "Sustained Activity Source"
+        threat_likelihood = "High"
+        assessment_confidence = 82
+    elif requests > 100:
+        behaviour_classification = "Elevated Activity Source"
+        threat_likelihood = "Moderate"
+        assessment_confidence = 72
+    else:
+        behaviour_classification = "Low Volume Source"
+        threat_likelihood = "Low"
+        assessment_confidence = 60
+
+    if anomaly_count > 50:
+        assessment_confidence += 5
+
+    assessment_confidence = min(95, assessment_confidence)
+
+    return {
+        "source_type": source_type,
+        "behaviour_classification": behaviour_classification,
+        "threat_likelihood": threat_likelihood,
+        "assessment_confidence": assessment_confidence,
+    }
+
+
 
 
 
@@ -493,7 +538,22 @@ def render_threat_intelligence(
                 risk_level = "Low"
                 reputation_score = "37 / 100"
 
+            # Activity Type logic
+            if requests > 1000:
+                activity_type = "Burst Activity"
+            elif requests > 500:
+                activity_type = "Sustained Activity"
+            elif requests > 100:
+                activity_type = "Elevated Activity"
+            else:
+                activity_type = "Low Volume Source"
+
             source_enrichment = get_internal_source_enrichment(ip)
+            intelligence_profile = classify_threat_source(
+                source_enrichment["provider"],
+                requests,
+                anomaly_count
+            )
 
             threat_rows.append({
                 "IP Address": ip,
@@ -501,7 +561,10 @@ def render_threat_intelligence(
                 "ASN / Provider": f"{source_enrichment['asn']} {source_enrichment['provider']}",
                 "Country": source_enrichment["country"],
                 "Reputation Score": reputation_score,
-                "Confidence": f"{intelligence_coverage}%"
+                "Requests": f"{requests:,}",
+                "Activity Type": activity_type,
+                "Behaviour": intelligence_profile["behaviour_classification"],
+                "Likelihood": intelligence_profile["threat_likelihood"],
             })
 
     table_rows_html = ""
@@ -516,7 +579,10 @@ def render_threat_intelligence(
             <td>{row['ASN / Provider']}</td>
             <td>{row['Country']}</td>
             <td>{row['Reputation Score']}</td>
-            <td>{row['Confidence']}</td>
+            <td>{row['Requests']}</td>
+            <td>{row['Activity Type']}</td>
+            <td>{row['Behaviour']}</td>
+            <td>{row['Likelihood']}</td>
         </tr>
         """
 
@@ -532,7 +598,10 @@ def render_threat_intelligence(
                         <th>ASN / Provider</th>
                         <th>Country</th>
                         <th>Reputation</th>
-                        <th>Confidence</th>
+                        <th>Requests</th>
+                        <th>Activity</th>
+                        <th>Behaviour</th>
+                        <th>Likelihood</th>
                     </tr>
                 </thead>
                 <tbody>

@@ -1,0 +1,226 @@
+/* =====================================================
+   N.O.R.A HEADER SYSTEM
+===================================================== */
+
+.nora-workspace-header {
+    background: transparent;
+
+    border: none;
+    border-radius: 0;
+
+    padding: 0 24px 16px 24px;
+    margin-left: -24px;
+    margin-right: -24px;
+    margin-top: 18px;
+    margin-bottom: 20px;
+
+    width: calc(100% + 48px);
+    min-width: calc(100% + 48px);
+    box-sizing: border-box;
+
+    box-shadow: none;
+
+    border-bottom: 1px solid rgba(37,150,190,0.18);
+}
+
+.nora-workspace-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 28px;
+}
+
+.nora-workspace-header-left {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+
+    min-width: 0;
+}
+
+.nora-workspace-header-copy {
+    min-width: 0;
+}
+
+.nora-workspace-header-icon-tile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 76px;
+    height: 76px;
+
+    flex: 0 0 76px;
+
+    border-radius: 18px;
+    border: 1px solid rgba(37,150,190,0.30);
+
+    background: rgba(15,23,42,0.55);
+
+    box-shadow: 0 0 24px rgba(37,150,190,0.12);
+}
+
+.nora-workspace-header-icon-tile svg {
+    width: 38px;
+    height: 38px;
+}
+
+.nora-workspace-header-title {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    font-size: 28px;
+    font-weight: 700;
+    color: #F8FAFC;
+}
+
+
+.nora-workspace-header-subtitle {
+    margin-top: 6px;
+
+    font-size: 14px;
+    line-height: 1.5;
+    color: #94A3B8;
+}
+
+.nora-workspace-header-modules {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 16px;
+
+    margin-left: auto;
+}
+
+.nora-workspace-header-module {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    width: 260px;
+    min-width: 260px;
+    height: 92px;
+
+    padding: 16px 20px;
+    box-sizing: border-box;
+
+    border-radius: 12px;
+
+    border: 1px solid rgba(37,150,190,0.22);
+
+    background: rgba(15,23,42,0.46);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 0 16px rgba(37,150,190,0.08);
+
+    transition: all 0.2s ease;
+}
+
+.nora-workspace-header-module:hover {
+    border-color: rgba(103,232,249,0.45);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.04),
+        0 0 26px rgba(103,232,249,0.14);
+}
+
+.nora-workspace-header-module-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+
+    flex: 0 0 34px;
+
+    font-size: 24px;
+    line-height: 1;
+
+    color: #67E8F9;
+}
+
+.nora-workspace-header-module-value.status {
+    color: #FACC15;
+}
+
+.nora-workspace-status-dot {
+    display: inline-block;
+
+    width: 9px;
+    height: 9px;
+
+    margin-left: 8px;
+
+    border-radius: 999px;
+
+    background: #FACC15;
+
+    box-shadow: 0 0 10px rgba(250,204,21,0.45);
+}
+
+.nora-workspace-header-module-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+
+    color: #64748B;
+
+    margin-bottom: 6px;
+}
+
+
+.nora-workspace-header-module-value {
+    font-size: 16px;
+    font-weight: 700;
+
+    white-space: normal;
+    line-height: 1.25;
+    color: #E2E8F0;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+.nora-workspace-header-module:nth-child(2) .nora-workspace-header-module-value {
+    max-width: 150px;
+}
+
+.nora-workspace-header-dataset-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 22px;
+    height: 22px;
+
+    flex: 0 0 22px;
+
+    border-radius: 50%;
+
+    border: 1px solid rgba(148,163,184,0.22);
+
+    background: rgba(15,23,42,0.55);
+
+    color: #94A3B8;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.nora-workspace-header-dataset-close:hover {
+    border-color: rgba(103,232,249,0.45);
+
+    background: rgba(103,232,249,0.08);
+
+    color: #67E8F9;
+}

@@ -1,21 +1,3 @@
-
-
-"""
-Project N.O.R.A.
-Adaptive Intelligence Workspace
-
-Phase 3 Foundation:
-Operational intelligence validation and inspection layer.
-
-This workspace provides transparency into:
-- enrichment intelligence
-- behavioural scoring
-- escalation orchestration
-- notification workflows
-- adaptive confidence modelling
-"""
-
-import pandas as pd
 import streamlit as st
 
 from components.ui_helpers import (
@@ -23,10 +5,10 @@ from components.ui_helpers import (
     render_workspace_header
 )
 
+from src.icons import get_icon
+
 from services.enrichment.ip_enrichment import enrich_ip
 from services.scoring.pattern_similarity import analyse_pattern_similarity
-from services.workflows.escalation_engine import generate_escalation_recommendation
-from services.workflows.notification_engine import generate_notification_workflow
 
 
 # =====================================================
@@ -46,7 +28,7 @@ def render_adaptive_intelligence(
     render_workspace_header(
         "brain",
         "Adaptive Intelligence",
-        "Operational intelligence validation, orchestration inspection and behavioural analysis workspace.",
+        "Behavioural learning, memory correlation and adaptive confidence reinforcement workspace.",
         dataset_mode=dataset_mode,
         dataset_name=dataset_name,
         on_reset_dataset=on_reset_dataset,
@@ -59,26 +41,8 @@ def render_adaptive_intelligence(
     )
 
     # -------------------------------------------------
-    # Test Threat Inputs
+    # Adaptive Learning Inputs (removed simulation controls)
     # -------------------------------------------------
-
-    render_section_title(
-        "activity",
-        "Threat Simulation Controls"
-    )
-
-    simulated_ip = st.text_input(
-        "Test IP Address",
-        value="185.220.101.1"
-    )
-
-    simulated_requests = st.slider(
-        "Simulated Request Volume",
-        min_value=50,
-        max_value=5000,
-        value=1400,
-        step=50
-    )
 
     st.markdown(
         "<div class='nora-workspace-spacing'></div>",
@@ -90,49 +54,84 @@ def render_adaptive_intelligence(
     # -------------------------------------------------
 
     enriched_intel = enrich_ip(
-        simulated_ip,
-        simulated_requests
+        "185.220.101.1",
+        1400
     )
 
     similarity = analyse_pattern_similarity(
         enriched_intel
     )
 
-    escalation = generate_escalation_recommendation({
-        **enriched_intel,
-        "similarity_score": similarity["similarity_score"]
-    })
-
-    notification = generate_notification_workflow(
-        escalation
+    base_confidence = max(
+        0,
+        enriched_intel.get("confidence_score", 0) - 18
+    )
+    memory_reinforcement = 12 if similarity.get("similarity_score", 0) >= 80 else 6
+    enrichment_impact = min(
+        12,
+        round(enriched_intel.get("abuse_score", 0) / 10)
+    )
+    adjusted_confidence = min(
+        100,
+        base_confidence + memory_reinforcement + enrichment_impact
     )
 
     # -------------------------------------------------
-    # Intelligence Overview
+    # Learning Pipeline
     # -------------------------------------------------
 
     render_section_title(
-        "shield_alert",
-        "Intelligence Overview"
+        "brain",
+        "N.O.R.A Learning Pipeline"
     )
 
-    intelligence_overview = pd.DataFrame([
-        {
-            "Threat Level": enriched_intel["threat_level"],
-            "Confidence": enriched_intel["confidence_score"],
-            "Abuse Score": enriched_intel["abuse_score"],
-            "Known Malicious": enriched_intel["known_malicious"],
-            "Similarity": similarity["similarity_score"],
-            "Escalation": escalation["escalation_level"],
-            "Priority": escalation["response_priority"]
-        }
-    ])
+    learning_pipeline_html = f"""
+    <div class='nora-adaptive-card'>
+        <div class='nora-adaptive-pipeline'>
 
-    st.dataframe(
-        intelligence_overview,
-        use_container_width=True,
-        hide_index=True
-    )
+            <div class='nora-adaptive-stage blue'>
+                <div class='nora-adaptive-stage-number'>1</div>
+                <div class='nora-adaptive-stage-title'>Observed Activity</div>
+                <div class='nora-adaptive-stage-copy'>Traffic profile captured and analysed</div>
+            </div>
+
+            <div class='nora-adaptive-stage-arrow'>→</div>
+
+            <div class='nora-adaptive-stage cyan'>
+                <div class='nora-adaptive-stage-number'>2</div>
+                <div class='nora-adaptive-stage-title'>Behavioural Correlation</div>
+                <div class='nora-adaptive-stage-copy'>Compared against historical memory</div>
+            </div>
+
+            <div class='nora-adaptive-stage-arrow'>→</div>
+
+            <div class='nora-adaptive-stage purple'>
+                <div class='nora-adaptive-stage-number'>3</div>
+                <div class='nora-adaptive-stage-title'>Confidence Reinforcement</div>
+                <div class='nora-adaptive-stage-copy'>Confidence adjusted using memory evidence</div>
+            </div>
+
+            <div class='nora-adaptive-stage-arrow'>→</div>
+
+            <div class='nora-adaptive-stage amber'>
+                <div class='nora-adaptive-stage-number'>4</div>
+                <div class='nora-adaptive-stage-title'>Learning Outcome</div>
+                <div class='nora-adaptive-stage-copy'>Pattern stored for future comparison</div>
+            </div>
+
+            <div class='nora-adaptive-stage-arrow'>→</div>
+
+            <div class='nora-adaptive-stage green'>
+                <div class='nora-adaptive-stage-number'>5</div>
+                <div class='nora-adaptive-stage-title'>Future Impact</div>
+                <div class='nora-adaptive-stage-copy'>Future detections become stronger</div>
+            </div>
+
+        </div>
+    </div>
+    """
+
+    st.html(learning_pipeline_html)
 
     st.markdown(
         "<div class='nora-workspace-spacing'></div>",
@@ -148,7 +147,44 @@ def render_adaptive_intelligence(
         "Enrichment Intelligence"
     )
 
-    st.json(enriched_intel)
+    enrichment_html = f"""
+    <div class='nora-adaptive-card'>
+
+        <div class='nora-adaptive-grid'>
+
+            <div class='nora-adaptive-metric'>
+                <div class='nora-adaptive-metric-label'>Source IP</div>
+                <div class='nora-adaptive-metric-value'>{enriched_intel.get('ip_address', 'N/A')}</div>
+            </div>
+
+            <div class='nora-adaptive-metric'>
+                <div class='nora-adaptive-metric-label'>Infrastructure</div>
+                <div class='nora-adaptive-metric-value'>{enriched_intel.get('activity_profile', 'Unknown')}</div>
+            </div>
+
+            <div class='nora-adaptive-metric'>
+                <div class='nora-adaptive-metric-label'>Regional Risk</div>
+                <div class='nora-adaptive-metric-value'>{enriched_intel.get('regional_risk', 'N/A')}</div>
+            </div>
+
+            <div class='nora-adaptive-metric'>
+                <div class='nora-adaptive-metric-label'>Abuse Score</div>
+                <div class='nora-adaptive-metric-value'>{enriched_intel.get('abuse_score', 0)}</div>
+            </div>
+
+        </div>
+
+        <div class='nora-adaptive-insight-panel'>
+            <div class='nora-adaptive-panel-title'>Enrichment Assessment</div>
+            <div class='nora-adaptive-panel-content'>
+                N.O.R.A enriched the simulated activity using infrastructure, regional and abuse-reputation indicators. This context becomes evidence for behavioural memory comparison and adaptive confidence reinforcement.
+            </div>
+        </div>
+
+    </div>
+    """
+
+    st.html(enrichment_html)
 
     st.markdown(
         "<div class='nora-workspace-spacing'></div>",
@@ -159,115 +195,80 @@ def render_adaptive_intelligence(
     # Behavioural Correlation
     # -------------------------------------------------
 
-    render_section_title(
-        "radar",
-        "Behavioural Correlation"
-    )
-
-    st.json(similarity)
-
-    st.markdown(
-        "<div class='nora-workspace-spacing'></div>",
-        unsafe_allow_html=True
-    )
-
-    # -------------------------------------------------
-    # Escalation Orchestration
-    # -------------------------------------------------
-
-    render_section_title(
-        "triangle_alert",
-        "Escalation Orchestration"
-    )
-
-    st.json(escalation)
-
-    st.markdown(
-        "<div class='nora-workspace-spacing'></div>",
-        unsafe_allow_html=True
-    )
-
-    # -------------------------------------------------
-    # Notification Workflow
-    # -------------------------------------------------
-
-    render_section_title(
-        "notifications",
-        "Notification Workflow"
-    )
-
-    st.warning("NEW NOTIFICATION WORKFLOW RENDERER ACTIVE")
-    workflow_channels = " • ".join(notification["channels"])
-
-    workflow_steps = [
-        "Threat Detected",
-        "Escalation Triggered",
-        "Notification Dispatch",
-        "SOC Review",
-        "Incident Queue"
-    ]
-
-    workflow_html = f"""
-    <div class='nora-workspace-card'>
-
-        <div style='display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;'>
-
-            <div class='nora-threat-stat'>
-                <div class='nora-threat-stat-label'>Workflow Status</div>
-                <div class='nora-threat-stat-value'>ACTIVE</div>
-            </div>
-
-            <div class='nora-threat-stat'>
-                <div class='nora-threat-stat-label'>Priority</div>
-                <div class='nora-threat-stat-value'>{notification['notification_priority']}</div>
-            </div>
-
-            <div class='nora-threat-stat'>
-                <div class='nora-threat-stat-label'>SOC Notification</div>
-                <div class='nora-threat-stat-value'>{'ENABLED' if notification['notify_soc'] else 'DISABLED'}</div>
-            </div>
-
-            <div class='nora-threat-stat'>
-                <div class='nora-threat-stat-label'>Acknowledgement</div>
-                <div class='nora-threat-stat-value'>{'REQUIRED' if notification['requires_acknowledgement'] else 'OPTIONAL'}</div>
-            </div>
-
+    st.html(
+        f"""
+        <div class='nora-section-title'>
+            {get_icon("activity")}
+            <span>Behavioural Memory Centre</span>
         </div>
+        """
+    )
 
-        <div style='display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:28px;'>
-            {
-                ''.join([
-                    f'''<div style="display:flex; align-items:center; gap:10px;">
-                            <div style="padding:10px 16px; border:1px solid rgba(0,255,255,0.15); border-radius:10px; background:rgba(0,255,255,0.03); font-size:0.82rem; color:#d8f8ff; white-space:nowrap;">
-                                {step}
-                            </div>
-                            {'<div style="color:rgba(120,220,255,0.5); font-size:1rem;">→</div>' if step != workflow_steps[-1] else ''}
-                        </div>'''
-                    for step in workflow_steps
-                ])
-            }
-        </div>
+    behavioural_memory_html = f"""
+    <div class='nora-adaptive-card'>
 
-        <div style='margin-bottom:22px;'>
-            <div style='font-size:0.78rem; text-transform:uppercase; letter-spacing:1px; color:rgba(140,220,255,0.7); margin-bottom:8px;'>Operational Notification</div>
-            <div style='padding:16px; border-radius:12px; border:1px solid rgba(0,255,255,0.12); background:rgba(0,255,255,0.03); color:#dff9ff; line-height:1.6;'>
-                {notification['message']}
+        <div class='nora-adaptive-insight-panel' style='margin-top:0; margin-bottom:18px;'>
+            <div class='nora-adaptive-panel-title'>Behavioural Memory Assessment</div>
+            <div class='nora-adaptive-panel-content'>
+                N.O.R.A compared the current activity profile against previously observed behavioural patterns and generated a similarity score of {similarity.get('similarity_score', 0)}%. This memory match can reinforce future confidence scoring and improve repeat-pattern classification.
             </div>
         </div>
 
-        <div style='display:grid; grid-template-columns:1fr 1fr; gap:18px;'>
+        <div style='display:grid; grid-template-columns: 0.85fr 1.15fr; gap:18px;'>
 
-            <div style='padding:18px; border-radius:12px; border:1px solid rgba(0,255,255,0.12); background:rgba(0,255,255,0.025);'>
-                <div style='font-size:0.78rem; text-transform:uppercase; letter-spacing:1px; color:rgba(140,220,255,0.7); margin-bottom:10px;'>Notification Channels</div>
-                <div style='color:#dff9ff; line-height:1.7;'>
-                    {workflow_channels}
+            <div class='nora-adaptive-insight-panel' style='margin-top:0;'>
+                <div class='nora-adaptive-panel-title'>Current Behaviour Match</div>
+
+                <div style='display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:12px; margin-top:12px;'>
+
+                    <div class='nora-adaptive-metric'>
+                        <div class='nora-adaptive-metric-label'>Pattern</div>
+                        <div class='nora-adaptive-metric-value'>{similarity.get('matched_pattern', 'Unknown')}</div>
+                    </div>
+
+                    <div class='nora-adaptive-metric'>
+                        <div class='nora-adaptive-metric-label'>Similarity</div>
+                        <div class='nora-adaptive-metric-value'>{similarity.get('similarity_score', 0)}%</div>
+                    </div>
+
+                    <div class='nora-adaptive-metric'>
+                        <div class='nora-adaptive-metric-label'>Strength</div>
+                        <div class='nora-adaptive-metric-value'>{similarity.get('correlation_strength', 'N/A')}</div>
+                    </div>
+
+                    <div class='nora-adaptive-metric'>
+                        <div class='nora-adaptive-metric-label'>Status</div>
+                        <div class='nora-adaptive-metric-value'>MEMORISED</div>
+                    </div>
+
                 </div>
             </div>
 
-            <div style='padding:18px; border-radius:12px; border:1px solid rgba(0,255,255,0.12); background:rgba(0,255,255,0.025);'>
-                <div style='font-size:0.78rem; text-transform:uppercase; letter-spacing:1px; color:rgba(140,220,255,0.7); margin-bottom:10px;'>Recommended Analyst Action</div>
-                <div style='color:#dff9ff; line-height:1.7;'>
-                    {notification['recommended_action']}
+            <div class='nora-adaptive-learning-panel' style='margin-top:0;'>
+                <div class='nora-adaptive-panel-title'>Behavioural Memory Repository</div>
+                <div class='nora-adaptive-memory-row'>
+                    <span>Volumetric DDoS</span>
+                    <div class='nora-adaptive-memory-bar'><span style='width:82%;'></span></div>
+                    <strong>82%</strong>
+                </div>
+                <div class='nora-adaptive-memory-row'>
+                    <span>Burst Attack</span>
+                    <div class='nora-adaptive-memory-bar'><span style='width:74%;'></span></div>
+                    <strong>74%</strong>
+                </div>
+                <div class='nora-adaptive-memory-row'>
+                    <span>Slow Build Attack</span>
+                    <div class='nora-adaptive-memory-bar'><span style='width:58%;'></span></div>
+                    <strong>58%</strong>
+                </div>
+                <div class='nora-adaptive-memory-row'>
+                    <span>Sustained Saturation</span>
+                    <div class='nora-adaptive-memory-bar'><span style='width:41%;'></span></div>
+                    <strong>41%</strong>
+                </div>
+
+                <div class='nora-adaptive-panel-content' style='margin-top:18px;'>
+                    Historical behavioural memory allows N.O.R.A to compare the current activity profile against previously observed DDoS-style patterns and identify reusable detection evidence.
                 </div>
             </div>
 
@@ -276,10 +277,107 @@ def render_adaptive_intelligence(
     </div>
     """
 
+    st.html(behavioural_memory_html)
+
     st.markdown(
-        workflow_html,
+        "<div class='nora-workspace-spacing'></div>",
         unsafe_allow_html=True
     )
+
+    # -------------------------------------------------
+    # Adaptive Confidence Engine
+    # -------------------------------------------------
+
+    render_section_title(
+        "brain",
+        "Adaptive Confidence Assessment"
+    )
+
+    confidence_assessment_html = f"""
+    <div class='nora-adaptive-card'>
+
+        <div class='nora-adaptive-confidence-flow'>
+
+            <div class='nora-adaptive-confidence-step'>
+                <div class='nora-adaptive-metric-label'>Base Confidence</div>
+                <div class='nora-adaptive-confidence-value'>{base_confidence}%</div>
+                <div class='nora-adaptive-confidence-copy'>Initial confidence from enrichment and detection evidence</div>
+            </div>
+
+            <div class='nora-adaptive-confidence-operator'>+</div>
+
+            <div class='nora-adaptive-confidence-step'>
+                <div class='nora-adaptive-metric-label'>Memory Reinforcement</div>
+                <div class='nora-adaptive-confidence-value'>+{memory_reinforcement}%</div>
+                <div class='nora-adaptive-confidence-copy'>Historical similarity strengthens confidence weighting</div>
+            </div>
+
+            <div class='nora-adaptive-confidence-operator'>+</div>
+
+            <div class='nora-adaptive-confidence-step'>
+                <div class='nora-adaptive-metric-label'>Enrichment Impact</div>
+                <div class='nora-adaptive-confidence-value'>+{enrichment_impact}%</div>
+                <div class='nora-adaptive-confidence-copy'>Reputation and enrichment evidence support assessment</div>
+            </div>
+
+            <div class='nora-adaptive-confidence-operator'>=</div>
+
+            <div class='nora-adaptive-confidence-step final'>
+                <div class='nora-adaptive-metric-label'>Adjusted Confidence</div>
+                <div class='nora-adaptive-confidence-value'>{adjusted_confidence}%</div>
+                <div class='nora-adaptive-confidence-copy'>Final adaptive confidence after memory reinforcement</div>
+            </div>
+
+        </div>
+
+        <div class='nora-adaptive-confidence-panel'>
+            <div class='nora-adaptive-panel-title'>Confidence Reinforcement Reasoning</div>
+            <div class='nora-adaptive-panel-content'>
+                N.O.R.A combined base confidence, enrichment evidence and behavioural memory similarity to produce an adjusted confidence score of {adjusted_confidence}%. The confidence model was reinforced because the current behaviour shows {similarity.get('similarity_score', 0)}% similarity to known behavioural activity.
+            </div>
+        </div>
+
+    </div>
+    """
+
+    st.html(confidence_assessment_html)
+
+    st.markdown(
+        "<div class='nora-workspace-spacing'></div>",
+        unsafe_allow_html=True
+    )
+
+    # -------------------------------------------------
+    # Learning Outcome
+    # -------------------------------------------------
+
+    st.html(
+        f"""
+        <div class='nora-section-title'>
+            {get_icon('activity')}
+            <span>Adaptive Learning Outcome</span>
+        </div>
+        """
+    )
+
+    learning_outcome_html = f"""
+    <div class='nora-adaptive-card nora-adaptive-outcome-card'>
+        <div class='nora-adaptive-outcome-icon'>✓</div>
+        <div>
+            <div class='nora-adaptive-panel-title'>LEARNING STORED</div>
+            <div class='nora-adaptive-panel-content'>
+                Pattern memory has been reinforced. Future detections with similar behavioural characteristics can receive stronger confidence weighting and faster similarity classification.
+            </div>
+            <div class='nora-adaptive-outcome-list'>
+                <span>Pattern reinforced in memory</span>
+                <span>Confidence model improved</span>
+                <span>Future detections strengthened</span>
+            </div>
+        </div>
+    </div>
+    """
+
+    st.html(learning_outcome_html)
 
     st.markdown(
         "<div class='nora-workspace-spacing'></div>",
@@ -287,5 +385,5 @@ def render_adaptive_intelligence(
     )
 
     st.caption(
-        "Adaptive Intelligence provides operational transparency into the Phase 3 orchestration pipeline including enrichment, behavioural scoring, escalation reasoning and notification workflow generation before future ML-assisted automation layers are introduced."
+        "Adaptive Intelligence demonstrates how N.O.R.A uses behavioural memory, enrichment context and confidence reinforcement to make future detections stronger."
     )

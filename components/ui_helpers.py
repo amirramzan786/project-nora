@@ -23,74 +23,150 @@ def render_workspace_header(
     on_reset_dataset=None,
     reset_key=None,
 ):
-    """Render a workspace header with optional active-dataset context."""
+    """Render a reusable N.O.R.A workspace header."""
 
     show_dataset_status = dataset_mode in {"sample", "upload"}
+    active_name = dataset_name or "sample.log"
+
+    dataset_label = (
+        f"Uploaded Dataset: {active_name}"
+        if dataset_mode == "upload"
+        else "Sample Dataset: sample.log"
+    )
 
     if not show_dataset_status:
         st.html(
             f"""
-<div class='nora-workspace-card'>
-    <div class='nora-section-title'>
-        {get_icon(icon)}
-        <span>{title}</span>
-    </div>
+<div class='nora-workspace-header'>
+    <div class='nora-workspace-header-top'>
+        <div class='nora-workspace-header-left'>
+            <div class='nora-workspace-header-icon-tile'>
+                {get_icon(icon)}
+            </div>
 
-    <div class='nora-workspace-description'>
-        {description}
+            <div class='nora-workspace-header-copy'>
+                <div class='nora-workspace-header-title'>
+                    <span>{title}</span>
+                </div>
+
+                <div class='nora-workspace-header-subtitle'>
+                    {description}
+                </div>
+            </div>
+        </div>
+
+        <div class='nora-workspace-header-modules'>
+            <div class='nora-workspace-header-module'>
+                <div class='nora-workspace-header-module-icon'>
+                    {get_icon("dataset")}
+                </div>
+                <div>
+                    <div class='nora-workspace-header-module-label'>Active Workspace</div>
+                    <div class='nora-workspace-header-module-value'>Detection Intelligence</div>
+                </div>
+            </div>
+
+            <div class='nora-workspace-header-module'>
+                <div class='nora-workspace-header-module-icon'>⌁</div>
+                <div>
+                    <div class='nora-workspace-header-module-label'>Analysis</div>
+                    <div class='nora-workspace-header-module-value'>Behavioural</div>
+                </div>
+            </div>
+
+            <div class='nora-workspace-header-module'>
+                <div class='nora-workspace-header-module-icon'>∿</div>
+                <div>
+                    <div class='nora-workspace-header-module-label'>Status</div>
+                    <div class='nora-workspace-header-module-value status'>Operational</div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 """
         )
         return
 
-    header_col, status_col, action_col = st.columns(
-        [6.2, 2.4, 0.35],
-        gap="small",
-        vertical_alignment="center",
+    reset_html = ""
+
+    if dataset_mode == "upload" and on_reset_dataset is not None:
+        current_page = st.query_params.get("page", "overview")
+
+        reset_html = (
+            f"<a href='?page={current_page}&reset_dataset=1' class='nora-workspace-header-dataset-close'>×</a>"
+        )
+
+    if (
+        dataset_mode == "upload"
+        and on_reset_dataset is not None
+        and st.query_params.get("reset_dataset") == "1"
+    ):
+        on_reset_dataset()
+
+        if "reset_dataset" in st.query_params:
+            del st.query_params["reset_dataset"]
+
+        st.rerun()
+
+    st.html(
+        f"""
+<div class='nora-workspace-header'>
+    <div class='nora-workspace-header-top'>
+        <div class='nora-workspace-header-left'>
+            <div class='nora-workspace-header-icon-tile'>
+                {get_icon(icon)}
+            </div>
+
+            <div class='nora-workspace-header-copy'>
+                <div class='nora-workspace-header-title'>
+                    <span>{title}</span>
+                </div>
+
+                <div class='nora-workspace-header-subtitle'>
+                    {description}
+                </div>
+            </div>
+        </div>
+
+        <div class='nora-workspace-header-modules'>
+            <div class='nora-workspace-header-module'>
+                <div class='nora-workspace-header-module-icon'>
+                    {get_icon("dataset")}
+                </div>
+                <div>
+                    <div class='nora-workspace-header-module-label'>Dataset</div>
+                    <div class='nora-workspace-header-module-value'>
+                        {active_name}
+                        {reset_html}
+                    </div>
+                </div>
+            </div>
+
+            <div class='nora-workspace-header-module'>
+                <div class='nora-workspace-header-module-icon'>
+                    {get_icon("workspace")}
+                </div>
+                <div>
+                    <div class='nora-workspace-header-module-label'>Active Workspace</div>
+                    <div class='nora-workspace-header-module-value'>{title}</div>
+                </div>
+            </div>
+
+            <div class='nora-workspace-header-module'>
+                <div class='nora-workspace-header-module-icon'>
+                    {get_icon("status")}
+                </div>
+                <div>
+                    <div class='nora-workspace-header-module-label'>Status</div>
+                    <div class='nora-workspace-header-module-value status'>Under Analysis <span class='nora-workspace-status-dot'></span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+"""
     )
-
-    with header_col:
-        st.html(
-            f"""
-<div class='nora-workspace-card'>
-    <div class='nora-section-title'>
-        {get_icon(icon)}
-        <span>{title}</span>
-    </div>
-
-    <div class='nora-workspace-description'>
-        {description}
-    </div>
-</div>
-"""
-        )
-
-    with status_col:
-        active_name = dataset_name or "sample.log"
-        status_text = (
-            f"Using uploaded log: {active_name}"
-            if dataset_mode == "upload"
-            else "Using sample log dataset"
-        )
-
-        st.html(
-            f"""
-<div class='nora-live-status'>
-    <div class='nora-live-dot'></div>
-    <span>{status_text}</span>
-</div>
-"""
-        )
-
-    with action_col:
-        if dataset_mode == "upload" and on_reset_dataset is not None:
-            st.button(
-                "×",
-                key=reset_key or f"reset_dataset_{title.lower().replace(' ', '_')}",
-                help="Stop using the uploaded log and return to the sample dataset",
-                on_click=on_reset_dataset,
-            )
 
 def render_threat_stat(label, value, extra_class="", icon_key=None):
 

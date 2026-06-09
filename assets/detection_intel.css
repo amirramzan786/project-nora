@@ -329,8 +329,7 @@ div[data-testid="stVerticalBlockBorderWrapper"]:not(:has(.nora-threat-stat)) hr 
    ===================================================== */
 
 .nora-detection-custom-panel {
-    height: 420px;
-    min-height: 420px;
+    min-height: 460px;
     padding: 1.55rem 1.45rem;
     box-sizing: border-box;
     border-radius: 26px;
@@ -351,6 +350,7 @@ div[data-testid="stVerticalBlockBorderWrapper"]:not(:has(.nora-threat-stat)) hr 
 .nora-detection-history-panel {
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
 .nora-detection-confidence-panel .nora-detection-final-confidence,

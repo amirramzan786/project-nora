@@ -283,7 +283,67 @@ def compare_with_detection_history(
         reverse=True,
     )
 
+
     return ranked_matches[:max(0, top_n)]
+
+
+# =====================================================
+# BEHAVIOURAL REINFORCEMENT (ADAPTIVE CONFIDENCE)
+# =====================================================
+
+def calculate_adaptive_confidence_adjustment(
+    historical_matches: list[dict[str, Any]],
+    base_confidence: float,
+) -> dict[str, Any]:
+    """
+    Apply behavioural reinforcement using historical detection memory.
+
+    The strongest historical match can reinforce confidence when N.O.R.A
+    observes behaviour that closely resembles previously analysed sessions.
+    """
+
+    if not historical_matches:
+        return {
+            "reinforcement_score": 0,
+            "adjusted_confidence": round(base_confidence),
+            "reason": "No historical matches available",
+        }
+
+    strongest_match = max(
+        historical_matches,
+        key=lambda match: match.get("similarity_score", 0),
+    )
+
+    similarity_score = float(
+        strongest_match.get("similarity_score", 0)
+    )
+
+    if similarity_score >= 90:
+        reinforcement_score = 8
+    elif similarity_score >= 80:
+        reinforcement_score = 6
+    elif similarity_score >= 70:
+        reinforcement_score = 4
+    elif similarity_score >= 60:
+        reinforcement_score = 2
+    else:
+        reinforcement_score = 0
+
+    adjusted_confidence = min(
+        100,
+        round(base_confidence + reinforcement_score)
+    )
+
+    return {
+        "reinforcement_score": reinforcement_score,
+        "adjusted_confidence": adjusted_confidence,
+        "reason": (
+            f"Historical reinforcement from {similarity_score:.0f}% "
+            f"similarity to previous behaviour"
+        ),
+        "matched_session": strongest_match.get("session_id"),
+        "matched_pattern": strongest_match.get("matched_pattern"),
+    }
 
 
 
