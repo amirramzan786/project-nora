@@ -8,7 +8,13 @@ from components.ui_helpers import (
 from src.icons import get_icon
 
 from services.enrichment.ip_enrichment import enrich_ip
+
 from services.scoring.pattern_similarity import analyse_pattern_similarity
+from services.intelligence.detection_history import (
+    build_behavioural_memory_repository,
+    compare_with_detection_history,
+    calculate_adaptive_confidence_adjustment,
+)
 
 
 # =====================================================
@@ -17,6 +23,10 @@ from services.scoring.pattern_similarity import analyse_pattern_similarity
 
 
 def render_adaptive_intelligence(
+    ip_totals,
+    alerts,
+    anomalies,
+    time_counts,
     dataset_mode=None,
     dataset_name=None,
     on_reset_dataset=None,
@@ -53,27 +63,116 @@ def render_adaptive_intelligence(
     # Intelligence Pipeline Execution
     # -------------------------------------------------
 
-    enriched_intel = enrich_ip(
-        "185.220.101.1",
-        1400
+    total_requests = int(sum(ip_totals.values())) if ip_totals else 0
+
+    top_ip = (
+        max(ip_totals, key=ip_totals.get)
+        if ip_totals
+        else "Unknown"
     )
+
+    top_ip_requests = (
+        ip_totals.get(top_ip, 0)
+        if ip_totals
+        else 0
+    )
+
+    source_concentration = (
+        round(top_ip_requests / total_requests, 2)
+        if total_requests > 0
+        else 0
+    )
+
+    anomaly_count = len(anomalies) if anomalies is not None else 0
+
+    anomaly_ratio = (
+        round(anomaly_count / total_requests, 2)
+        if total_requests > 0
+        else 0
+    )
+
+    enriched_intel = enrich_ip(
+        top_ip,
+        top_ip_requests
+    )
+
+    enriched_intel.update({
+        "total_requests": total_requests,
+        "request_volume": total_requests,
+        "anomaly_count": anomaly_count,
+        "anomaly_ratio": anomaly_ratio,
+        "source_concentration": source_concentration,
+    })
 
     similarity = analyse_pattern_similarity(
         enriched_intel
     )
 
-    base_confidence = max(
-        0,
-        enriched_intel.get("confidence_score", 0) - 18
-    )
-    memory_reinforcement = 12 if similarity.get("similarity_score", 0) >= 80 else 6
+    memory_repository = build_behavioural_memory_repository()
+
+    memory_rows_html = ""
+
+    for memory_item in memory_repository:
+        strength = int(memory_item.get("memory_strength", 0))
+
+        memory_rows_html += f"""
+        <div class='nora-adaptive-memory-row'>
+            <span>{memory_item.get('pattern', 'Unknown')}</span>
+            <div class='nora-adaptive-memory-bar'>
+                <span style='width:{strength}%;'></span>
+            </div>
+            <strong>{strength}%</strong>
+        </div>
+        """
+
+    if not memory_rows_html:
+        memory_rows_html = """
+        <div class='nora-adaptive-panel-content'>
+            No behavioural memory has been stored yet.
+        </div>
+        """
+
     enrichment_impact = min(
         12,
         round(enriched_intel.get("abuse_score", 0) / 10)
     )
+
+    base_confidence = max(
+        0,
+        enriched_intel.get("confidence_score", 0) - enrichment_impact
+    )
+
+    adaptive_session_data = {
+        "total_requests": total_requests,
+        "peak_requests": top_ip_requests,
+        "average_requests": round(total_requests / max(len(ip_totals), 1), 2) if ip_totals else 0,
+        "anomaly_count": anomaly_count,
+        "anomaly_ratio": anomaly_ratio,
+        "source_concentration": source_concentration,
+        "traffic_pattern": similarity.get("matched_pattern", "Unknown Behaviour"),
+        "severity": enriched_intel.get("threat_level", "Unknown"),
+        "confidence": base_confidence,
+        "matched_pattern": similarity.get("matched_pattern", "Unknown Behaviour"),
+        "similarity_score": similarity.get("similarity_score", 0),
+        "primary_source": top_ip,
+    }
+
+    historical_adaptive_matches = compare_with_detection_history(
+        adaptive_session_data,
+        history_limit=100,
+        top_n=3,
+    )
+
+    adaptive_confidence_result = calculate_adaptive_confidence_adjustment(
+        historical_adaptive_matches,
+        base_confidence,
+    )
+
+    memory_reinforcement = adaptive_confidence_result["reinforcement_score"]
+
     adjusted_confidence = min(
         100,
-        base_confidence + memory_reinforcement + enrichment_impact
+        adaptive_confidence_result["adjusted_confidence"] + enrichment_impact
     )
 
     # -------------------------------------------------
@@ -246,27 +345,7 @@ def render_adaptive_intelligence(
 
             <div class='nora-adaptive-learning-panel' style='margin-top:0;'>
                 <div class='nora-adaptive-panel-title'>Behavioural Memory Repository</div>
-                <div class='nora-adaptive-memory-row'>
-                    <span>Volumetric DDoS</span>
-                    <div class='nora-adaptive-memory-bar'><span style='width:82%;'></span></div>
-                    <strong>82%</strong>
-                </div>
-                <div class='nora-adaptive-memory-row'>
-                    <span>Burst Attack</span>
-                    <div class='nora-adaptive-memory-bar'><span style='width:74%;'></span></div>
-                    <strong>74%</strong>
-                </div>
-                <div class='nora-adaptive-memory-row'>
-                    <span>Slow Build Attack</span>
-                    <div class='nora-adaptive-memory-bar'><span style='width:58%;'></span></div>
-                    <strong>58%</strong>
-                </div>
-                <div class='nora-adaptive-memory-row'>
-                    <span>Sustained Saturation</span>
-                    <div class='nora-adaptive-memory-bar'><span style='width:41%;'></span></div>
-                    <strong>41%</strong>
-                </div>
-
+                {memory_rows_html}
                 <div class='nora-adaptive-panel-content' style='margin-top:18px;'>
                     Historical behavioural memory allows N.O.R.A to compare the current activity profile against previously observed DDoS-style patterns and identify reusable detection evidence.
                 </div>
@@ -309,7 +388,7 @@ def render_adaptive_intelligence(
             <div class='nora-adaptive-confidence-step'>
                 <div class='nora-adaptive-metric-label'>Memory Reinforcement</div>
                 <div class='nora-adaptive-confidence-value'>+{memory_reinforcement}%</div>
-                <div class='nora-adaptive-confidence-copy'>Historical similarity strengthens confidence weighting</div>
+                <div class='nora-adaptive-confidence-copy'>Historical detection memory strengthens confidence weighting</div>
             </div>
 
             <div class='nora-adaptive-confidence-operator'>+</div>
@@ -333,7 +412,7 @@ def render_adaptive_intelligence(
         <div class='nora-adaptive-confidence-panel'>
             <div class='nora-adaptive-panel-title'>Confidence Reinforcement Reasoning</div>
             <div class='nora-adaptive-panel-content'>
-                N.O.R.A combined base confidence, enrichment evidence and behavioural memory similarity to produce an adjusted confidence score of {adjusted_confidence}%. The confidence model was reinforced because the current behaviour shows {similarity.get('similarity_score', 0)}% similarity to known behavioural activity.
+                N.O.R.A compared the current activity profile against saved detection history and applied a real historical reinforcement score of +{memory_reinforcement}%. Enrichment evidence contributed +{enrichment_impact}%, producing an adjusted confidence score of {adjusted_confidence}%.
             </div>
         </div>
 

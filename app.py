@@ -451,9 +451,13 @@ if active_page == "overview" and show_overview_dashboard:
 
 elif active_page == "adaptive_intelligence":
     render_adaptive_intelligence(
-        dataset_mode=st.session_state.get("active_log_mode", "sample"),
-        dataset_name=st.session_state.get("active_log_name", "sample.log"),
-        on_reset_dataset=stop_using_uploaded_log,
+    ip_totals=ip_totals,
+    alerts=alerts,
+    anomalies=anomalies,
+    time_counts=time_counts,
+    dataset_mode=st.session_state.get("active_log_mode", "sample"),
+    dataset_name=st.session_state.get("active_log_name", "sample.log"),
+    on_reset_dataset=stop_using_uploaded_log,
     )
 
 elif active_page == "log_explorer":

@@ -19,21 +19,8 @@ from services.scoring.pattern_similarity import analyse_pattern_similarity
 from services.intelligence.detection_history import (
     compare_with_detection_history,
     save_detection_session,
+    calculate_adaptive_confidence_adjustment,
 )
-
-
-def render_detection_info_tooltip(text):
-    st.markdown(
-        f"""
-        <details class='nora-detection-info-tooltip'>
-            <summary class='nora-detection-info-trigger'>i</summary>
-            <div class='nora-detection-info-content'>
-                {text}
-            </div>
-        </details>
-        """,
-        unsafe_allow_html=True
-    )
 
 
 
@@ -193,9 +180,9 @@ def render_confidence_breakdown_panel(
 def render_historical_comparison_panel(historical_matches):
     rows_html = ""
 
+    highest_match_label = historical_matches[0][0] if historical_matches else "No comparable pattern"
     highest_match = historical_matches[0][1] if historical_matches else "0%"
     highest_score = int(highest_match.replace("%", "")) if highest_match else 0
-    closest_pattern = historical_matches[0][0] if historical_matches else "No previous pattern"
 
     match_strength = "HIGH" if highest_score >= 75 else "MEDIUM" if highest_score >= 55 else "LOW"
     recurrence_count = len(historical_matches)
@@ -228,7 +215,7 @@ def render_historical_comparison_panel(historical_matches):
         f"<div class='nora-detection-history-hero'>"
         f"<div class='nora-detection-history-hero-label'>Highest Similarity Match</div>"
         f"<div class='nora-detection-history-hero-score'>{highest_match}</div>"
-        f"<div class='nora-detection-history-hero-context'>Historical comparison against previously analysed traffic behaviour</div>"
+        f"<div class='nora-detection-history-hero-context'>Matched against {highest_match_label} using adaptive memory reinforcement from previously analysed traffic behaviour</div>"
         f"</div>"
         f"<div class='nora-detection-history-meta-grid'>"
         f"<div class='nora-detection-history-meta-card'>"
@@ -372,15 +359,6 @@ def render_detection_intelligence(
 
     similarity_score = similarity_result["similarity_score"]
     similarity_match = f"{similarity_score}%"
-    validation_status = (
-        "Validated Pattern"
-        if similarity_score >= 80
-        else "Correlated"
-        if estimated_confidence >= 80
-        else "Under Analysis"
-        if estimated_confidence >= 55
-        else "Needs Review"
-    )
 
     traffic_values = list(time_counts.values()) if time_counts else []
     peak_requests = max(traffic_values, default=0)
@@ -415,6 +393,24 @@ def render_detection_intelligence(
         current_session_id=save_result["session_id"],
         history_limit=100,
         top_n=3,
+    )
+
+    adaptive_confidence_result = calculate_adaptive_confidence_adjustment(
+        historical_session_matches,
+        estimated_confidence,
+    )
+
+    adaptive_confidence = adaptive_confidence_result["adjusted_confidence"]
+    adaptive_reinforcement_score = adaptive_confidence_result["reinforcement_score"]
+
+    validation_status = (
+        "Validated Pattern"
+        if similarity_score >= 80
+        else "Correlated"
+        if adaptive_confidence >= 80
+        else "Under Analysis"
+        if adaptive_confidence >= 55
+        else "Needs Review"
     )
 
     if similarity_score >= 80:
@@ -476,8 +472,8 @@ def render_detection_intelligence(
 
     with metric1:
         render_threat_stat(
-            "Detection Confidence",
-            f"{estimated_confidence}%",
+            "Adaptive Confidence",
+            f"{adaptive_confidence}%",
             icon_key="fc_statistics"
         )
 
@@ -544,7 +540,7 @@ def render_detection_intelligence(
             detection_classification,
             overall_severity,
             primary_source,
-            estimated_confidence,
+            adaptive_confidence,
             primary_source_requests,
             ml_anomaly_signal
         )
@@ -583,21 +579,6 @@ def render_detection_intelligence(
             else 0
         )
 
-        temporal_behaviour_score = (
-            12
-            if traffic_pattern in ["Burst", "Sustained"]
-            else 6
-            if traffic_pattern not in ["Baseline", "Unknown", None]
-            else 2
-        )
-
-        ml_signal_score = (
-            12
-            if anomalies and overall_severity == "HIGH"
-            else 8
-            if anomalies
-            else 0
-        )
 
         historical_similarity_score = (
             14
@@ -609,15 +590,6 @@ def render_detection_intelligence(
             else 0
         )
 
-        reducing_factor_score = (
-            -12
-            if estimated_confidence < 45
-            else -8
-            if estimated_confidence < 65
-            else -4
-            if estimated_confidence < 85
-            else 0
-        )
 
         confidence_factors = [
             ("Source concentration", f"+{source_concentration_score}"),
@@ -627,7 +599,7 @@ def render_detection_intelligence(
 
         render_confidence_breakdown_panel(
             confidence_factors,
-            estimated_confidence
+            adaptive_confidence
         )
 
     with history_col:
@@ -796,8 +768,12 @@ def render_detection_intelligence(
                         "Contribution": historical_similarity_score
                     },
                     {
+                        "Signal": "Memory Reinforcement",
+                        "Contribution": adaptive_reinforcement_score
+                    },
+                    {
                         "Signal": "Final Confidence",
-                        "Contribution": estimated_confidence
+                        "Contribution": adaptive_confidence
                     }
                 ])
 
@@ -807,14 +783,13 @@ def render_detection_intelligence(
                 )
 
                 st.caption(
-                    f"Final Detection Confidence: {estimated_confidence}%"
+                    f"Adaptive Confidence: {adaptive_confidence}% | Historical reinforcement: +{adaptive_reinforcement_score}%"
                 )
 
     # =====================================================
     # OBSERVED DETECTION SOURCES
     # =====================================================
 
-    enriched_threats = []
 
     with st.container(border=True):
 
@@ -835,7 +810,7 @@ def render_detection_intelligence(
                 reverse=True
             )[:5]
 
-            threat_rows, enriched_threats = build_threat_source_rows(
+            threat_rows, _ = build_threat_source_rows(
                 top_ips,
                 ip_totals,
                 active_alerts,

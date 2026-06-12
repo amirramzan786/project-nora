@@ -3,6 +3,7 @@ import textwrap
 
 import streamlit as st
 from components.ui_helpers import render_workspace_header
+from services.enrichment.ip_enrichment import enrich_ip
 
 
 def render_html(html: str) -> None:
@@ -10,75 +11,9 @@ def render_html(html: str) -> None:
     st.html(textwrap.dedent(html).strip())
 
 
-# Internal source-context mapping for IPs (deterministic placeholder for future enrichment)
-def get_internal_source_enrichment(ip_address: str) -> dict:
-    """Return deterministic internal enrichment context for a source IP."""
-
-    enrichment_profiles = [
-        {
-            "asn": "AS14061",
-            "provider": "DigitalOcean LLC",
-            "country": "Germany",
-            "city": "Frankfurt",
-            "infrastructure_class": "Cloud Hosting Infrastructure",
-        },
-        {
-            "asn": "AS14618",
-            "provider": "Amazon AWS",
-            "country": "Ireland",
-            "city": "Dublin",
-            "infrastructure_class": "Public Cloud Infrastructure",
-        },
-        {
-            "asn": "AS8075",
-            "provider": "Microsoft Azure",
-            "country": "United Kingdom",
-            "city": "London",
-            "infrastructure_class": "Enterprise Cloud Infrastructure",
-        },
-        {
-            "asn": "AS16276",
-            "provider": "OVH SAS",
-            "country": "France",
-            "city": "Roubaix",
-            "infrastructure_class": "European Hosting Infrastructure",
-        },
-        {
-            "asn": "AS13335",
-            "provider": "Cloudflare Inc.",
-            "country": "United States",
-            "city": "San Francisco",
-            "infrastructure_class": "Edge Network Infrastructure",
-        },
-    ]
-
-    if not ip_address or ip_address == "No Data":
-        return {
-            "asn": "N/A",
-            "provider": "No enrichment available",
-            "country": "Unknown",
-            "city": "Unknown",
-            "infrastructure_class": "Unclassified Source Infrastructure",
-        }
-
-    profile_index = sum(ord(character) for character in str(ip_address)) % len(enrichment_profiles)
-    return enrichment_profiles[profile_index]
-
-
 # Threat Source Classification Engine
-def classify_threat_source(provider: str, requests: int, anomaly_count: int):
+def classify_threat_source(requests: int, anomaly_count: int):
     """Simple intelligence classification engine used by Threat Intelligence."""
-
-    provider_lower = provider.lower()
-
-    if "aws" in provider_lower or "azure" in provider_lower:
-        source_type = "Public Cloud Infrastructure"
-    elif "cloudflare" in provider_lower:
-        source_type = "Edge Network Infrastructure"
-    elif "ovh" in provider_lower:
-        source_type = "Hosting Infrastructure"
-    else:
-        source_type = "Virtual Private Infrastructure"
 
     if requests > 1000:
         behaviour_classification = "High-Volume Distributed Source"
@@ -103,14 +38,66 @@ def classify_threat_source(provider: str, requests: int, anomaly_count: int):
     assessment_confidence = min(95, assessment_confidence)
 
     return {
-        "source_type": source_type,
         "behaviour_classification": behaviour_classification,
         "threat_likelihood": threat_likelihood,
         "assessment_confidence": assessment_confidence,
     }
 
 
+# Helper to prevent mixed real/fallback enrichment from showing impossible geography.
+def normalise_geographic_context(country: str, city: str) -> tuple[str, str]:
+    """Prevent mixed real/fallback enrichment from showing impossible geography."""
 
+    country_value = country or "Unknown"
+    city_value = city or "Unknown"
+
+    mock_city_country_pairs = {
+        "moscow": "Russia",
+        "frankfurt": "Germany",
+        "london": "United Kingdom",
+    }
+
+    expected_country = mock_city_country_pairs.get(city_value.lower())
+
+    if expected_country and country_value != expected_country:
+        city_value = "Unknown"
+
+    return country_value, city_value
+ 
+# Helper to render confidence bars based on a percentage score
+def build_confidence_bars(score: int) -> str:
+    """Render confidence bars based on a percentage score."""
+
+    try:
+        numeric_score = int(score)
+    except (TypeError, ValueError):
+        numeric_score = 0
+
+    if numeric_score >= 85:
+        bar_count = 5
+    elif numeric_score >= 70:
+        bar_count = 4
+    elif numeric_score >= 50:
+        bar_count = 3
+    elif numeric_score >= 30:
+        bar_count = 2
+    else:
+        bar_count = 1
+
+    return "".join([
+        "<span class='nora-threat-confidence-bar'></span>"
+        for _ in range(bar_count)
+    ])
+
+
+# Helper to safely display abuse scores
+def format_abuse_score(score) -> str:
+    """Return a safe display value for AbuseIPDB-style scores."""
+
+    if score in [None, "N/A", ""]:
+        return "N/A"
+
+    return f"{score}/100"
 
 
 def render_threat_intelligence(
@@ -143,7 +130,7 @@ def render_threat_intelligence(
     if ip_totals:
         top_ip, top_ip_requests = max(ip_totals.items(), key=lambda x: x[1])
 
-    intelligence_coverage = min(100, 50 + (threat_count * 2))
+    intelligence_coverage = 0
 
     if top_ip_requests > 500:
         threat_rating = "Critical"
@@ -180,34 +167,72 @@ def render_threat_intelligence(
 
     # Infrastructure Intelligence (data-driven)
     if top_ip_requests > 500:
-        infrastructure_type = "High-Volume Source Infrastructure"
         observed_usage = "Sustained Network Activity"
         infrastructure_assessment = (
             "Traffic volume suggests a highly active source requiring further review."
         )
     elif top_ip_requests > 100:
-        infrastructure_type = "Active Source Infrastructure"
         observed_usage = "Elevated Network Activity"
         infrastructure_assessment = (
             "Observed activity exceeds normal levels and may indicate coordinated behaviour."
         )
     else:
-        infrastructure_type = "Observed Network Infrastructure"
         observed_usage = "Limited Network Activity"
         infrastructure_assessment = (
             "Limited activity observed from this source during analysis."
         )
 
-    provider_context = "Internal Traffic Analysis"
+    # Phase 3.1 service-layer enrichment.
+    # Threat Intelligence now consumes the central IP enrichment service.
+    if top_ip == "No Data":
+        primary_enrichment = {
+            "asn": "N/A",
+            "isp": "Unknown Provider",
+            "country": "Unknown",
+            "city": "Unknown",
+            "infrastructure_class": "Unclassified Source Infrastructure",
+            "abuse_score": None,
+            "known_malicious": False,
+            "confidence_score": 0,
+        }
+    else:
+        primary_enrichment = enrich_ip(
+            top_ip,
+            request_count=top_ip_requests,
+            operational_severity=threat_rating.upper(),
+            coordinated_activity=anomaly_count > 10,
+        )
+    asn_value = primary_enrichment.get("asn", "N/A")
+    asn_provider = primary_enrichment.get("isp", "Unknown Provider")
+    geo_country = primary_enrichment.get("country", "Unknown")
+    geo_city = primary_enrichment.get("city", "Unknown")
+    geo_country, geo_city = normalise_geographic_context(geo_country, geo_city)
+    enriched_infrastructure_class = primary_enrichment.get(
+        "infrastructure_class",
+        "Unclassified Source Infrastructure",
+    )
 
-    # Phase 3.1B internal source-context placeholder
-    # Later phases can replace this deterministic mapping with live ASN/Geo/API lookups.
-    primary_enrichment = get_internal_source_enrichment(top_ip)
-    asn_value = primary_enrichment["asn"]
-    asn_provider = primary_enrichment["provider"]
-    geo_country = primary_enrichment["country"]
-    geo_city = primary_enrichment["city"]
-    enriched_infrastructure_class = primary_enrichment["infrastructure_class"]
+    primary_abuse_score = primary_enrichment.get("abuse_score", "N/A")
+    formatted_primary_abuse_score = format_abuse_score(primary_abuse_score)
+    reputation_card_value = (
+        formatted_primary_abuse_score
+        if formatted_primary_abuse_score != "N/A"
+        else threat_rating
+    )
+    reputation_card_meta = (
+        f"{threat_rating} threat rating"
+        if primary_abuse_score != "N/A"
+        else f"{threat_count} detection events"
+    )
+    geographic_card_meta = geo_city if geo_city != "Unknown" else "Region pending"
+
+    available_context_signals = sum([
+        primary_enrichment.get("abuse_score") not in [None, "N/A"],
+        primary_enrichment.get("asn") not in [None, "N/A"],
+        primary_enrichment.get("country") not in [None, "Unknown"],
+    ])
+    intelligence_coverage = round((available_context_signals / 3) * 100)
+    coverage_card_meta = f"{available_context_signals}/3 enrichment signals available"
 
     assessment_summary = (
         f"Analysis identified {threat_count} detection events and "
@@ -227,9 +252,18 @@ def render_threat_intelligence(
             "summary": "Reputation context is derived from request volume, observed source behaviour and current detection severity.",
             "rows": [
                 ("Threat Rating", threat_rating),
-                ("Detection Events", threat_count),
-                ("Assessment Confidence", "Pending calculation"),
-                ("Primary Source", top_ip),
+                (
+                    "Abuse Score",
+                    formatted_primary_abuse_score,
+                ),
+                (
+                    "Known Malicious",
+                    "Yes" if primary_enrichment.get('known_malicious') else "No",
+                ),
+                (
+                    "Infrastructure",
+                    enriched_infrastructure_class,
+                ),
             ],
         },
         "ASN": {
@@ -239,7 +273,10 @@ def render_threat_intelligence(
                 ("ASN", asn_value),
                 ("Provider", asn_provider),
                 ("Infrastructure Class", enriched_infrastructure_class),
-                ("Observed Usage", observed_usage),
+                (
+                    "Known Malicious",
+                    "Yes" if primary_enrichment.get("known_malicious") else "No",
+                ),
             ],
         },
         "Geographic": {
@@ -249,69 +286,71 @@ def render_threat_intelligence(
                 ("Country", geo_country),
                 ("City / Region", geo_city),
                 ("Primary Source", top_ip),
-                ("Source Requests", top_ip_requests),
+                (
+                    "Confidence Score",
+                    f"{primary_enrichment.get('confidence_score', 'N/A')}%",
+                ),
             ],
         },
         "Coverage": {
-            "title": "Intelligence Coverage",
-            "summary": "Coverage indicates how much of the current detection assessment is supported by available source-context signals.",
+            "title": "Enrichment Coverage",
+            "summary": "Enrichment coverage shows which external and internal source-context signals are available for the current primary threat source.",
             "rows": [
                 ("Coverage", f"{intelligence_coverage}%"),
-                ("Internal Signals", threat_count),
-                ("Anomaly Signals", anomaly_count),
+                (
+                    "AbuseIPDB Data",
+                    "Available"
+                    if primary_enrichment.get("abuse_score") not in [None, "N/A"]
+                    else "Unavailable",
+                ),
+                (
+                    "ASN Context",
+                    "Available" if primary_enrichment.get("asn") not in [None, "N/A"] else "Unavailable",
+                ),
+                (
+                    "Geographic Context",
+                    "Available" if primary_enrichment.get("country") not in [None, "Unknown"] else "Unavailable",
+                ),
                 ("Reliability", assessment_reliability),
             ],
         },
     }
 
-    confidence_bars = "".join([
-        "<span class='nora-threat-confidence-bar'></span>"
-        for _ in range(5)
-    ])
 
     if threat_rating == "Critical":
-        assessment_confidence_pct = 95
+        fallback_assessment_confidence = 95
     elif threat_rating == "High":
-        assessment_confidence_pct = 82
+        fallback_assessment_confidence = 82
     else:
-        assessment_confidence_pct = 68
+        fallback_assessment_confidence = 68
 
-    intelligence_panels["Reputation"]["rows"][2] = (
-        "Assessment Confidence",
-        f"{assessment_confidence_pct}%"
+    assessment_confidence_pct = primary_enrichment.get(
+        "confidence_score",
+        fallback_assessment_confidence,
     )
+    confidence_bars = build_confidence_bars(assessment_confidence_pct)
+
 
     if threat_rating == "Critical":
         severity_badge = "CRITICAL"
-        infrastructure_confidence = "".join([
-            "<span class='nora-threat-confidence-bar'></span>"
-            for _ in range(5)
-        ])
+        fallback_infrastructure_confidence = 90
     elif threat_rating == "High":
         severity_badge = "HIGH"
-        infrastructure_confidence = "".join([
-            "<span class='nora-threat-confidence-bar'></span>"
-            for _ in range(4)
-        ])
+        fallback_infrastructure_confidence = 75
     else:
         severity_badge = "MEDIUM"
-        infrastructure_confidence = "".join([
-            "<span class='nora-threat-confidence-bar'></span>"
-            for _ in range(3)
-        ])
+        fallback_infrastructure_confidence = 60
 
-    behavioural_risk = "".join([
-        "<span class='nora-threat-confidence-bar'></span>"
-        for _ in range(2 if anomaly_count < 10 else 4)
-    ])
+    infrastructure_confidence_score = primary_enrichment.get(
+        "confidence_score",
+        fallback_infrastructure_confidence,
+    )
+    infrastructure_confidence = build_confidence_bars(infrastructure_confidence_score)
+    behavioural_risk_score = 40 if anomaly_count < 10 else 75
+    behavioural_risk = build_confidence_bars(behavioural_risk_score)
 
-    coverage_indicator = "".join([
-        "<span class='nora-threat-confidence-bar'></span>"
-        for _ in range(5)
-    ])
+    coverage_indicator = build_confidence_bars(intelligence_coverage)
 
-    if "active_threat_panel" not in st.session_state:
-        st.session_state["active_threat_panel"] = None
 
     drawer_panels_html = ""
     for panel_key, panel_data in intelligence_panels.items():
@@ -359,8 +398,8 @@ def render_threat_intelligence(
                         <span class='nora-threat-telemetry-label'>Reputation</span>
                         <label class='nora-threat-info-dot' for='nora-panel-reputation'>i</label>
                     </div>
-                    <div class='nora-threat-telemetry-value red'>{threat_rating}</div>
-                    <div class='nora-threat-telemetry-meta'>{threat_count} detection events</div>
+                    <div class='nora-threat-telemetry-value red'>{reputation_card_value}</div>
+                    <div class='nora-threat-telemetry-meta'>{reputation_card_meta}</div>
                     <div class='nora-threat-telemetry-icon'>!</div>
                 </div>
 
@@ -380,17 +419,17 @@ def render_threat_intelligence(
                         <label class='nora-threat-info-dot' for='nora-panel-geographic'>i</label>
                     </div>
                     <div class='nora-threat-telemetry-value blue'>{geo_country}</div>
-                    <div class='nora-threat-telemetry-meta'>{geo_city}</div>
+                    <div class='nora-threat-telemetry-meta'>{geographic_card_meta}</div>
                     <div class='nora-threat-telemetry-icon'>◉</div>
                 </div>
 
                 <div class='nora-threat-telemetry-card coverage'>
                     <div class='nora-threat-telemetry-label-row'>
-                        <span class='nora-threat-telemetry-label'>Coverage</span>
+                        <span class='nora-threat-telemetry-label'>Enrichment Coverage</span>
                         <label class='nora-threat-info-dot' for='nora-panel-coverage'>i</label>
                     </div>
                     <div class='nora-threat-telemetry-value green'>{intelligence_coverage}%</div>
-                    <div class='nora-threat-telemetry-meta'>internal intelligence coverage</div>
+                    <div class='nora-threat-telemetry-meta'>{coverage_card_meta}</div>
                     <div class='nora-threat-progress-ring'></div>
                 </div>
             </div>
@@ -451,7 +490,7 @@ def render_threat_intelligence(
                         </div>
 
                         <div class='nora-threat-mini-row'>
-                            <div class='nora-threat-mini-label'>Intelligence Coverage</div>
+                            <div class='nora-threat-mini-label'>Enrichment Coverage</div>
                             <div class='nora-threat-mini-value'><div class='nora-threat-confidence-bars'>{coverage_indicator}</div></div>
                         </div>
 
@@ -476,7 +515,7 @@ def render_threat_intelligence(
                     </div>
                     <div class='nora-threat-mini-row'>
                         <div class='nora-threat-mini-label'>Geographic Region</div>
-                        <div class='nora-threat-mini-value'>{geo_city}, {geo_country}</div>
+                        <div class='nora-threat-mini-value'>{geo_country if geo_city == 'Unknown' else f'{geo_city}, {geo_country}'}</div>
                     </div>
                     <div class='nora-threat-mini-row'>
                         <div class='nora-threat-mini-label'>Infrastructure Class</div>
@@ -513,7 +552,6 @@ def render_threat_intelligence(
         </div>
         """)
 
-
     # Evidence Section
     threat_rows = []
 
@@ -527,16 +565,16 @@ def render_threat_intelligence(
         for ip, requests in sorted_sources:
             if requests > 1000:
                 risk_level = "Critical"
-                reputation_score = "92 / 100"
+                fallback_reputation_score = 92
             elif requests > 500:
                 risk_level = "High"
-                reputation_score = "84 / 100"
+                fallback_reputation_score = 84
             elif requests > 100:
                 risk_level = "Medium"
-                reputation_score = "63 / 100"
+                fallback_reputation_score = 63
             else:
                 risk_level = "Low"
-                reputation_score = "37 / 100"
+                fallback_reputation_score = 37
 
             # Activity Type logic
             if requests > 1000:
@@ -548,23 +586,42 @@ def render_threat_intelligence(
             else:
                 activity_type = "Low Volume Source"
 
-            source_enrichment = get_internal_source_enrichment(ip)
+            source_enrichment = enrich_ip(
+                ip,
+                request_count=requests,
+                operational_severity=risk_level.upper(),
+                coordinated_activity=anomaly_count > 10,
+            )
+            enrichment_reputation_score = source_enrichment.get(
+                "abuse_score",
+                fallback_reputation_score,
+            )
+            reputation_score = format_abuse_score(enrichment_reputation_score)
+
             intelligence_profile = classify_threat_source(
-                source_enrichment["provider"],
                 requests,
                 anomaly_count
+            )
+            row_country, _ = normalise_geographic_context(
+                source_enrichment.get("country", "Unknown"),
+                source_enrichment.get("city", "Unknown"),
+            )
+            row_confidence = source_enrichment.get(
+                "confidence_score",
+                intelligence_profile["assessment_confidence"],
             )
 
             threat_rows.append({
                 "IP Address": ip,
                 "Risk Level": risk_level,
-                "ASN / Provider": f"{source_enrichment['asn']} {source_enrichment['provider']}",
-                "Country": source_enrichment["country"],
+                "ASN / Provider": f"{source_enrichment.get('asn', 'N/A')} {source_enrichment.get('isp', 'Unknown Provider')}",
+                "Country": row_country,
                 "Reputation Score": reputation_score,
                 "Requests": f"{requests:,}",
                 "Activity Type": activity_type,
                 "Behaviour": intelligence_profile["behaviour_classification"],
                 "Likelihood": intelligence_profile["threat_likelihood"],
+                "Confidence": f"{row_confidence}%",
             })
 
     table_rows_html = ""
@@ -583,6 +640,7 @@ def render_threat_intelligence(
             <td>{row['Activity Type']}</td>
             <td>{row['Behaviour']}</td>
             <td>{row['Likelihood']}</td>
+            <td>{row['Confidence']}</td>
         </tr>
         """
 
@@ -602,6 +660,7 @@ def render_threat_intelligence(
                         <th>Activity</th>
                         <th>Behaviour</th>
                         <th>Likelihood</th>
+                        <th>Confidence</th>
                     </tr>
                 </thead>
                 <tbody>

@@ -346,6 +346,76 @@ def calculate_adaptive_confidence_adjustment(
     }
 
 
+# =====================================================
+# ADAPTIVE INTELLIGENCE MEMORY REPOSITORY
+# =====================================================
+
+def build_behavioural_memory_repository(
+    history_limit: int = 100,
+    top_n: int = 4,
+) -> list[dict[str, Any]]:
+    """
+    Build a compact behavioural memory repository from saved detections.
+
+    The repository groups historical sessions by matched pattern and returns
+    the strongest patterns for display in the Adaptive Intelligence workspace.
+    """
+
+    history_rows = load_detection_history(limit=history_limit)
+
+    if not history_rows:
+        return []
+
+    pattern_memory: dict[str, dict[str, Any]] = {}
+
+    for row in history_rows:
+        pattern_name = str(
+            row.get("matched_pattern")
+            or row.get("traffic_pattern")
+            or "Unknown Behaviour"
+        )
+
+        similarity_score = _safe_float(
+            row.get("similarity_score")
+        )
+
+        confidence_score = _safe_float(
+            row.get("confidence")
+        )
+
+        memory_strength = max(
+            similarity_score,
+            confidence_score,
+        )
+
+        if pattern_name not in pattern_memory:
+            pattern_memory[pattern_name] = {
+                "pattern": pattern_name,
+                "memory_strength": memory_strength,
+                "session_count": 1,
+                "last_seen": row.get("session_time", "Unknown Time"),
+            }
+            continue
+
+        existing_pattern = pattern_memory[pattern_name]
+        existing_pattern["session_count"] += 1
+        existing_pattern["memory_strength"] = max(
+            existing_pattern["memory_strength"],
+            memory_strength,
+        )
+        existing_pattern["last_seen"] = row.get(
+            "session_time",
+            existing_pattern["last_seen"],
+        )
+
+    repository_rows = list(pattern_memory.values())
+
+    repository_rows.sort(
+        key=lambda item: item["memory_strength"],
+        reverse=True,
+    )
+
+    return repository_rows[:max(0, top_n)]
 
 def _compare_session_pair(
     current_session: dict[str, Any],
