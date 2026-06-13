@@ -832,8 +832,6 @@ def render_detection_intelligence(
 
     # Phase 3.2: legacy SOC notification workflow removed from Detection Intelligence.
     # Detection Intelligence now focuses on reasoning, evidence, confidence and validation.
-    # render_notification_workflow_panel(enriched_threats)
 
     # Phase 3.2: Analyst Validation & Feedback temporarily removed during Detection Intelligence rebuild.
     # It will return later as a focused feedback-loop component aligned with adaptive learning.
-    # render_analyst_action_panel()
