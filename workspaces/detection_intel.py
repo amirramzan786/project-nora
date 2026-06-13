@@ -10,8 +10,6 @@ from components.ui_helpers import (
 
 from components.header import render_workspace_header
 
-from components.detection_sources_table import render_detection_sources_table
-
 from components.detection_panels import (
     render_detection_summary_panel,
     render_detection_evidence_panel,
@@ -22,10 +20,10 @@ from components.detection_panels import (
 from components.detection_visualisation import render_detection_visualisation
 from components.detection_metrics_row import render_detection_metrics_row
 from components.detection_confidence import build_confidence_breakdown
+from components.detection_sources_section import render_detection_sources_section
 
 from src.detection_metrics import get_detection_metrics
 
-from src.threat_source_intelligence import build_threat_source_rows
 from services.scoring.pattern_similarity import analyse_pattern_similarity
 from services.intelligence.detection_history import (
     compare_with_detection_history,
@@ -387,40 +385,13 @@ def render_detection_intelligence(
     # OBSERVED DETECTION SOURCES
     # =====================================================
 
-    with st.container(border=True):
-
-        render_section_title(
-            'fc_radar_plot',
-            'Detection Sources'
-        )
-        st.markdown(
-            "<div class='nora-workspace-spacing-sm'></div>",
-            unsafe_allow_html=True
-        )
-
-        if ip_totals:
-
-            top_ips = sorted(
-                ip_totals.items(),
-                key=lambda x: x[1],
-                reverse=True
-            )[:5]
-
-            threat_rows, _ = build_threat_source_rows(
-                top_ips,
-                ip_totals,
-                active_alerts,
-                avg_requests,
-                overall_severity,
-                estimated_confidence
-            )
-
-            detection_sources_df = pd.DataFrame(threat_rows)
-
-            render_detection_sources_table(
-                detection_sources_df,
-                estimated_confidence
-            )
+    render_detection_sources_section(
+        ip_totals,
+        active_alerts,
+        avg_requests,
+        overall_severity,
+        estimated_confidence,
+    )
 
     # -----------------------------------------------------
     # OPERATIONAL RESPONSE CENTER & WORKFLOW ORCHESTRATION (Stacked)
