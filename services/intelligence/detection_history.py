@@ -43,6 +43,11 @@ DETECTION_HISTORY_HEADERS = [
     "traffic_pattern",
     "severity",
     "confidence",
+    "adaptive_confidence",
+    "reinforcement_score",
+    "detection_classification",
+    "validation_status",
+    "primary_source_requests",
     "matched_pattern",
     "similarity_score",
     "primary_source",
@@ -200,6 +205,11 @@ def save_detection_session(session_data: dict[str, Any]) -> dict[str, Any]:
         "traffic_pattern": str(session_data.get("traffic_pattern", "Unknown")),
         "severity": str(session_data.get("severity", "Unknown")),
         "confidence": _safe_float(session_data.get("confidence")),
+        "adaptive_confidence": _safe_float(session_data.get("adaptive_confidence")),
+        "reinforcement_score": _safe_float(session_data.get("reinforcement_score")),
+        "detection_classification": str(session_data.get("detection_classification", "Unknown")),
+        "validation_status": str(session_data.get("validation_status", "Unknown")),
+        "primary_source_requests": _safe_int(session_data.get("primary_source_requests")),
         "matched_pattern": str(session_data.get("matched_pattern", "Unknown Behaviour")),
         "similarity_score": _safe_float(session_data.get("similarity_score")),
         "primary_source": str(session_data.get("primary_source", "N/A")),
@@ -416,6 +426,101 @@ def build_behavioural_memory_repository(
     )
 
     return repository_rows[:max(0, top_n)]
+
+
+def build_detection_intelligence_summary(history_limit: int = 100) -> dict[str, Any]:
+    """Build aggregate intelligence from saved detection history."""
+
+    history_rows = load_detection_history(limit=history_limit)
+
+    if not history_rows:
+        return {
+            "total_detections": 0,
+            "average_adaptive_confidence": 0,
+            "average_reinforcement": 0,
+            "most_common_classification": "No stored detections",
+            "most_common_pattern": "No stored patterns",
+            "last_detection_seen": "No detections recorded",
+            "validated_sessions": 0,
+        }
+
+    adaptive_values = []
+    reinforcement_values = []
+    classification_counts = {}
+    pattern_counts = {}
+    validated_sessions = 0
+
+    for row in history_rows:
+        adaptive_confidence = _optional_float(row.get("adaptive_confidence"))
+
+        if adaptive_confidence is not None:
+            adaptive_values.append(adaptive_confidence)
+
+        reinforcement = _optional_float(row.get("reinforcement_score"))
+
+        if reinforcement is not None:
+            reinforcement_values.append(reinforcement)
+
+        classification = str(
+            row.get("detection_classification")
+            or "Unknown Classification"
+        )
+
+        classification_counts[classification] = classification_counts.get(
+            classification,
+            0,
+        ) + 1
+
+        pattern = str(
+            row.get("matched_pattern")
+            or row.get("traffic_pattern")
+            or "Unknown Behaviour"
+        )
+
+        pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
+
+        validation_status = str(
+            row.get("validation_status")
+            or ""
+        ).strip().lower()
+
+        if validation_status and validation_status not in ("unknown", "pending", "n/a"):
+            validated_sessions += 1
+
+    most_common_classification = (
+        max(classification_counts, key=classification_counts.get)
+        if classification_counts
+        else "Unknown Classification"
+    )
+
+    most_common_pattern = (
+        max(pattern_counts, key=pattern_counts.get)
+        if pattern_counts
+        else "Unknown Behaviour"
+    )
+
+    average_adaptive_confidence = (
+        round(sum(adaptive_values) / len(adaptive_values), 1)
+        if adaptive_values
+        else 0
+    )
+
+    average_reinforcement = (
+        round(sum(reinforcement_values) / len(reinforcement_values), 1)
+        if reinforcement_values
+        else 0
+    )
+
+    return {
+        "total_detections": len(history_rows),
+        "average_adaptive_confidence": average_adaptive_confidence,
+        "average_reinforcement": average_reinforcement,
+        "most_common_classification": most_common_classification,
+        "most_common_pattern": most_common_pattern,
+        "last_detection_seen": history_rows[-1].get("session_time", "Unknown Time"),
+        "validated_sessions": validated_sessions,
+    }
+
 
 def _compare_session_pair(
     current_session: dict[str, Any],

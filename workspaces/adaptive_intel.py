@@ -12,6 +12,7 @@ from services.enrichment.ip_enrichment import enrich_ip
 from services.scoring.pattern_similarity import analyse_pattern_similarity
 from services.intelligence.detection_history import (
     build_behavioural_memory_repository,
+    build_detection_intelligence_summary,
     compare_with_detection_history,
     calculate_adaptive_confidence_adjustment,
 )
@@ -109,6 +110,7 @@ def render_adaptive_intelligence(
     )
 
     memory_repository = build_behavioural_memory_repository()
+    detection_intelligence_summary = build_detection_intelligence_summary()
 
     memory_rows_html = ""
 
@@ -357,6 +359,43 @@ def render_adaptive_intelligence(
     """
 
     st.html(behavioural_memory_html)
+
+    historical_detection_html = f"""
+    <div class='nora-adaptive-card' style='margin-top:18px;'>
+        <div class='nora-adaptive-panel-title'>Historical Detection Intelligence</div>
+
+        <div class='nora-adaptive-grid' style='margin-top:14px;'>
+            <div class='nora-adaptive-metric'>
+                <div class='nora-adaptive-metric-label'>Stored Detections</div>
+                <div class='nora-adaptive-metric-value'>{detection_intelligence_summary.get('total_detections', 0)}</div>
+            </div>
+
+            <div class='nora-adaptive-metric'>
+                <div class='nora-adaptive-metric-label'>Avg Adaptive Confidence</div>
+                <div class='nora-adaptive-metric-value'>{detection_intelligence_summary.get('average_adaptive_confidence', 0)}%</div>
+            </div>
+
+            <div class='nora-adaptive-metric'>
+                <div class='nora-adaptive-metric-label'>Avg Reinforcement</div>
+                <div class='nora-adaptive-metric-value'>+{detection_intelligence_summary.get('average_reinforcement', 0)}</div>
+            </div>
+
+            <div class='nora-adaptive-metric'>
+                <div class='nora-adaptive-metric-label'>Validated Sessions</div>
+                <div class='nora-adaptive-metric-value'>{detection_intelligence_summary.get('validated_sessions', 0)}</div>
+            </div>
+        </div>
+
+        <div class='nora-adaptive-insight-panel' style='margin-top:18px;'>
+            <div class='nora-adaptive-panel-title'>Memory Learning Summary</div>
+            <div class='nora-adaptive-panel-content'>
+                N.O.R.A has most frequently observed <strong>{detection_intelligence_summary.get('most_common_classification', 'Unknown')}</strong> behaviour, with <strong>{detection_intelligence_summary.get('most_common_pattern', 'Unknown')}</strong> appearing as the strongest recurring memory pattern. The most recent stored detection was recorded at {detection_intelligence_summary.get('last_detection_seen', 'Unknown')}.
+            </div>
+        </div>
+    </div>
+    """
+
+    st.html(historical_detection_html)
 
     st.markdown(
         "<div class='nora-workspace-spacing'></div>",

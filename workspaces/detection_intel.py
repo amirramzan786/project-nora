@@ -185,11 +185,9 @@ def render_detection_intelligence(
         "primary_source": primary_source,
     }
 
-    save_result = save_detection_session(current_session_data)
-
     historical_session_matches = compare_with_detection_history(
         current_session_data,
-        current_session_id=save_result["session_id"],
+        current_session_id=None,
         history_limit=100,
         top_n=3,
     )
@@ -228,6 +226,16 @@ def render_detection_intelligence(
         detection_classification = "Low-Confidence Anomalous Activity"
     else:
         detection_classification = "Baseline Behavioural Activity"
+
+    current_session_data.update({
+        "adaptive_confidence": adaptive_confidence,
+        "reinforcement_score": adaptive_reinforcement_score,
+        "detection_classification": detection_classification,
+        "validation_status": validation_status,
+        "primary_source_requests": primary_source_requests,
+    })
+
+    save_result = save_detection_session(current_session_data)
 
     source_concentration_signal = (
         "HIGH"

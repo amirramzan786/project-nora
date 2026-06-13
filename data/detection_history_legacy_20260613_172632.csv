@@ -1,0 +1,3 @@
+session_id,session_time,total_requests,peak_requests,average_requests,anomaly_count,anomaly_ratio,source_concentration,traffic_pattern,severity,confidence,matched_pattern,similarity_score,primary_source
+72171d2d3e9e2e2b,18:23|18:59,10000,478,270.27027,1,0.0001,0.1255,Sustained,MEDIUM,74.0,Suspicious Hosting Activity,47.0,172.67.211.55
+0afe36cda829fca9,18:23|18:23,1,1,1.0,0,0.0,1.0,Baseline,LOW,46.0,Low Risk Consumer Traffic,58.0,\f0\fs24
