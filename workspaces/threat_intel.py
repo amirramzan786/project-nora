@@ -134,20 +134,43 @@ def render_threat_intelligence(
 
     intelligence_coverage = 0
 
-    if top_ip_requests > 500:
-        threat_rating = "Critical"
-    elif top_ip_requests > 100:
-        threat_rating = "High"
-    else:
-        threat_rating = "Medium"
+    latest_anomaly = anomalies[-1] if anomalies else {}
 
-    if anomaly_count > 50:
+    classifier_label = latest_anomaly.get(
+        "attack_classification",
+        "Normal Traffic"
+    )
+
+    classifier_risk_level = latest_anomaly.get(
+        "classification_risk_level",
+        "Low"
+    )
+
+    classifier_summary = latest_anomaly.get(
+        "classification_summary",
+        "Traffic behaviour remains under observation."
+    )
+
+    # Phase 3.6 classification source-of-truth alignment
+    threat_rating = classifier_risk_level.title()
+
+    # Phase 3.6A behavioural realism calibration
+    if (
+        threat_rating in ["Critical", "High"]
+        and top_ip_requests > 500
+        and threat_count > 25
+    ):
         behavioural_profile = "Sustained Anomalous Activity"
         coordination_level = "Likely"
         consistency_level = "High"
         persistence_level = "Sustained"
         assessment_reliability = "High"
-    elif anomaly_count > 10:
+    elif (
+        threat_rating in ["High", "Medium"]
+        or anomaly_count > 10
+        or threat_count > 5
+        or top_ip_requests > 100
+    ):
         behavioural_profile = "Moderate Anomalous Activity"
         coordination_level = "Possible"
         consistency_level = "Moderate"
@@ -160,12 +183,7 @@ def render_threat_intelligence(
         persistence_level = "Minimal"
         assessment_reliability = "Low"
 
-    if threat_count > 25:
-        threat_classification = "Coordinated Reconnaissance Infrastructure"
-    elif threat_count > 5:
-        threat_classification = "Suspicious Network Activity"
-    else:
-        threat_classification = "Observed Source Activity"
+    threat_classification = classifier_label
 
     # Infrastructure Intelligence (data-driven)
     if top_ip_requests > 500:
@@ -192,9 +210,8 @@ def render_threat_intelligence(
             "isp": "Unknown Provider",
             "country": "Unknown",
             "city": "Unknown",
-            "infrastructure_class": "Unclassified Source Infrastructure",
+            "infrastructure_class": "Observed Traffic Source",
             "abuse_score": None,
-            "known_malicious": False,
             "confidence_score": 0,
         }
     else:
@@ -211,7 +228,7 @@ def render_threat_intelligence(
     geo_country, geo_city = normalise_geographic_context(geo_country, geo_city)
     enriched_infrastructure_class = primary_enrichment.get(
         "infrastructure_class",
-        "Unclassified Source Infrastructure",
+        "Observed Traffic Source",
     )
 
     primary_abuse_score = primary_enrichment.get("abuse_score", "N/A")
@@ -237,15 +254,14 @@ def render_threat_intelligence(
     coverage_card_meta = f"{available_context_signals}/3 enrichment signals available"
 
     assessment_summary = (
-        f"Analysis identified {threat_count} detection events and "
-        f"{anomaly_count} anomalous observations. Behavioural indicators "
-        f"suggest {behavioural_profile.lower()}."
+        f"{classifier_summary} Analysis identified {threat_count} detection "
+        f"events and {anomaly_count} anomalous observations."
     )
 
     summary_text = (
         f"Analysis identified {threat_count} threat events, {anomaly_count} anomalies, "
-        f"and a primary source of {top_ip}. Current assessment indicates "
-        f"{behavioural_profile.lower()} with a {threat_rating.lower()} threat rating."
+        f"and a primary source of {top_ip}. Current classifier assessment indicates "
+        f"{classifier_label} with a {threat_rating.lower()} threat rating."
     )
 
     intelligence_panels = {
@@ -259,26 +275,18 @@ def render_threat_intelligence(
                     formatted_primary_abuse_score,
                 ),
                 (
-                    "Known Malicious",
-                    "Yes" if primary_enrichment.get('known_malicious') else "No",
-                ),
-                (
                     "Infrastructure",
                     enriched_infrastructure_class,
                 ),
             ],
         },
         "ASN": {
-            "title": "ASN Infrastructure Intelligence",
-            "summary": "ASN context provides infrastructure ownership and hosting information for the observed traffic source.",
+            "title": "ASN Context",
+            "summary": "ASN context provides network ownership and provider information when enrichment data is available.",
             "rows": [
                 ("ASN", asn_value),
                 ("Provider", asn_provider),
                 ("Infrastructure Class", enriched_infrastructure_class),
-                (
-                    "Known Malicious",
-                    "Yes" if primary_enrichment.get("known_malicious") else "No",
-                ),
             ],
         },
         "Geographic": {
@@ -289,7 +297,7 @@ def render_threat_intelligence(
                 ("City / Region", geo_city),
                 ("Primary Source", top_ip),
                 (
-                    "Confidence Score",
+                    "Behavioural Confidence",
                     f"{primary_enrichment.get('confidence_score', 'N/A')}%",
                 ),
             ],
@@ -323,8 +331,10 @@ def render_threat_intelligence(
         fallback_assessment_confidence = 95
     elif threat_rating == "High":
         fallback_assessment_confidence = 82
-    else:
+    elif threat_rating == "Medium":
         fallback_assessment_confidence = 68
+    else:
+        fallback_assessment_confidence = 15
 
     assessment_confidence_pct = primary_enrichment.get(
         "confidence_score",
@@ -339,16 +349,24 @@ def render_threat_intelligence(
     elif threat_rating == "High":
         severity_badge = "HIGH"
         fallback_infrastructure_confidence = 75
-    else:
+    elif threat_rating == "Medium":
         severity_badge = "MEDIUM"
         fallback_infrastructure_confidence = 60
+    else:
+        severity_badge = "LOW"
+        fallback_infrastructure_confidence = 15
 
     infrastructure_confidence_score = primary_enrichment.get(
         "confidence_score",
         fallback_infrastructure_confidence,
     )
     infrastructure_confidence = build_confidence_bars(infrastructure_confidence_score)
-    behavioural_risk_score = 40 if anomaly_count < 10 else 75
+    if behavioural_profile == "Sustained Anomalous Activity":
+        behavioural_risk_score = 85
+    elif behavioural_profile == "Moderate Anomalous Activity":
+        behavioural_risk_score = 60
+    else:
+        behavioural_risk_score = 20
     behavioural_risk = build_confidence_bars(behavioural_risk_score)
 
     coverage_indicator = build_confidence_bars(intelligence_coverage)

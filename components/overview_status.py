@@ -1,11 +1,9 @@
-
-
 import streamlit as st
 
 from src.icons import get_icon
 
 
-def render_overview_status(ip_totals):
+def render_overview_status(ip_totals, overall_severity="LOW", anomaly_count=0):
     """Render the Overview system status banner."""
 
     status_col = st.container()
@@ -14,7 +12,9 @@ def render_overview_status(ip_totals):
         if ip_totals:
             max_requests = max(ip_totals.values())
 
-            if max_requests >= 5:
+            severity = str(overall_severity).upper()
+
+            if severity == "HIGH" and anomaly_count > 0:
                 st.markdown(
                     f"""
                     <div class='nora-alert-banner danger'>
@@ -28,7 +28,7 @@ def render_overview_status(ip_totals):
                     unsafe_allow_html=True
                 )
 
-            elif max_requests >= 3:
+            elif severity == "MEDIUM":
                 st.markdown(
                     f"""
                     <div class='nora-alert-banner warning'>

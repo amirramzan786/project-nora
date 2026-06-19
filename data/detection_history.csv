@@ -1,2 +1,22 @@
 session_id,session_time,total_requests,peak_requests,average_requests,anomaly_count,anomaly_ratio,source_concentration,traffic_pattern,severity,confidence,adaptive_confidence,reinforcement_score,detection_classification,validation_status,primary_source_requests,matched_pattern,similarity_score,primary_source
 72171d2d3e9e2e2b,18:23|18:59,10000,478,270.27027,1,0.0001,0.1255,Sustained,MEDIUM,74.0,74.0,0.0,Elevated Behavioural Activity,Under Analysis,1255,Suspicious Hosting Activity,47.0,172.67.211.55
+255cc34c48d9b74e,18:00|18:59,1937,229,39.530612,7,0.003614,0.290139,Burst,MEDIUM,74.0,74.0,0.0,Elevated Behavioural Activity,Under Analysis,562,Suspicious Hosting Activity,71.0,185.220.101.42
+d85ef1a25fc06522,10:00|10:29,120,6,4.0,0,0.0,0.266667,Sustained,LOW,46.0,46.0,0.0,Baseline Behavioural Activity,Needs Review,32,Low Risk Consumer Traffic,57.0,192.168.1.22
+db1463965f260db2,18:00|18:59,1937,229,39.530612,7,0.003614,0.290139,Burst,HIGH,75.0,81.0,6.0,Coordinated Burst Attack Behaviour,Confirmed Detection,562,Volumetric DDoS,70.0,185.220.101.42
+252f812736865e98,18:23|18:59,10000,478,270.27027,1,0.0001,0.1255,Sustained,HIGH,86.0,92.0,6.0,Sustained Attack Behaviour,Under Analysis,1255,Volumetric DDoS,67.0,172.67.211.55
+d556ecf1e858c4c8,18:00|18:59,680,21,11.333333,0,0.0,0.257353,Sustained,MEDIUM,26.0,28.0,2.0,Elevated Behavioural Activity,Needs Review,175,Suspicious Hosting Activity,52.0,192.168.1.10
+d87ef858c5b7d897,09:00|10:29,1081,20,12.011111,0,0.0,0.111008,Sustained,MEDIUM,46.0,54.0,8.0,Elevated Behavioural Activity,Needs Review,120,Suspicious Hosting Activity,46.0,91.240.118.172
+bfe544e7fc532f54,09:00|10:59,1614,22,13.45,0,0.0,0.158612,Sustained,MEDIUM,46.0,54.0,8.0,Elevated Behavioural Activity,Needs Review,256,Suspicious Hosting Activity,47.0,45.155.205.233
+afc57770175258ce,13:00|14:29,2700,63,30.0,0,0.0,0.038889,Burst,MEDIUM,66.0,72.0,6.0,Elevated Behavioural Activity,Under Analysis,105,Suspicious Hosting Activity,66.0,10.0.0.22
+fed2c469fa291206,16:00|16:59,2358,238,39.3,8,0.003393,0.182782,Burst,HIGH,95.0,100.0,8.0,Coordinated Burst Attack Behaviour,Confirmed Detection,431,Volumetric DDoS,67.0,203.0.113.77
+bda9275785bdc789,17:00|18:14,5621,188,74.946667,2,0.000356,0.154243,Burst,HIGH,86.0,92.0,6.0,Coordinated Burst Attack Behaviour,Under Analysis,867,Volumetric DDoS,67.0,45.155.205.233
+200bfef5524d35b2,18:30|19:44,5754,264,76.72,8,0.00139,0.152242,Burst,HIGH,95.0,100.0,8.0,Coordinated Burst Attack Behaviour,Confirmed Detection,876,Volumetric DDoS,67.0,103.21.244.18
+2f3429451ae84957,20:00|21:09,5950,303,85.0,4,0.000672,0.157143,Burst,HIGH,90.0,98.0,8.0,Coordinated Burst Attack Behaviour,Under Analysis,935,Volumetric DDoS,67.0,203.0.113.77
+7d670d82a667ebed,18:00|18:59,680,21,11.333333,0,0.0,0.257353,normal,LOW,26.0,26.0,0.0,Normal Traffic,Traffic Under Observation,175,Suspicious Hosting Activity,42.0,192.168.1.10
+4fea597e843ccdb2,18:23|18:59,10000,478,270.27027,1,0.0001,0.1255,slow_build,MEDIUM,86.0,90.0,4.0,Slow Build Attack,Behavioural Event,1255,Volumetric DDoS,37.0,172.67.211.55
+b65555be34c2dbd0,16:00|16:59,2358,238,39.3,8,0.003393,0.182782,decay,MEDIUM,95.0,97.0,2.0,Decay Attack,Behavioural Event,431,Volumetric DDoS,37.0,203.0.113.77
+85b99d5a36aa15e2,10:00|10:29,120,6,4.0,0,0.0,0.266667,normal,LOW,0.0,0.0,0.0,Normal Traffic,Validated Pattern,32,Low Risk Consumer Traffic,81.0,192.168.1.22
+06d0d991024ccfc4,17:00|18:14,5621,188,74.946667,2,0.000356,0.154243,decay,MEDIUM,86.0,92.0,6.0,Decay Attack,Behavioural Event,867,Volumetric DDoS,34.0,45.155.205.233
+08461a035f62732a,18:30|19:44,5754,264,76.72,8,0.00139,0.152242,decay,MEDIUM,98.0,100.0,8.0,Decay Attack,Behavioural Event,876,Low Risk Consumer Traffic,27.0,103.21.244.18
+60cbbd95c086b81b,18:30|19:44,5754,264,76.72,8,0.00139,0.152242,sustained,MEDIUM,98.0,100.0,6.0,Sustained Distributed Attack,Behavioural Event,876,Low Risk Consumer Traffic,35.0,103.21.244.18
+54a8adabc1d472e4,20:00|21:09,5950,303,85.0,4,0.000672,0.157143,decay,HIGH,54.0,56.0,2.0,Decay Attack,Under Analysis,935,Volumetric DDoS,34.0,203.0.113.77

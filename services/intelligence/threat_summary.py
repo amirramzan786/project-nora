@@ -29,16 +29,10 @@ def classify_operational_severity(enriched_threats, confidence_score):
         if t.get("threat_level") == "High"
     ])
 
-    malicious_count = len([
-        t for t in enriched_threats
-        if t.get("known_malicious") is True
-    ])
-
     total_threats = len(enriched_threats)
 
     severity_score = (
         (high_risk_count * 18) +
-        (malicious_count * 22) +
         (total_threats * 3) +
         confidence_score
     )
@@ -69,12 +63,7 @@ def classify_attack_likelihood(enriched_threats, confidence_score):
         if t.get("threat_level") == "High"
     ])
 
-    malicious_count = len([
-        t for t in enriched_threats
-        if t.get("known_malicious") is True
-    ])
-
-    if confidence_score >= 92 and malicious_count >= 4:
+    if confidence_score >= 92 and high_risk_count >= 4:
         return "Active Coordinated Attack Conditions"
 
     if confidence_score >= 82 and high_risk_count >= 4:
@@ -102,18 +91,12 @@ def calculate_operational_confidence(enriched_threats):
         if t.get("threat_level") == "High"
     ])
 
-    malicious_count = len([
-        t for t in enriched_threats
-        if t.get("known_malicious") is True
-    ])
-
     unique_regions = len(set([
         t.get("region", "Unknown")
         for t in enriched_threats
     ]))
 
     confidence += high_risk_count * 12
-    confidence += malicious_count * 15
     confidence += unique_regions * 4
 
     # Prevent unrealistic certainty inflation
@@ -154,19 +137,9 @@ def generate_threat_summary(enriched_threats):
         if threat.get("threat_level") == "High"
     ]
 
-    malicious_sources = [
-        threat for threat in enriched_threats
-        if threat.get("known_malicious") is True
-    ]
-
     coordinated_sources = [
         threat for threat in enriched_threats
         if len(threat.get("attack_patterns", [])) >= 3
-    ]
-
-    eastern_europe_sources = [
-        threat for threat in enriched_threats
-        if threat.get("region") == "Eastern Europe"
     ]
 
     # -------------------------------------------------
@@ -181,24 +154,16 @@ def generate_threat_summary(enriched_threats):
             f"currently under active behavioural analysis. "
         )
 
-        if eastern_europe_sources:
-            summary += (
-                "Multiple distributed sources originate from Eastern Europe "
-                "and display behavioural characteristics consistent with "
-                "elevated coordinated traffic activity. "
-            )
-
-        if malicious_sources:
-            summary += (
-                "Known malicious indicators and elevated abuse scoring "
-                "suggest elevated suspicious network behaviour requiring "
-                "continued analyst observation. "
-            )
+        summary += (
+            "Multiple correlated behavioural indicators suggest "
+            "coordinated traffic activity and sustained "
+            "traffic escalation patterns. "
+        )
 
         if coordinated_sources:
             summary += (
                 "Multiple correlated behavioural indicators suggest "
-                "coordinated infrastructure activity and sustained "
+                "coordinated traffic activity and sustained "
                 "traffic escalation patterns. "
             )
 

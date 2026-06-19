@@ -417,7 +417,7 @@ def render_log_explorer(
                 if severity_level == "HIGH"
                 else "Elevated Behavioural Activity"
                 if severity_level == "MEDIUM"
-                else "Passive Reconnaissance"
+                else "Passive Scanning Behaviour"
             )
 
             operational_state = (

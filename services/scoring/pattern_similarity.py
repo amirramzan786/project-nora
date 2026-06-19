@@ -1,161 +1,5 @@
 """
 Project N.O.R.A.
-Threat Pattern Similarity Engine
-
-Phase 3 Foundation:
-Behavioural threat comparison and similarity scoring layer.
-
-This service compares enriched threat intelligence objects
-against known behavioural attack profiles to support:
-- Adaptive learning
-- Pattern correlation
-- Threat clustering
-- Confidence strengthening
-- Repeated attack detection
-"""
-
-
-# =====================================================
-# KNOWN ATTACK PATTERNS
-# =====================================================
-
-KNOWN_ATTACK_PATTERNS = {
-    "Volumetric DDoS": {
-        "threat_level": "High",
-        "activity_profile": "Known Botnet Infrastructure",
-        "required_tags": [
-            "DDoS",
-            "Volumetric Attack"
-        ],
-        "attack_behaviours": [
-            "Distributed Saturation",
-            "Traffic Amplification",
-            "Coordinated Burst Activity"
-        ],
-        "correlation_indicators": [
-            "Multi-Region Source Activity",
-            "Sustained Throughput Spike",
-            "Escalated Traffic Behaviour"
-        ],
-        "similarity_score": 92,
-        "behavioural_summary": (
-            "Known volumetric DDoS behaviour detected."
-        )
-    },
-
-    "Suspicious Hosting Activity": {
-        "threat_level": "Medium",
-        "activity_profile": "Suspicious Hosting Traffic",
-        "required_tags": [
-            "Suspicious Traffic"
-        ],
-        "attack_behaviours": [
-            "Burst Correlation",
-            "Recon Activity",
-            "Escalating Traffic Pattern"
-        ],
-        "correlation_indicators": [
-            "Behavioural Drift",
-            "Repeated Request Behaviour"
-        ],
-        "similarity_score": 71,
-        "behavioural_summary": (
-            "Suspicious hosting infrastructure activity detected."
-        )
-    },
-
-    "Low Risk Consumer Traffic": {
-        "threat_level": "Low",
-        "activity_profile": "Baseline Drift",
-        "required_tags": [],
-        "attack_behaviours": [
-            "Low Velocity Activity"
-        ],
-        "correlation_indicators": [
-            "Passive Behaviour"
-        ],
-        "similarity_score": 28,
-        "behavioural_summary": (
-            "Low-risk baseline traffic deviation detected."
-        )
-    }
-}
-
-
-# =====================================================
-# PATTERN SIMILARITY ENGINE
-# =====================================================
-
-
-def analyse_pattern_similarity(enriched_threat):
-    """
-    Compare an enriched threat object against
-    known behavioural attack profiles.
-    """
-
-    threat_level = enriched_threat.get("threat_level")
-    activity_profile = enriched_threat.get("activity_profile")
-    threat_tags = enriched_threat.get("threat_tags", [])
-
-    best_match = {
-        "matched_pattern": "Unknown Behaviour",
-        "similarity_score": 0,
-        "confidence_boost": 0,
-        "repeat_activity": False,
-        "correlation_strength": "Low",
-        "behavioural_summary": "No significant behavioural correlation identified.",
-        "correlation_indicators": []
-    }
-
-    for pattern_name, pattern_data in KNOWN_ATTACK_PATTERNS.items():
-
-        level_match = (
-            str(threat_level).strip().upper()
-            == str(pattern_data["threat_level"]).strip().upper()
-        )
-
-        profile_match = (
-            str(activity_profile).strip().lower()
-            == str(pattern_data["activity_profile"]).strip().lower()
-        )
-
-        tag_match = all(
-            tag in threat_tags
-            for tag in pattern_data["required_tags"]
-        )
-
-        if level_match and profile_match and tag_match:
-
-            similarity_score = pattern_data["similarity_score"]
-
-            best_match = {
-                "matched_pattern": pattern_name,
-                "similarity_score": similarity_score,
-                "confidence_boost": round(similarity_score * 0.12),
-                "repeat_activity": similarity_score >= 80,
-                "correlation_strength": (
-                    "High"
-                    if similarity_score >= 85
-                    else "Medium"
-                ),
-                "behavioural_summary": pattern_data.get(
-                    "behavioural_summary",
-                    "Behavioural threat correlation detected."
-                ),
-                "correlation_indicators": pattern_data.get(
-                    "correlation_indicators",
-                    []
-                ),
-                "attack_behaviours": pattern_data.get(
-                    "attack_behaviours",
-                    []
-                )
-            }
-
-    return best_match
-
-"""
-Project N.O.R.A.
 Behavioural Pattern Similarity Engine
 
 Phase 3 functionality:
@@ -179,7 +23,7 @@ KNOWN_ATTACK_PATTERNS = {
     "Volumetric DDoS": {
         "threat_level": "High",
         "activity_profiles": [
-            "Known Botnet Infrastructure",
+            "High-Risk Behavioural Activity",
             "Distributed Attack Traffic",
             "Volumetric Traffic",
         ],
@@ -212,11 +56,11 @@ KNOWN_ATTACK_PATTERNS = {
         ),
     },
 
-    "Suspicious Hosting Activity": {
+    "Suspicious Behavioural Activity": {
         "threat_level": "Medium",
         "activity_profiles": [
-            "Suspicious Hosting Traffic",
-            "Hosting Infrastructure Activity",
+            "Suspicious Behavioural Activity",
+            "Observed Traffic Activity",
             "Suspicious Traffic",
         ],
         "required_tags": [
@@ -242,7 +86,7 @@ KNOWN_ATTACK_PATTERNS = {
             "Behavioural Drift",
         ],
         "behavioural_summary": (
-            "Observed traffic resembles suspicious hosting activity with "
+            "Observed traffic resembles suspicious behavioural activity with "
             "repeated requests and moderate behavioural deviation."
         ),
     },
@@ -329,7 +173,7 @@ def _numeric_similarity(observed_value, expected_value):
 
 
 def _text_matches(value, expected_values):
-    """Check whether a text value matches one of the expected values."""
+    """Check whether a text value broadly matches one of the expected values."""
 
     if not value:
         return False
@@ -338,6 +182,8 @@ def _text_matches(value, expected_values):
 
     return any(
         normalised_value == str(expected).strip().lower()
+        or str(expected).strip().lower() in normalised_value
+        or normalised_value in str(expected).strip().lower()
         for expected in expected_values
     )
 
@@ -397,13 +243,6 @@ def analyse_pattern_similarity(enriched_threat):
         enriched_threat.get(
             "source_concentration",
             enriched_threat.get("top_ip_concentration"),
-        )
-    )
-
-    detection_confidence = _normalise_number(
-        enriched_threat.get(
-            "estimated_confidence",
-            enriched_threat.get("ml_confidence"),
         )
     )
 
@@ -537,15 +376,6 @@ def analyse_pattern_similarity(enriched_threat):
                     "Source concentration resembles the known pattern"
                 )
 
-        # Confidence similarity
-        confidence_score = _numeric_similarity(
-            detection_confidence,
-            pattern_data["expected_confidence"],
-        )
-        if confidence_score is not None:
-            weighted_score += confidence_score * 5
-            available_weight += 5
-            score_breakdown["confidence"] = round(confidence_score * 100)
 
         similarity_score = (
             round((weighted_score / available_weight) * 100)
@@ -553,17 +383,24 @@ def analyse_pattern_similarity(enriched_threat):
             else 0
         )
 
+        evidence_used = len(score_breakdown)
+
+        if evidence_used < 4:
+            similarity_score = min(similarity_score, 60)
+        elif evidence_used < 6:
+            similarity_score = min(similarity_score, 80)
+
         if similarity_score > best_match["similarity_score"]:
             best_match = {
                 "matched_pattern": pattern_name,
                 "similarity_score": similarity_score,
                 "confidence_boost": round(similarity_score * 0.12),
-                "repeat_activity": similarity_score >= 80,
+                "repeat_activity": similarity_score >= 90 and evidence_used >= 5,
                 "correlation_strength": (
                     "High"
-                    if similarity_score >= 80
+                    if similarity_score >= 90 and evidence_used >= 5
                     else "Medium"
-                    if similarity_score >= 55
+                    if similarity_score >= 65 and evidence_used >= 4
                     else "Low"
                 ),
                 "behavioural_summary": pattern_data["behavioural_summary"],
@@ -577,7 +414,7 @@ def analyse_pattern_similarity(enriched_threat):
                 ),
                 "match_reasons": match_reasons,
                 "score_breakdown": score_breakdown,
-                "evidence_used": len(score_breakdown),
+                "evidence_used": evidence_used,
             }
 
     return best_match

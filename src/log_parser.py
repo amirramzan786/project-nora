@@ -1,6 +1,7 @@
 from sklearn.ensemble import IsolationForest
 import pandas as pd
 from services.enrichment.ip_enrichment import enrich_ip
+from services.intelligence.attack_classifier import classify_attack_pattern
 
 def extract_ip(line):
 
@@ -44,13 +45,17 @@ def read_logs(file_path=None, file_content=None):
     ip_totals = {}
 
     time_counts = {}
+    parsed_log_rows = []
 
     pattern_colors = {
         "Burst Attack": "#DC2626",
         "Sustained Attack": "#F59E0B",
+        "Sustained Distributed Attack": "#F59E0B",
         "Slow Build Attack": "#3B82F6",
         "Decay Attack": "#10B981",
         "Wave Attack": "#8B5CF6",
+        "Multi-Stage Attack": "#EC4899",
+        "Normal Traffic": "#22C55E",
         "Unknown": "#6B7280"
     }
 
@@ -84,6 +89,11 @@ def read_logs(file_path=None, file_content=None):
         except Exception as e:
             print("Error in log_parser:", e)
             continue
+
+        parsed_log_rows.append({
+            "timestamp": ts_parsed,
+            "ip": ip
+        })
 
         key = (ip, time_bucket)
 
@@ -703,6 +713,31 @@ def read_logs(file_path=None, file_content=None):
 
                 # --- Replace raw anomalies with grouped anomalies (single source of truth) ---
                 anomalies = merged
+
+                # --- Phase 3.6: Central behavioural classification ---
+                # Use the full traffic lifecycle to classify the dataset shape rather than
+                # relying only on individual anomaly windows.
+                try:
+                    parsed_logs_df = pd.DataFrame(parsed_log_rows)
+                    attack_classification = classify_attack_pattern(
+                        parsed_logs_df,
+                        anomaly_count=len(anomalies),
+                        detection_events=anomalies
+                    )
+
+                    for anomaly in anomalies:
+                        anomaly["pattern"] = attack_classification.label
+                        anomaly["attack_classification"] = attack_classification.label
+                        anomaly["classification_summary"] = attack_classification.summary
+                        anomaly["classification_confidence"] = attack_classification.confidence
+                        anomaly["classification_risk_level"] = attack_classification.risk_level
+                        anomaly["risk_level"] = attack_classification.risk_level
+                        anomaly["classification_pattern_type"] = attack_classification.pattern_type
+                        anomaly["classification_evidence"] = attack_classification.evidence
+                        anomaly["classification_source"] = "attack_classifier"
+
+                except Exception as e:
+                    print("Attack classification error:", e)
 
             # --- Create anomaly points dataframe for visualization ---
             anomaly_points = []

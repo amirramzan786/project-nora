@@ -304,6 +304,7 @@ def compare_with_detection_history(
 def calculate_adaptive_confidence_adjustment(
     historical_matches: list[dict[str, Any]],
     base_confidence: float,
+    current_severity: str = "LOW",
 ) -> dict[str, Any]:
     """
     Apply behavioural reinforcement using historical detection memory.
@@ -324,24 +325,37 @@ def calculate_adaptive_confidence_adjustment(
         key=lambda match: match.get("similarity_score", 0),
     )
 
+    severity_normalised = str(current_severity).strip().upper()
+
+    if severity_normalised == "LOW":
+        return {
+            "reinforcement_score": 0,
+            "adjusted_confidence": round(base_confidence),
+            "reason": "Behavioural reinforcement disabled for low-risk activity",
+            "matched_session": strongest_match.get("session_id"),
+            "matched_pattern": strongest_match.get("matched_pattern"),
+        }
+
     similarity_score = float(
         strongest_match.get("similarity_score", 0)
     )
 
-    if similarity_score >= 90:
-        reinforcement_score = 8
-    elif similarity_score >= 80:
-        reinforcement_score = 6
-    elif similarity_score >= 70:
+    evidence_used = int(strongest_match.get("evidence_used", 0) or 0)
+
+    if evidence_used < 4:
+        reinforcement_score = 0
+    elif similarity_score >= 95 and evidence_used >= 6:
+        reinforcement_score = 5
+    elif similarity_score >= 90 and evidence_used >= 5:
         reinforcement_score = 4
-    elif similarity_score >= 60:
+    elif similarity_score >= 80 and evidence_used >= 5:
         reinforcement_score = 2
     else:
         reinforcement_score = 0
 
     adjusted_confidence = min(
         100,
-        round(base_confidence + reinforcement_score)
+        round(base_confidence + reinforcement_score),
     )
 
     return {
@@ -516,9 +530,87 @@ def build_detection_intelligence_summary(history_limit: int = 100) -> dict[str, 
         "average_adaptive_confidence": average_adaptive_confidence,
         "average_reinforcement": average_reinforcement,
         "most_common_classification": most_common_classification,
+        "classification_distribution": dict(
+            sorted(
+                classification_counts.items(),
+                key=lambda item: item[1],
+                reverse=True,
+            )
+        ),
         "most_common_pattern": most_common_pattern,
         "last_detection_seen": history_rows[-1].get("session_time", "Unknown Time"),
         "validated_sessions": validated_sessions,
+    }
+
+
+def build_learning_trend_summary(history_limit: int = 100) -> dict[str, Any]:
+    """
+    Analyse reinforcement-score movement across stored detections.
+
+    This gives the Adaptive Intelligence workspace an examiner-visible view
+    of whether behavioural reinforcement is improving, stable, or declining.
+    """
+
+    history_rows = load_detection_history(limit=history_limit)
+
+    reinforcement_values = []
+
+    for row in history_rows:
+        reinforcement_score = _optional_float(row.get("reinforcement_score"))
+
+        if reinforcement_score is not None:
+            reinforcement_values.append(reinforcement_score)
+
+    if len(reinforcement_values) < 2:
+        return {
+            "trend": "Insufficient Data",
+            "current_average": 0,
+            "previous_average": 0,
+            "change_percent": 0,
+            "trend_summary": "More detection history is required before a reinforcement trend can be calculated.",
+        }
+
+    midpoint = max(len(reinforcement_values) // 2, 1)
+    previous_window = reinforcement_values[:midpoint]
+    current_window = reinforcement_values[midpoint:]
+
+    if not current_window:
+        current_window = reinforcement_values[-1:]
+
+    previous_average = round(
+        sum(previous_window) / len(previous_window),
+        1,
+    )
+
+    current_average = round(
+        sum(current_window) / len(current_window),
+        1,
+    )
+
+    if previous_average == 0:
+        change_percent = 100 if current_average > 0 else 0
+    else:
+        change_percent = round(
+            ((current_average - previous_average) / previous_average) * 100,
+            1,
+        )
+
+    if current_average > previous_average + 0.5:
+        trend = "Improving"
+        trend_summary = "Historical reinforcement is increasing, indicating stronger behavioural memory correlation across recent detections."
+    elif current_average < previous_average - 0.5:
+        trend = "Declining"
+        trend_summary = "Historical reinforcement has reduced, suggesting recent detections are less similar to stored behavioural memory."
+    else:
+        trend = "Stable"
+        trend_summary = "Historical reinforcement remains broadly stable across stored detection sessions."
+
+    return {
+        "trend": trend,
+        "current_average": current_average,
+        "previous_average": previous_average,
+        "change_percent": change_percent,
+        "trend_summary": trend_summary,
     }
 
 
@@ -591,11 +683,6 @@ def _compare_session_pair(
             "Source concentration resembles the previous session",
             10,
         ),
-        (
-            "confidence",
-            "Detection confidence is comparable",
-            5,
-        ),
     ]
 
     for field_name, reason_text, weight in numeric_comparisons:
@@ -625,11 +712,18 @@ def _compare_session_pair(
         else 0
     )
 
+    evidence_used = len(score_breakdown)
+
+    if evidence_used < 4:
+        similarity_score = min(similarity_score, 60)
+    elif evidence_used < 6:
+        similarity_score = min(similarity_score, 80)
+
     correlation_strength = (
         "High"
-        if similarity_score >= 80
+        if similarity_score >= 90 and evidence_used >= 5
         else "Medium"
-        if similarity_score >= 55
+        if similarity_score >= 65 and evidence_used >= 4
         else "Low"
     )
 
@@ -638,10 +732,8 @@ def _compare_session_pair(
         "correlation_strength": correlation_strength,
         "match_reasons": match_reasons,
         "score_breakdown": score_breakdown,
-        "evidence_used": len(score_breakdown),
+        "evidence_used": evidence_used,
     }
-
-
 
 def _numeric_similarity(
     current_value: float | None,

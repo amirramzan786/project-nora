@@ -13,6 +13,7 @@ from services.scoring.pattern_similarity import analyse_pattern_similarity
 from services.intelligence.detection_history import (
     build_behavioural_memory_repository,
     build_detection_intelligence_summary,
+    build_learning_trend_summary,
     compare_with_detection_history,
     calculate_adaptive_confidence_adjustment,
 )
@@ -111,6 +112,7 @@ def render_adaptive_intelligence(
 
     memory_repository = build_behavioural_memory_repository()
     detection_intelligence_summary = build_detection_intelligence_summary()
+    learning_trend_summary = build_learning_trend_summary()
 
     memory_rows_html = ""
 
@@ -259,7 +261,7 @@ def render_adaptive_intelligence(
             </div>
 
             <div class='nora-adaptive-metric'>
-                <div class='nora-adaptive-metric-label'>Infrastructure</div>
+                <div class='nora-adaptive-metric-label'>Activity Profile</div>
                 <div class='nora-adaptive-metric-value'>{enriched_intel.get('activity_profile', 'Unknown')}</div>
             </div>
 
@@ -278,7 +280,7 @@ def render_adaptive_intelligence(
         <div class='nora-adaptive-insight-panel'>
             <div class='nora-adaptive-panel-title'>Enrichment Assessment</div>
             <div class='nora-adaptive-panel-content'>
-                N.O.R.A enriched the simulated activity using infrastructure, regional and abuse-reputation indicators. This context becomes evidence for behavioural memory comparison and adaptive confidence reinforcement.
+                N.O.R.A assessed the observed activity using behavioural indicators, detection evidence and historical memory. This context becomes evidence for behavioural memory comparison and adaptive confidence reinforcement.
             </div>
         </div>
 
@@ -387,6 +389,54 @@ def render_adaptive_intelligence(
         </div>
 
         <div class='nora-adaptive-insight-panel' style='margin-top:18px;'>
+            <div class='nora-adaptive-panel-title'>Historical Classification Breakdown</div>
+
+            <div class='nora-adaptive-panel-content'>
+                {
+                    '<br>'.join(
+                        [
+                            f"{classification}: {count} detections"
+                            for classification, count in detection_intelligence_summary.get(
+                                'classification_distribution', {}
+                            ).items()
+                        ]
+                    )
+                    or 'No historical classifications recorded yet.'
+                }
+            </div>
+        </div>
+
+        <div class='nora-adaptive-insight-panel' style='margin-top:18px;'>
+            <div class='nora-adaptive-panel-title'>Behavioural Learning Trend</div>
+
+            <div class='nora-adaptive-grid' style='margin-top:12px;'>
+                <div class='nora-adaptive-metric'>
+                    <div class='nora-adaptive-metric-label'>Trend</div>
+                    <div class='nora-adaptive-metric-value'>{learning_trend_summary.get('trend', 'Unknown')}</div>
+                </div>
+
+                <div class='nora-adaptive-metric'>
+                    <div class='nora-adaptive-metric-label'>Current Average</div>
+                    <div class='nora-adaptive-metric-value'>{learning_trend_summary.get('current_average', 0)}</div>
+                </div>
+
+                <div class='nora-adaptive-metric'>
+                    <div class='nora-adaptive-metric-label'>Previous Average</div>
+                    <div class='nora-adaptive-metric-value'>{learning_trend_summary.get('previous_average', 0)}</div>
+                </div>
+
+                <div class='nora-adaptive-metric'>
+                    <div class='nora-adaptive-metric-label'>Change</div>
+                    <div class='nora-adaptive-metric-value'>{learning_trend_summary.get('change_percent', 0)}%</div>
+                </div>
+            </div>
+
+            <div class='nora-adaptive-panel-content' style='margin-top:12px;'>
+                {learning_trend_summary.get('trend_summary', '')}
+            </div>
+        </div>
+
+        <div class='nora-adaptive-insight-panel' style='margin-top:18px;'>
             <div class='nora-adaptive-panel-title'>Memory Learning Summary</div>
             <div class='nora-adaptive-panel-content'>
                 N.O.R.A has most frequently observed <strong>{detection_intelligence_summary.get('most_common_classification', 'Unknown')}</strong> behaviour, with <strong>{detection_intelligence_summary.get('most_common_pattern', 'Unknown')}</strong> appearing as the strongest recurring memory pattern. The most recent stored detection was recorded at {detection_intelligence_summary.get('last_detection_seen', 'Unknown')}.
@@ -433,9 +483,9 @@ def render_adaptive_intelligence(
             <div class='nora-adaptive-confidence-operator'>+</div>
 
             <div class='nora-adaptive-confidence-step'>
-                <div class='nora-adaptive-metric-label'>Enrichment Impact</div>
+                <div class='nora-adaptive-metric-label'>Behavioural Evidence Impact</div>
                 <div class='nora-adaptive-confidence-value'>+{enrichment_impact}%</div>
-                <div class='nora-adaptive-confidence-copy'>Reputation and enrichment evidence support assessment</div>
+                <div class='nora-adaptive-confidence-copy'>Behavioural evidence supports assessment</div>
             </div>
 
             <div class='nora-adaptive-confidence-operator'>=</div>
@@ -451,7 +501,7 @@ def render_adaptive_intelligence(
         <div class='nora-adaptive-confidence-panel'>
             <div class='nora-adaptive-panel-title'>Confidence Reinforcement Reasoning</div>
             <div class='nora-adaptive-panel-content'>
-                N.O.R.A compared the current activity profile against saved detection history and applied a real historical reinforcement score of +{memory_reinforcement}%. Enrichment evidence contributed +{enrichment_impact}%, producing an adjusted confidence score of {adjusted_confidence}%.
+                N.O.R.A compared the current activity profile against saved detection history and applied a real historical reinforcement score of +{memory_reinforcement}%. Behavioural evidence contributed +{enrichment_impact}%, producing an adjusted confidence score of {adjusted_confidence}%.
             </div>
         </div>
 
@@ -503,5 +553,5 @@ def render_adaptive_intelligence(
     )
 
     st.caption(
-        "Adaptive Intelligence demonstrates how N.O.R.A uses behavioural memory, enrichment context and confidence reinforcement to make future detections stronger."
+        "Adaptive Intelligence demonstrates how N.O.R.A uses behavioural memory, detection evidence and confidence reinforcement to make future detections stronger."
     )

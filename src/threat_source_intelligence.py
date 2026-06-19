@@ -110,7 +110,45 @@ def build_threat_source_rows(
                 "LOW": "P4"
             }.get(intel["threat_level"], "P4")
 
-            diversified_similarity = similarity["similarity_score"]
+            # Phase 3.6A source similarity realism calibration
+            top_request_count = max(ip_totals.values()) if ip_totals else count
+            source_ratio = (
+                count / top_request_count
+                if top_request_count > 0
+                else 0
+            )
+            base_similarity = similarity.get("similarity_score", 0)
+
+            if aligned_severity == "HIGH":
+                diversified_similarity = round(
+                    (base_similarity * 0.35)
+                    + (source_ratio * 45)
+                    + 20
+                )
+                diversified_similarity = max(
+                    62,
+                    min(95, diversified_similarity)
+                )
+            elif aligned_severity == "MEDIUM":
+                diversified_similarity = round(
+                    (base_similarity * 0.30)
+                    + (source_ratio * 40)
+                    + 12
+                )
+                diversified_similarity = max(
+                    45,
+                    min(84, diversified_similarity)
+                )
+            else:
+                diversified_similarity = round(
+                    (base_similarity * 0.20)
+                    + (source_ratio * 30)
+                    + 8
+                )
+                diversified_similarity = max(
+                    25,
+                    min(58, diversified_similarity)
+                )
 
         threat_colour = {
             "HIGH": "🔴 HIGH",
@@ -120,15 +158,22 @@ def build_threat_source_rows(
 
         if overall_severity != "MEDIUM":
 
-            # --- Phase 2.5B operational realism calibration ---
+            # --- Phase 3.6A realism calibration ---
             threat_classification = {
                 "HIGH": "Sustained Coordinated Activity",
                 "MEDIUM": "Elevated Behavioural Activity",
-                "LOW": "Suspicious Network Behaviour"
+                "LOW": "Observed Source Activity"
             }.get(
                 aligned_severity,
-                "Suspicious Network Behaviour"
+                "Observed Source Activity"
             )
+
+            if (
+                aligned_severity == "LOW"
+                and active_alerts == 0
+                and estimated_confidence <= 20
+            ):
+                threat_classification = "Normal Source Activity"
 
         if overall_severity != "MEDIUM":
 
@@ -148,6 +193,26 @@ def build_threat_source_rows(
             "P4": "🟢 P4"
         }.get(threat_priority, threat_priority)
 
+        # Phase 3.6A source confidence diversification
+        source_confidence = estimated_confidence
+
+        if diversified_similarity >= 90:
+            source_confidence += 8
+        elif diversified_similarity >= 75:
+            source_confidence += 4
+
+        if count >= 500:
+            source_confidence += 5
+        elif count >= 250:
+            source_confidence += 2
+
+        if aligned_severity == "HIGH":
+            source_confidence += 5
+        elif aligned_severity == "MEDIUM":
+            source_confidence += 2
+
+        source_confidence = min(100, source_confidence)
+
         threat_rows.append({
             "Priority": priority_label,
             "Threat Source": intel["ip_address"],
@@ -159,7 +224,7 @@ def build_threat_source_rows(
             "Similarity": f"{diversified_similarity}%",
             "Escalation": escalation_state,
             "Traffic Profile": traffic_classification,
-            "Confidence": f"{estimated_confidence}%",
+            "Confidence": f"{source_confidence}%",
             "Correlation": similarity.get(
                 "correlation_strength",
                 "Low"
@@ -167,4 +232,3 @@ def build_threat_source_rows(
         })
 
     return threat_rows, enriched_threats
-

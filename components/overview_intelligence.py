@@ -1,5 +1,3 @@
-
-
 import streamlit as st
 
 from src.icons import get_icon
@@ -38,9 +36,16 @@ def render_detection_intelligence(df_time, anomalies):
                 elif peak_val >= 180 and increase_pct < 18:
                     increase_pct = 18.0
 
-                pattern = latest.get("pattern", "Unknown")
+                pattern = latest.get(
+                    "attack_classification",
+                    latest.get("pattern", "Unknown")
+                )
                 similarity = latest.get("similarity", 0)
                 z_score = latest.get("z_score", 0)
+                classification_summary = latest.get(
+                    "classification_summary",
+                    "Suspicious traffic behaviour detected."
+                )
 
                 if z_score >= 2.5:
                     z_label = "High deviation"
@@ -72,13 +77,10 @@ def render_detection_intelligence(df_time, anomalies):
                 else:
                     pattern_text = f"{pattern}"
 
-                attack_classification = (
-                    "Distributed Attack"
-                    if latest.get("top_ips") and len(latest["top_ips"]) > 1
-                    else "Single Source Attack"
-                    if latest.get("top_ips")
-                    else "Anomalous behaviour detected"
-                )
+                attack_classification = latest.get(
+                    "classification_pattern_type",
+                    "Behavioural Analysis"
+                ).replace("_", " ").title()
 
                 st.markdown(f"""
 <div class='nora-intel-panel'>
@@ -108,7 +110,7 @@ def render_detection_intelligence(df_time, anomalies):
     </div>
     <div class='nora-core-status'>
         <strong>Analyst Summary:</strong><br>
-        {pattern_text} traffic behaviour identified with elevated request coordination across multiple network sources.
+        {classification_summary}
     </div>
 
 </div>

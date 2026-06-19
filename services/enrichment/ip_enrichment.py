@@ -224,9 +224,9 @@ def calculate_confidence_score(enriched_ip):
 
     activity_profile = enriched_ip.get("activity_profile")
 
-    if activity_profile == "Known Botnet Infrastructure":
+    if activity_profile == "High-Risk Behavioural Activity":
         confidence += 15
-    elif activity_profile == "Suspicious Hosting Traffic":
+    elif activity_profile == "Suspicious Behavioural Activity":
         confidence += 8
 
     # -------------------------------------------------
@@ -342,6 +342,8 @@ def enrich_ip(
     # Mock Intelligence Logic
     # -------------------------------------------------
 
+    has_live_intelligence = abuseipdb_data is not None
+
     if (
         request_count >= 1000
         or (
@@ -359,64 +361,33 @@ def enrich_ip(
             enriched_ip["known_malicious"]
             or enriched_ip["abuse_score"] >= 75
         )
-
-        if enriched_ip["country"] == "Unknown":
-            enriched_ip["country"] = "Russia"
-            enriched_ip["country_code"] = "RU"
-            enriched_ip["country_flag"] = get_country_flag("RU")
-        enriched_ip["city"] = (
-            enriched_ip["city"]
-            if enriched_ip["city"] != "Unknown"
-            else "Moscow"
-        )
-        enriched_ip["region"] = (
-            enriched_ip["region"]
-            if enriched_ip["region"] != "Unknown"
-            else "Eastern Europe"
-        )
-        enriched_ip["asn"] = (
-            enriched_ip["asn"]
-            if enriched_ip["asn"] != "Unknown"
-            else "AS9009"
-        )
-        enriched_ip["isp"] = (
-            enriched_ip["isp"]
-            if enriched_ip["isp"] != "Unknown"
-            else "M247 Europe"
-        )
         enriched_ip["regional_risk"] = "High"
-        enriched_ip["activity_profile"] = "Known Botnet Infrastructure"
-
+        enriched_ip["activity_profile"] = "High-Risk Behavioural Activity"
         enriched_ip["threat_infrastructure"] = (
-            "Distributed Botnet Relay Cluster"
+            "Distributed Traffic Source"
         )
-
         enriched_ip["traffic_classification"] = (
-            "Coordinated Volumetric Flood Activity"
+            "Volumetric Traffic Behaviour"
         )
-
         enriched_ip["region_cluster"] = (
-            "Eastern European Traffic Corridor"
+            "Unknown Infrastructure Group"
         )
-
         enriched_ip["threat_tags"] = [
             "DDoS",
-            "Botnet Activity",
-            "Volumetric Attack"
+            "Distributed Activity",
+            "Volumetric Traffic Behaviour"
         ]
-
         enriched_ip["attack_patterns"] = [
             "Traffic Flooding",
             "Distributed Saturation",
             "Coordinated Burst Correlation",
             "Sustained Throughput Escalation"
         ]
-
         enriched_ip["confidence_justification"] = [
             "Sustained high-volume traffic activity detected",
             "Behavioural indicators match distributed attack patterns",
             "Multi-region escalation indicators identified",
-            "Elevated abuse reputation confidence"
+            "Elevated behavioural confidence indicators observed"
         ]
 
     elif (
@@ -431,60 +402,29 @@ def enrich_ip(
             enriched_ip["abuse_score"],
             61
         )
-
-        if enriched_ip["country"] == "Unknown":
-            enriched_ip["country"] = "Germany"
-            enriched_ip["country_code"] = "DE"
-            enriched_ip["country_flag"] = get_country_flag("DE")
-        enriched_ip["city"] = (
-            enriched_ip["city"]
-            if enriched_ip["city"] != "Unknown"
-            else "Frankfurt"
-        )
-        enriched_ip["region"] = (
-            enriched_ip["region"]
-            if enriched_ip["region"] != "Unknown"
-            else "Western Europe"
-        )
-        enriched_ip["asn"] = (
-            enriched_ip["asn"]
-            if enriched_ip["asn"] != "Unknown"
-            else "AS3320"
-        )
-        enriched_ip["isp"] = (
-            enriched_ip["isp"]
-            if enriched_ip["isp"] != "Unknown"
-            else "Deutsche Telekom"
-        )
         enriched_ip["regional_risk"] = "Medium"
-        enriched_ip["activity_profile"] = "Suspicious Hosting Traffic"
-
+        enriched_ip["activity_profile"] = "Suspicious Behavioural Activity"
         enriched_ip["threat_infrastructure"] = (
-            "Suspicious Hosting Relay"
+            "Observed Traffic Source"
         )
-
         enriched_ip["traffic_classification"] = (
             "Escalating Behavioural Traffic"
         )
-
         enriched_ip["region_cluster"] = (
-            "Western European Hosting Corridor"
+            "Unknown Infrastructure Group"
         )
-
         enriched_ip["threat_tags"] = [
             "Suspicious Traffic"
         ]
-
         enriched_ip["attack_patterns"] = [
             "Repeated Connection Attempts",
             "Burst Correlation Activity",
             "Escalating Request Behaviour"
         ]
-
         enriched_ip["confidence_justification"] = [
             "Repeated behavioural anomalies observed",
             "Suspicious traffic correlation patterns identified",
-            "Elevated hosting infrastructure activity detected"
+            "Elevated traffic activity observed"
         ]
 
     else:
@@ -493,50 +433,20 @@ def enrich_ip(
             enriched_ip["abuse_score"],
             18
         )
-
-        if enriched_ip["country"] == "Unknown":
-            enriched_ip["country"] = "United Kingdom"
-            enriched_ip["country_code"] = "GB"
-            enriched_ip["country_flag"] = get_country_flag("GB")
-        enriched_ip["city"] = (
-            enriched_ip["city"]
-            if enriched_ip["city"] != "Unknown"
-            else "London"
-        )
-        enriched_ip["region"] = (
-            enriched_ip["region"]
-            if enriched_ip["region"] != "Unknown"
-            else "Western Europe"
-        )
-        enriched_ip["asn"] = (
-            enriched_ip["asn"]
-            if enriched_ip["asn"] != "Unknown"
-            else "AS5607"
-        )
-        enriched_ip["isp"] = (
-            enriched_ip["isp"]
-            if enriched_ip["isp"] != "Unknown"
-            else "Sky UK"
-        )
         enriched_ip["regional_risk"] = "Low"
-        enriched_ip["activity_profile"] = "Baseline Drift"
-
+        enriched_ip["activity_profile"] = "Low-Risk Behavioural Activity"
         enriched_ip["threat_infrastructure"] = (
-            "Residential Consumer Network"
+            "Observed Traffic Source"
         )
-
         enriched_ip["traffic_classification"] = (
-            "Low Velocity Behavioural Drift"
+            "Low Velocity Behaviour"
         )
-
         enriched_ip["region_cluster"] = (
-            "Stable Regional Traffic"
+            "Unknown Infrastructure Group"
         )
-
         enriched_ip["attack_patterns"] = [
             "Baseline Behaviour Deviation"
         ]
-
         enriched_ip["confidence_justification"] = [
             "Low-risk behavioural deviation observed",
             "Traffic patterns remain operationally stable"
@@ -552,7 +462,16 @@ def enrich_ip(
 
     if not enriched_ip["intel_sources"]:
         enriched_ip["intel_sources"] = [
-            "Mock Intelligence Engine"
+            "Behavioural Analysis Only"
         ]
+
+    if not has_live_intelligence:
+        enriched_ip["country"] = "Unknown"
+        enriched_ip["country_code"] = "UN"
+        enriched_ip["country_flag"] = "🏳️"
+        enriched_ip["city"] = "Unknown"
+        enriched_ip["region"] = "Unknown"
+        enriched_ip["asn"] = "Unknown"
+        enriched_ip["isp"] = "Unknown"
 
     return enriched_ip

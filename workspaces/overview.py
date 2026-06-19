@@ -13,7 +13,25 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies)
     """Render the Overview workspace."""
 
     # --- System Status Banner ---
-    render_overview_status(ip_totals)
+    overall_severity = "LOW"
+    anomaly_count = len(anomalies) if anomalies else 0
+
+    if anomalies:
+        severities = [
+            str(anomaly.get("severity", "LOW")).upper()
+            for anomaly in anomalies
+        ]
+
+        if "HIGH" in severities:
+            overall_severity = "HIGH"
+        elif "MEDIUM" in severities:
+            overall_severity = "MEDIUM"
+
+    render_overview_status(
+        ip_totals,
+        overall_severity=overall_severity,
+        anomaly_count=anomaly_count,
+    )
 
     # --- Key Metrics ---
     df_time = render_overview_metrics(ip_totals, time_counts, anomalies)

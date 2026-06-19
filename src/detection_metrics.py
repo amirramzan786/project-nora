@@ -37,7 +37,7 @@ def get_detection_metrics(
     )
 
     severity_logic = get_detection_severity(
-        max_requests,
+        total_requests,
         unique_ips=len(ip_totals) if ip_totals else 1,
         anomaly_count=active_alerts,
         avg_requests=avg_requests
@@ -50,12 +50,19 @@ def get_detection_metrics(
     )
 
     # =====================================================
-    # Phase 2.5G — Unified telemetry coupling engine
+    # Phase 3.6A — Telemetry adjustment layer
     # =====================================================
     telemetry_profile = get_telemetry_profile(overall_severity)
 
+    # Safety fallback for new or unsupported severity levels
+    if telemetry_profile is None:
+        telemetry_profile = {
+            "confidence_modifier": 0,
+            "escalation_modifier": 0
+        }
+
     estimated_confidence = max(
-        42,
+        0,
         min(
             98,
             estimated_confidence + telemetry_profile["confidence_modifier"]
@@ -71,7 +78,8 @@ def get_detection_metrics(
     severity_class = {
         "LOW": "nora-risk-low",
         "MEDIUM": "nora-risk-medium",
-        "HIGH": "nora-risk-high"
+        "HIGH": "nora-risk-high",
+        "CRITICAL": "nora-risk-high"
     }.get(overall_severity, "")
 
     # --- Estimated detection accuracy ---

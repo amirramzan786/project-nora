@@ -74,7 +74,7 @@ def render_threat_assessment_card(
             '● Analyst monitoring recommended'
         ),
         'HIGH': (
-            '● Coordinated malicious behaviour suspected<br>'
+            '● Coordinated suspicious behaviour observed<br>'
             '● Sustained anomalous traffic detected<br>'
             '● Escalation and investigation required'
         ),

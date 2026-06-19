@@ -95,42 +95,47 @@ def render_detection_intelligence(
             key=lambda item: item[1]
         )
 
-    traffic_pattern = None
+    latest_anomaly = anomalies[-1] if anomalies else {}
 
-    if isinstance(telemetry_profile, dict):
-        traffic_pattern = (
-            telemetry_profile.get("traffic_pattern")
-            or telemetry_profile.get("pattern")
-        )
+    classifier_label = latest_anomaly.get(
+        "attack_classification",
+        "Normal Traffic"
+    )
 
-    if not traffic_pattern:
-        traffic_values = list(time_counts.values()) if time_counts else []
+    classifier_risk_level = latest_anomaly.get(
+        "classification_risk_level",
+        overall_severity
+    )
 
-        if traffic_values:
-            average_traffic = sum(traffic_values) / len(traffic_values)
-            peak_traffic = max(traffic_values)
+    traffic_pattern = latest_anomaly.get(
+        "classification_pattern_type",
+        "normal"
+    )
 
-            if average_traffic and peak_traffic >= average_traffic * 2:
-                traffic_pattern = "Burst"
-            elif len(traffic_values) >= 4 and average_traffic > 0:
-                traffic_pattern = "Sustained"
-            else:
-                traffic_pattern = "Baseline"
-        else:
-            traffic_pattern = "Baseline"
+    classifier_confidence = latest_anomaly.get(
+        "classification_confidence",
+        estimated_confidence
+    )
 
     activity_profile = {
         "HIGH": "Distributed Attack Traffic",
-        "MEDIUM": "Suspicious Hosting Traffic",
+        "MEDIUM": "Suspicious Behavioural Activity",
         "LOW": "Baseline Drift",
     }.get(overall_severity, "Baseline Drift")
 
     threat_tags = []
 
-    if overall_severity == "HIGH":
-        threat_tags = ["DDoS", "Volumetric Attack"]
-    elif overall_severity == "MEDIUM":
-        threat_tags = ["Suspicious Traffic"]
+    if "Distributed" in classifier_label:
+        threat_tags.append("Distributed Activity")
+
+    if "Burst" in classifier_label:
+        threat_tags.append("Burst Behaviour")
+
+    if "Sustained" in classifier_label:
+        threat_tags.append("Sustained Behaviour")
+
+    if classifier_risk_level in ["HIGH", "CRITICAL"]:
+        threat_tags.append("High Confidence Detection")
 
     anomaly_count = len(anomalies)
     anomaly_ratio = (
@@ -157,6 +162,7 @@ def render_detection_intelligence(
     })
 
     similarity_score = similarity_result["similarity_score"]
+    overall_severity = classifier_risk_level
     similarity_match = f"{similarity_score}%"
 
     traffic_values = list(time_counts.values()) if time_counts else []
@@ -195,37 +201,26 @@ def render_detection_intelligence(
     adaptive_confidence_result = calculate_adaptive_confidence_adjustment(
         historical_session_matches,
         estimated_confidence,
+        current_severity=overall_severity,
     )
 
     adaptive_confidence = adaptive_confidence_result["adjusted_confidence"]
     adaptive_reinforcement_score = adaptive_confidence_result["reinforcement_score"]
 
-    validation_status = (
-        "Validated Pattern"
-        if similarity_score >= 80
-        else "Correlated"
-        if adaptive_confidence >= 80
-        else "Under Analysis"
-        if adaptive_confidence >= 55
-        else "Needs Review"
-    )
-
-    if similarity_score >= 80:
-        detection_classification = "Repeated Historical Attack Pattern"
-    elif overall_severity == "HIGH" and traffic_pattern == "Burst":
-        detection_classification = "Coordinated Burst Attack Behaviour"
-    elif overall_severity == "HIGH" and traffic_pattern == "Sustained":
-        detection_classification = "Sustained Attack Behaviour"
-    elif overall_severity == "HIGH":
-        detection_classification = "Coordinated Attack Behaviour"
-    elif overall_severity == "MEDIUM" and source_concentration >= 0.35:
-        detection_classification = "Reconnaissance Activity"
-    elif overall_severity == "MEDIUM":
-        detection_classification = "Elevated Behavioural Activity"
-    elif anomaly_ratio > 0:
-        detection_classification = "Low-Confidence Anomalous Activity"
+    if classifier_label == "Normal Traffic":
+        validation_status = "Baseline Behaviour"
+    elif classifier_risk_level in ["HIGH", "CRITICAL"] and similarity_score >= 75:
+        validation_status = "Confirmed Detection"
+    elif similarity_score >= 80:
+        validation_status = "Validated Pattern"
+    elif classifier_risk_level == "MEDIUM":
+        validation_status = "Behavioural Event"
+    elif adaptive_confidence >= 55:
+        validation_status = "Under Analysis"
     else:
-        detection_classification = "Baseline Behavioural Activity"
+        validation_status = "Traffic Under Observation"
+
+    detection_classification = classifier_label
 
     current_session_data.update({
         "adaptive_confidence": adaptive_confidence,
@@ -237,19 +232,20 @@ def render_detection_intelligence(
 
     save_result = save_detection_session(current_session_data)
 
+    # Phase 3.6A evidence realism calibration
     source_concentration_signal = (
         "HIGH"
-        if source_concentration >= 0.60
+        if primary_source_requests >= 500
         else "MEDIUM"
-        if source_concentration >= 0.35
+        if primary_source_requests >= 200
         else "LOW"
     )
 
     request_burst_signal = (
         "HIGH"
-        if anomaly_ratio >= 0.18
+        if traffic_pattern == "Burst" and overall_severity == "HIGH"
         else "MEDIUM"
-        if anomaly_ratio >= 0.08
+        if traffic_pattern == "Burst"
         else "LOW"
     )
 

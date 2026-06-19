@@ -1,5 +1,3 @@
-
-
 """
 Project N.O.R.A.
 Incident Escalation Engine
@@ -39,11 +37,6 @@ def generate_escalation_recommendation(enriched_threat):
         0
     )
 
-    known_malicious = enriched_threat.get(
-        "known_malicious",
-        False
-    )
-
     correlation_strength = enriched_threat.get(
         "correlation_strength",
         "Low"
@@ -55,8 +48,8 @@ def generate_escalation_recommendation(enriched_threat):
 
     if (
         threat_level == "High"
-        and confidence_score >= 85
-        and known_malicious
+        and confidence_score >= 90
+        and correlation_strength == "High"
     ):
 
         return {
@@ -68,10 +61,10 @@ def generate_escalation_recommendation(enriched_threat):
                 "containment recommended."
             ),
             "analyst_guidance": (
-                "High-confidence malicious infrastructure "
+                "High-confidence behavioural indicators "
                 "identified. Review firewall policies, "
-                "rate-limiting controls and upstream "
-                "traffic filtering immediately."
+                "rate-limiting controls and traffic "
+                "filtering measures immediately."
             )
         }
 
