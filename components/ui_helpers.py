@@ -1,5 +1,6 @@
 import streamlit as st
 
+from components.navigation import render_navigation
 from src.icons import get_icon
 
 def render_section_title(icon, title):
@@ -22,6 +23,7 @@ def render_workspace_header(
     dataset_name=None,
     on_reset_dataset=None,
     reset_key=None,
+    dataset_controls_html="",
 ):
     """Render a reusable N.O.R.A workspace header."""
 
@@ -83,9 +85,12 @@ def render_workspace_header(
             </div>
         </div>
     </div>
+
+    <div class='nora-workspace-header-shell-divider'></div>
 </div>
 """
         )
+        render_navigation()
         return
 
     reset_html = ""
@@ -140,6 +145,7 @@ def render_workspace_header(
                         {active_name}
                         {reset_html}
                     </div>
+                    {dataset_controls_html}
                 </div>
             </div>
 
@@ -164,9 +170,12 @@ def render_workspace_header(
             </div>
         </div>
     </div>
+
+    <div class='nora-workspace-header-shell-divider'></div>
 </div>
 """
     )
+    render_navigation()
 
 def render_threat_stat(label, value, extra_class="", icon_key=None):
 

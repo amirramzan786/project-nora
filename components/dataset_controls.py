@@ -1,9 +1,6 @@
-
-
-import datetime
-
 import streamlit as st
 
+from components.ui_helpers import render_workspace_header
 from services.app_state import (
     activate_sample_log,
     activate_uploaded_log,
@@ -11,119 +8,50 @@ from services.app_state import (
 )
 
 
-def get_dashboard_greeting():
-    """Return a time-aware greeting for the dashboard header."""
-
-    current_hour = datetime.datetime.now().hour
-
-    if current_hour < 12:
-        return "Good morning"
-
-    if current_hour < 18:
-        return "Good afternoon"
-
-    return "Good evening"
-
-
-
 def render_dataset_controls():
     """Render the Overview dataset selector and upload controls."""
 
     show_overview_dashboard = True
-    greeting = get_dashboard_greeting()
+    current_mode = st.session_state.get("active_log_mode", "sample")
+    current_name = st.session_state.get("active_log_name", "sample.log")
 
-    control_container = st.container(border=True)
+    selected_dataset_source = st.query_params.get("dataset_source")
 
-    with control_container:
-        left_col, mid_col, right_col = st.columns(
-            [3, 4, 3],
-            gap="large",
-            vertical_alignment="center"
+    if selected_dataset_source == "sample":
+        if st.session_state.get("active_log_mode") != "sample":
+            activate_sample_log()
+            st.session_state["log_uploader_version"] += 1
+            st.rerun()
+
+        if "dataset_source" in st.query_params:
+            del st.query_params["dataset_source"]
+
+    option = (
+        "Upload log file"
+        if selected_dataset_source == "upload"
+        else (
+            "Upload log file"
+            if st.session_state.get("active_log_mode") == "upload"
+            else "Use sample logs"
         )
+    )
 
-        with left_col:
-            st.markdown(
-                f"""
-                <div class='nora-greeting-block'>
-                    <div class='nora-greeting-title'>{greeting}, Analyst </div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+    dataset_controls_html = f"""
+    <div class='nora-dataset-card-controls'>
+        <a class='nora-dataset-card-option {'active' if option == 'Use sample logs' else ''}' href='?page=overview&dataset_source=sample'>Sample</a>
+        <span class='nora-dataset-card-separator'>|</span>
+        <a class='nora-dataset-card-option {'active' if option == 'Upload log file' else ''}' href='?page=overview&dataset_source=upload'>Upload Log File</a>
+    </div>
+    """
 
-        with mid_col:
-            st.markdown("<div class='nora-radio-align-wrap'>", unsafe_allow_html=True)
-
-            _, radio_col = st.columns(
-                [0.01, 5],
-                gap="small",
-                vertical_alignment="center"
-            )
-
-            with radio_col:
-                pending_source_choice = st.session_state.get(
-                    "pending_log_source_choice"
-                )
-
-                active_source_choice = (
-                    "Upload log file"
-                    if st.session_state.get("active_log_mode") == "upload"
-                    else "Use sample logs"
-                )
-
-                desired_source_choice = (
-                    pending_source_choice or active_source_choice
-                )
-
-                if "log_source_choice_widget" not in st.session_state:
-                    st.session_state["log_source_choice_widget"] = desired_source_choice
-                elif pending_source_choice:
-                    st.session_state["log_source_choice_widget"] = desired_source_choice
-
-                st.session_state["pending_log_source_choice"] = None
-
-                option = st.radio(
-                    "Analyse logs",
-                    ("Use sample logs", "Upload log file"),
-                    horizontal=True,
-                    key="log_source_choice_widget",
-                    label_visibility="collapsed"
-                )
-
-            st.markdown("</div>", unsafe_allow_html=True)
-
-        with right_col:
-            current_mode = st.session_state.get("active_log_mode", "sample")
-            current_name = st.session_state.get("active_log_name", "sample.log")
-
-            status_box_col, action_box_col = st.columns([5, 1])
-
-            with status_box_col:
-                status_text = (
-                    f"📤 Using {current_name}"
-                    if current_mode == "upload"
-                    else "📄 Using sample log dataset"
-                )
-
-                st.markdown(
-                    f"""
-                    <div class='nora-live-status'>
-                        <div class='nora-live-dot'></div>
-                        <span>{status_text}</span>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
-
-            with action_box_col:
-                if current_mode == "upload":
-                    if st.button(
-                        "×",
-                        key="stop_using_uploaded_log_overview",
-                        help="Stop using the uploaded log and return to the sample dataset",
-                    ):
-                        stop_using_uploaded_log()
-                        st.rerun()
+    render_workspace_header(
+        icon="shield",
+        title="Overview",
+        description="Real-time behavioural detection monitoring and threat overview",
+        dataset_mode=current_mode,
+        dataset_name=current_name,
+        dataset_controls_html=dataset_controls_html,
+    )
 
     if option == "Use sample logs":
         if st.session_state.get("active_log_mode") != "sample":
@@ -142,7 +70,6 @@ def render_dataset_controls():
                 activated_new_log = activate_uploaded_log(uploaded_file)
 
                 if activated_new_log:
-                    st.session_state["pending_log_source_choice"] = "Upload log file"
                     st.rerun()
                 else:
                     st.info(f"{uploaded_file.name} is already the active dataset.")

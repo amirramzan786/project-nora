@@ -18,63 +18,43 @@ NAV_ITEMS = [
     },
 ]
 
+
 def render_navigation():
+    """Render the primary workspace navigation as native HTML links.
+
+    This avoids Streamlit radio/segmented-control hitbox issues and keeps
+    navigation stable because each tab is a normal browser anchor.
+    """
 
     current_page = st.query_params.get("page", "overview")
 
-    left_spacer, logo_col, right_spacer = st.columns([1, 2, 1])
-
-    with logo_col:
-        st.image("logo.png", width=140)
-
-    st.markdown(
-        """
-        <div class='nora-sidebar-subtitle'>
-            Network Operational Research Assistant
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
+    flat_nav_items = []
     for section_group in NAV_ITEMS:
+        flat_nav_items.extend(section_group["items"])
 
-        section_name = section_group["section"]
+    valid_pages = {key for key, _, _, _ in flat_nav_items}
+    if current_page not in valid_pages:
+        current_page = "overview"
 
-        st.markdown(
+    nav_links = []
+    for key, icon, label, description in flat_nav_items:
+        active_class = " active" if key == current_page else ""
+        nav_links.append(
             f"""
-            <div class='nora-nav-section'>
-                {section_name}
-            </div>
-            """,
-            unsafe_allow_html=True
+            <a class="nora-top-nav-item{active_class}" href="?page={key}" title="{description}">
+                <span class="nora-top-nav-icon">{icon}</span>
+                <span class="nora-top-nav-label">{label}</span>
+            </a>
+            """
         )
 
-        for key, icon, label, tooltip in section_group["items"]:
-
-            is_active = key == current_page
-            button_type = "primary" if is_active else "secondary"
-            button_label = f"{icon}\n{label}"
-
-            if st.button(
-                button_label,
-                key=f"nav_{key}",
-                use_container_width=True,
-                type=button_type,
-                help=tooltip,
-            ):
-                st.query_params.clear()
-                st.query_params["page"] = key
-                st.rerun()
-
-
-    st.markdown(
-        """
-        <div class='nora-sidebar-footer'>
-            <div class='nora-sidebar-status'>SYSTEM ONLINE</div>
-            <div class='nora-sidebar-version'>N.O.R.A v1.0.0</div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    nav_html = f'''
+    <div class="nora-app-shell-nav">
+        <nav class="nora-top-nav" aria-label="Workspace navigation">
+            {"".join(nav_links)}
+        </nav>
+    </div>
+    '''
+    st.html(nav_html)
 
     return current_page

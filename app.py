@@ -1,6 +1,6 @@
 from pathlib import Path
 import streamlit as st
-from components.navigation import render_navigation
+
 from components.dataset_controls import render_dataset_controls
 
 def load_css():
@@ -57,8 +57,8 @@ if st.query_params.get("reset_dataset") == "1":
     st.rerun()
 
 
-with st.sidebar:
-    active_page = render_navigation()
+
+active_page = st.query_params.get("page", "overview")
 
 show_overview_dashboard = True
 

@@ -8,11 +8,11 @@
     border: none;
     border-radius: 0;
 
-    padding: 0 24px 16px 24px;
+    padding: 0 24px 0 24px;
     margin-left: -24px;
     margin-right: -24px;
-    margin-top: 18px;
-    margin-bottom: 20px;
+    margin-top: 0;
+    margin-bottom: 0;
 
     width: calc(100% + 48px);
     min-width: calc(100% + 48px);
@@ -20,14 +20,28 @@
 
     box-shadow: none;
 
-    border-bottom: 1px solid rgba(37,150,190,0.18);
+    position: relative;
+    overflow: hidden;
+    padding-top: 12px;
+}
+
+.nora-workspace-header-shell-divider {
+    margin-top: 6px;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(92,198,238,0.45),
+        transparent
+    );
+    opacity: 0.75;
 }
 
 .nora-workspace-header-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 28px;
+    gap: 20px;
 }
 
 .nora-workspace-header-left {
@@ -223,4 +237,106 @@
     background: rgba(103,232,249,0.08);
 
     color: #67E8F9;
+}
+
+
+/* =====================================================
+   HEADER ACTION STRIP (OVERVIEW)
+===================================================== */
+
+.nora-workspace-header-actions {
+    margin-top: 8px;
+    padding: 8px 18px;
+
+    border: none;
+    border-radius: 0;
+
+    background: transparent;
+    box-shadow: none;
+}
+
+.nora-workspace-header-actions .nora-overview-dataset-toolbar-label {
+    padding-top: 8px;
+}
+
+/* ==========================================
+   DATASET SWITCHER LINKS
+========================================== */
+
+.nora-workspace-header-module-value a {
+    text-decoration: none !important;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 4px 10px;
+    margin-right: 6px;
+
+    border-radius: 8px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    color: #94A3B8 !important;
+
+    background: rgba(15,23,42,0.65);
+
+    border: 1px solid rgba(37,150,190,0.18);
+
+    transition: all 0.2s ease;
+}
+
+.nora-workspace-header-module-value a:hover {
+    color: #67E8F9 !important;
+
+    border-color: rgba(103,232,249,0.45);
+
+    background: rgba(103,232,249,0.08);
+
+    box-shadow: 0 0 12px rgba(103,232,249,0.12);
+}
+
+
+/* Dataset card source switcher */
+.nora-dataset-card-controls {
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-top:8px;
+    flex-wrap:nowrap;
+}
+
+.nora-dataset-card-option {
+    display:inline-flex !important;
+    align-items:center;
+    justify-content:center;
+    padding:3px 9px !important;
+    border-radius:999px !important;
+    border:1px solid rgba(37,150,190,0.20) !important;
+    background:rgba(15,23,42,0.72) !important;
+    color:#94A3B8 !important;
+    text-decoration:none !important;
+    font-size:11px !important;
+    font-weight:800 !important;
+    line-height:1 !important;
+    letter-spacing:0.02em;
+}
+
+.nora-dataset-card-option:hover {
+    color:#67E8F9 !important;
+    border-color:rgba(103,232,249,0.48) !important;
+    background:rgba(103,232,249,0.09) !important;
+    box-shadow:0 0 12px rgba(103,232,249,0.14);
+}
+
+.nora-dataset-card-option.active {
+    color:#FFFFFF !important;
+    border-color:rgba(92,198,238,0.58) !important;
+    background:rgba(37,150,190,0.22) !important;
+    box-shadow:0 0 14px rgba(37,150,190,0.18);
+}
+
+.nora-dataset-card-separator {
+    display:none;
 }

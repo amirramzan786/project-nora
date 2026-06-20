@@ -20,3 +20,5 @@ b65555be34c2dbd0,16:00|16:59,2358,238,39.3,8,0.003393,0.182782,decay,MEDIUM,95.0
 08461a035f62732a,18:30|19:44,5754,264,76.72,8,0.00139,0.152242,decay,MEDIUM,98.0,100.0,8.0,Decay Attack,Behavioural Event,876,Low Risk Consumer Traffic,27.0,103.21.244.18
 60cbbd95c086b81b,18:30|19:44,5754,264,76.72,8,0.00139,0.152242,sustained,MEDIUM,98.0,100.0,6.0,Sustained Distributed Attack,Behavioural Event,876,Low Risk Consumer Traffic,35.0,103.21.244.18
 54a8adabc1d472e4,20:00|21:09,5950,303,85.0,4,0.000672,0.157143,decay,HIGH,54.0,56.0,2.0,Decay Attack,Under Analysis,935,Volumetric DDoS,34.0,203.0.113.77
+7cd50be812fc969c,13:00|14:29,2700,63,30.0,0,0.0,0.038889,normal,HIGH,45.0,45.0,0.0,Normal Traffic,Baseline Behaviour,105,Low Risk Consumer Traffic,34.0,10.0.0.22
+45b84f20f8763031,16:00|16:59,2358,238,39.3,8,0.003393,0.182782,sustained,MEDIUM,59.0,61.0,2.0,Sustained Distributed Attack,Behavioural Event,431,Volumetric DDoS,56.0,203.0.113.77
