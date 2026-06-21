@@ -1,13 +1,12 @@
 """
 Project N.O.R.A.
 Phase 3 Validation Log Generator
-Dataset 09 - Wave Attack
+Dataset 09 - Sustained Distributed Attack
 
-This generator creates Apache-style access logs that simulate a wave-based DDoS
-pattern. The dataset contains normal baseline traffic, three escalating attack
-waves, partial recovery periods between each wave, and a final recovery window.
-It is designed to test whether N.O.R.A can distinguish repeated attack cycles
-from a single burst, sustained attack, or slow-build escalation.
+This generator creates Apache-style access logs that simulate a sustained distributed
+DDoS attack. The dataset contains normal baseline traffic, a prolonged elevated
+attack window, and a recovery period to test N.O.R.A's sustained attack detection,
+anomaly scoring, alert generation, and source attribution behaviour.
 """
 
 from datetime import datetime, timedelta
@@ -15,9 +14,9 @@ import os
 import random
 
 
-OUTPUT_FILE = "logs/phase3_validation_wave_attack.log"
-START_TIME = datetime(2026, 6, 17, 18, 30, 0)
-DURATION_MINUTES = 75
+OUTPUT_FILE = "logs/phase3_validation_sustained_attack.log"
+START_TIME = datetime(2026, 6, 17, 16, 0, 0)
+DURATION_MINUTES = 80
 
 NORMAL_IPS = [
     "192.168.1.10",
@@ -28,13 +27,15 @@ NORMAL_IPS = [
     "10.0.0.22",
 ]
 
-WAVE_ATTACK_IPS = [
+SUSTAINED_ATTACK_IPS = [
     "45.155.205.233",
     "185.220.101.42",
     "91.240.118.172",
     "103.21.244.18",
     "203.0.113.77",
-    "198.51.100.24",
+    "198.51.100.91",
+    "192.0.2.44",
+    "156.146.62.18",
 ]
 
 NORMAL_PATHS = [
@@ -46,14 +47,14 @@ NORMAL_PATHS = [
     "/help",
 ]
 
-WAVE_ATTACK_PATHS = [
+SUSTAINED_ATTACK_PATHS = [
     "/",
+    "/login",
     "/products",
     "/checkout",
     "/api/status",
     "/search",
-    "/login",
-    "/admin",
+    "/wp-login.php",
 ]
 
 
@@ -65,44 +66,16 @@ def apache_log_line(ip, timestamp, method, path, status, size):
     )
 
 
-def get_wave_attack_request_count(minute):
-    """Return attack request volume for a repeated wave attack profile."""
-    # Wave 1: moderate attack wave.
-    if 12 <= minute <= 17:
-        return random.randint(75, 115)
-
-    # Recovery after wave 1: near-baseline dip so wave behaviour is visible.
-    if 18 <= minute <= 23:
-        return random.randint(0, 8)
-
-    # Wave 2: stronger attack wave.
-    if 24 <= minute <= 31:
-        return random.randint(135, 195)
-
-    # Recovery after wave 2: clear drop before the next wave.
-    if 32 <= minute <= 38:
-        return random.randint(0, 10)
-
-    # Wave 3: strongest attack wave.
-    if 39 <= minute <= 47:
-        return random.randint(190, 270)
-
-    # Final recovery period.
-    if 48 <= minute <= 55:
-        return random.randint(0, 12)
-
-    return 0
-
-
-def generate_wave_attack_log():
-    """Generate a wave attack validation dataset."""
+def generate_sustained_attack_log():
+    """Generate a sustained distributed attack validation dataset."""
+    random.seed(43)
     lines = []
 
     for minute in range(DURATION_MINUTES):
         timestamp = START_TIME + timedelta(minutes=minute)
 
         # Normal baseline traffic throughout the session.
-        normal_request_count = random.randint(5, 12)
+        normal_request_count = random.randint(5, 11)
 
         for _ in range(normal_request_count):
             ip = random.choice(NORMAL_IPS)
@@ -121,13 +94,20 @@ def generate_wave_attack_log():
                 )
             )
 
-        # Wave attack traffic appears in repeated cycles with partial recovery.
-        attack_request_count = get_wave_attack_request_count(minute)
+        # Sustained window: prolonged elevation without a single sharp burst spike.
+        if 22 <= minute <= 25:
+            attack_request_count = random.randint(65, 95)
+        elif 26 <= minute <= 52:
+            attack_request_count = random.randint(115, 155)
+        elif 53 <= minute <= 58:
+            attack_request_count = random.randint(70, 105)
+        else:
+            attack_request_count = 0
 
         for _ in range(attack_request_count):
-            ip = random.choice(WAVE_ATTACK_IPS)
-            path = random.choice(WAVE_ATTACK_PATHS)
-            status = random.choice([200, 200, 200, 401, 403, 429, 503])
+            ip = random.choice(SUSTAINED_ATTACK_IPS)
+            path = random.choice(SUSTAINED_ATTACK_PATHS)
+            status = random.choice([200, 200, 200, 403, 429, 503])
             second_offset = random.randint(0, 59)
 
             lines.append(
@@ -137,7 +117,7 @@ def generate_wave_attack_log():
                     method=random.choice(["GET", "GET", "GET", "POST"]),
                     path=path,
                     status=status,
-                    size=random.randint(500, 3200),
+                    size=random.randint(500, 4200),
                 )
             )
 
@@ -152,16 +132,10 @@ def generate_wave_attack_log():
 
     print(f"Created {OUTPUT_FILE}")
     print(f"Total lines: {len(lines)}")
-    print("Dataset type: Wave attack")
-    print(f"Wave sources: {len(WAVE_ATTACK_IPS)}")
-    print("Baseline window: 18:30 to 18:41")
-    print("Wave 1: 18:42 to 18:47")
-    print("Recovery 1: 18:48 to 18:53")
-    print("Wave 2: 18:54 to 19:01")
-    print("Recovery 2: 19:02 to 19:08")
-    print("Wave 3: 19:09 to 19:17")
-    print("Final recovery: 19:18 to 19:25")
+    print("Dataset type: Sustained distributed attack")
+    print(f"Attack sources: {len(SUSTAINED_ATTACK_IPS)}")
+    print("Sustained attack window: 16:22 to 16:58")
 
 
 if __name__ == "__main__":
-    generate_wave_attack_log()
+    generate_sustained_attack_log()

@@ -66,11 +66,19 @@ def render_detection_intelligence(
     # METRIC CARDS (Telemetry-driven)
     # =====================================================
     # --- Detection intelligence calculations ---
+    latest_anomaly = anomalies[-1] if anomalies else {}
+
+    classifier_label = latest_anomaly.get(
+        "attack_classification",
+        "Normal Traffic"
+    )
+
     detection_metrics = get_detection_metrics(
         ip_totals,
         anomalies,
         time_counts,
-        alerts
+        alerts,
+        classification=classifier_label,
     )
 
     total_requests = detection_metrics["total_requests"]
@@ -95,12 +103,6 @@ def render_detection_intelligence(
             key=lambda item: item[1]
         )
 
-    latest_anomaly = anomalies[-1] if anomalies else {}
-
-    classifier_label = latest_anomaly.get(
-        "attack_classification",
-        "Normal Traffic"
-    )
 
     classifier_risk_level = latest_anomaly.get(
         "classification_risk_level",
@@ -163,7 +165,10 @@ def render_detection_intelligence(
 
     similarity_score = similarity_result["similarity_score"]
     overall_severity = classifier_risk_level
-    similarity_match = f"{similarity_score}%"
+    if classifier_label == "Normal Traffic":
+        similarity_match = f"{similarity_score}% Baseline"
+    else:
+        similarity_match = f"{similarity_score}%"
 
     traffic_values = list(time_counts.values()) if time_counts else []
     peak_requests = max(traffic_values, default=0)
@@ -220,6 +225,9 @@ def render_detection_intelligence(
     else:
         validation_status = "Traffic Under Observation"
 
+    if classifier_label == "Normal Traffic":
+        activity_profile = "Known Baseline Behaviour"
+
     detection_classification = classifier_label
 
     current_session_data.update({
@@ -258,13 +266,16 @@ def render_detection_intelligence(
     )
 
     ml_signal = "MEDIUM" if anomalies else "LOW"
-    similarity_signal = (
-        "HIGH"
-        if similarity_score >= 80
-        else "MEDIUM"
-        if similarity_score >= 55
-        else "LOW"
-    )
+    if detection_classification == "Normal Traffic":
+        similarity_signal = "LOW"
+    else:
+        similarity_signal = (
+            "HIGH"
+            if similarity_score >= 80
+            else "MEDIUM"
+            if similarity_score >= 55
+            else "LOW"
+        )
 
     render_detection_metrics_row(
         adaptive_confidence,
@@ -360,7 +371,8 @@ def render_detection_intelligence(
             ]
 
         render_historical_comparison_panel(
-            historical_matches
+            historical_matches,
+            is_baseline_context=(classifier_label == "Normal Traffic")
         )
 
 

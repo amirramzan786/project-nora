@@ -296,10 +296,25 @@ def read_logs(file_path=None, file_content=None):
                     if req > avg_requests + std_requests and req > avg_requests:
                         anomaly_rows = pd.concat([anomaly_rows, row.to_frame().T])
 
-            # --- Final fallback: only pick peak if it is above baseline ---
+            # --- Final fallback: only flag a peak when it shows meaningful deviation ---
+            # A normal traffic window will often contain one minute above the average.
+            # Do not create an anomaly unless the peak is clearly separated from baseline.
             if anomaly_rows.empty and not df_time.empty:
                 peak_row = df_time.loc[df_time["Requests"].idxmax()]
-                if peak_row["Requests"] > avg_requests:
+                peak_requests = float(peak_row["Requests"])
+                peak_z_score = abs(float(peak_row.get("ZScore", 0)))
+
+                meaningful_peak = (
+                    peak_requests > (avg_requests + (1.5 * std_requests))
+                    or peak_z_score >= 1.8
+                )
+
+                minimum_volume_context = (
+                    peak_requests >= 20
+                    or peak_requests >= (avg_requests * 2)
+                )
+
+                if meaningful_peak and minimum_volume_context:
                     anomaly_rows = pd.DataFrame([peak_row])
 
             for _, row in anomaly_rows.iterrows():
@@ -714,30 +729,83 @@ def read_logs(file_path=None, file_content=None):
                 # --- Replace raw anomalies with grouped anomalies (single source of truth) ---
                 anomalies = merged
 
-                # --- Phase 3.6: Central behavioural classification ---
-                # Use the full traffic lifecycle to classify the dataset shape rather than
-                # relying only on individual anomaly windows.
-                try:
-                    parsed_logs_df = pd.DataFrame(parsed_log_rows)
-                    attack_classification = classify_attack_pattern(
-                        parsed_logs_df,
-                        anomaly_count=len(anomalies),
-                        detection_events=anomalies
-                    )
 
-                    for anomaly in anomalies:
-                        anomaly["pattern"] = attack_classification.label
-                        anomaly["attack_classification"] = attack_classification.label
-                        anomaly["classification_summary"] = attack_classification.summary
-                        anomaly["classification_confidence"] = attack_classification.confidence
-                        anomaly["classification_risk_level"] = attack_classification.risk_level
-                        anomaly["risk_level"] = attack_classification.risk_level
-                        anomaly["classification_pattern_type"] = attack_classification.pattern_type
-                        anomaly["classification_evidence"] = attack_classification.evidence
-                        anomaly["classification_source"] = "attack_classifier"
+            # --- Phase 3.6: Central behavioural classification ---
+            # Run classifier against the full parsed traffic lifecycle, even when no
+            # anomaly windows were produced. This prevents low-volume distributed
+            # behaviour from falling back to Normal Traffic simply because ML did
+            # not create an anomaly event.
+            try:
+                parsed_logs_df = pd.DataFrame(parsed_log_rows)
+                attack_classification = classify_attack_pattern(
+                    parsed_logs_df,
+                    anomaly_count=len(anomalies),
+                    detection_events=anomalies
+                )
 
-                except Exception as e:
-                    print("Attack classification error:", e)
+                for anomaly in anomalies:
+                    anomaly["pattern"] = attack_classification.label
+                    anomaly["attack_classification"] = attack_classification.label
+                    anomaly["classification_summary"] = attack_classification.summary
+                    anomaly["classification_confidence"] = attack_classification.confidence
+                    anomaly["classification_risk_level"] = attack_classification.risk_level
+                    anomaly["risk_level"] = attack_classification.risk_level
+                    anomaly["classification_pattern_type"] = attack_classification.pattern_type
+                    anomaly["classification_evidence"] = attack_classification.evidence
+                    anomaly["classification_source"] = "attack_classifier"
+
+                if not anomalies and attack_classification.label != "Normal Traffic":
+                    peak_row = df_time.loc[df_time["Requests"].idxmax()]
+                    peak_time = str(peak_row.get("TimeOnly", peak_row.get("Time", "Unknown")))
+                    peak_requests = int(peak_row.get("Requests", 0))
+
+                    top_ips_combined = []
+                    for ip, cnt in sorted(ip_totals.items(), key=lambda x: x[1], reverse=True)[:3]:
+                        ip_context = enrich_ip(
+                            ip,
+                            request_count=cnt,
+                            operational_severity=attack_classification.risk_level
+                        )
+
+                        top_ips_combined.append({
+                            "ip": ip,
+                            "count": cnt,
+                            "country": ip_context.get("country"),
+                            "country_code": ip_context.get("country_code"),
+                            "country_flag": ip_context.get("country_flag"),
+                            "asn": ip_context.get("asn"),
+                            "isp": ip_context.get("isp"),
+                            "threat_level": ip_context.get("threat_level"),
+                            "abuse_score": ip_context.get("abuse_score")
+                        })
+
+                    anomalies.append({
+                        "time": peak_time,
+                        "start_time": peak_time,
+                        "end_time": peak_time,
+                        "requests": peak_requests,
+                        "total_requests": total_requests if "total_requests" in locals() else peak_requests,
+                        "peak_requests": peak_requests,
+                        "event_points": 1,
+                        "severity": attack_classification.risk_level,
+                        "score": 0,
+                        "pattern": attack_classification.label,
+                        "similarity": 0,
+                        "confidence": attack_classification.confidence,
+                        "z_score": round(float(peak_row.get("ZScore", 0)), 2),
+                        "top_ips": top_ips_combined,
+                        "attack_classification": attack_classification.label,
+                        "classification_summary": attack_classification.summary,
+                        "classification_confidence": attack_classification.confidence,
+                        "classification_risk_level": attack_classification.risk_level,
+                        "risk_level": attack_classification.risk_level,
+                        "classification_pattern_type": attack_classification.pattern_type,
+                        "classification_evidence": attack_classification.evidence,
+                        "classification_source": "attack_classifier"
+                    })
+
+            except Exception as e:
+                print("Attack classification error:", e)
 
             # --- Create anomaly points dataframe for visualization ---
             anomaly_points = []

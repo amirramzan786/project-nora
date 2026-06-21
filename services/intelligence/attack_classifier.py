@@ -12,6 +12,7 @@ It is designed to classify the core validation patterns used by Project N.O.R.A:
 - Slow Build Attack
 - Wave Attack
 - Decay Attack
+- Distributed Low-Volume Attack
 - Multi-Stage Attack
 
 The goal is to provide a single source of truth that Overview, Detection
@@ -114,18 +115,17 @@ def classify_attack_pattern(
         )
 
     features = _extract_shape_features(traffic_profile, baseline)
-    print("\n--- ATTACK CLASSIFIER DEBUG ---")
-    print(f"Segments: {features['elevated_segments']}")
-    print(f"Dips: {features['recovery_dips']}")
-    print(f"Elevated Minutes: {features['elevated_minutes']}")
-    print(f"Peak Ratio: {features['peak_ratio']:.2f}")
-    print("-------------------------------\n")
 
     wave_score = _score_wave(features)
     decay_score = _score_decay(features)
     slow_build_score = _score_slow_build(features)
     burst_score = _score_burst(features)
     sustained_score = _score_sustained(features)
+    distributed_low_volume_score = _score_distributed_low_volume(
+        features,
+        unique_ips=unique_ips,
+        total_requests=total_requests,
+    )
 
     scores = {
         "wave": wave_score,
@@ -133,10 +133,40 @@ def classify_attack_pattern(
         "slow_build": slow_build_score,
         "burst": burst_score,
         "sustained": sustained_score,
+        "distributed_low_volume": distributed_low_volume_score,
     }
 
     pattern_type = max(scores, key=scores.get)
     score = scores[pattern_type]
+
+    # Wave attacks can otherwise be misread as sustained when the total elevated
+    # duration is high. Prioritise wave behaviour when repeated elevated segments
+    # and recovery dips are present, or when wave pulses are present.
+    if (
+        wave_score >= 40
+        and (
+            features["elevated_segments"] >= 2
+            or features.get("wave_pulses", 0) >= 2
+        )
+        and (
+            features["recovery_dips"] >= 1
+            or features.get("wave_pulses", 0) >= 2
+        )
+    ):
+        pattern_type = "wave"
+        score = wave_score
+
+    # Burst datasets can otherwise be misread as sustained when the spike
+    # remains elevated for several minutes. Prioritise burst when the profile
+    # is short, sharply elevated, and the burst score is strong.
+    if (
+        burst_score >= 55
+        and features["elevated_segments"] == 1
+        and features["peak_ratio"] >= 5
+        and features["elevated_minutes"] <= 20
+    ):
+        pattern_type = "burst"
+        score = burst_score
 
     if score < 35:
         pattern_type = "multi_stage"
@@ -378,6 +408,7 @@ def _score_burst(features: dict) -> int:
     return min(score, 100)
 
 
+
 def _score_sustained(features: dict) -> int:
     """Score long-running elevated attack behaviour."""
 
@@ -400,6 +431,48 @@ def _score_sustained(features: dict) -> int:
     return min(score, 100)
 
 
+def _score_distributed_low_volume(
+    features: dict,
+    unique_ips: int,
+    total_requests: int,
+) -> int:
+    """Score coordinated low-volume distributed activity.
+
+    This pattern covers validation traffic where multiple sources sustain
+    moderate pressure over time without producing extreme volumetric spikes.
+    """
+
+    # Low-volume distributed activity should not win when the traffic profile
+    # contains a strong volumetric spike. Those cases are better handled by
+    # Burst, Sustained, or Wave classification rules.
+    if features["peak_ratio"] >= 5:
+        return 0
+    score = 0
+
+    if unique_ips >= 5:
+        score += 30
+    elif unique_ips >= 3:
+        score += 18
+
+    if total_requests >= 2000:
+        score += 25
+    elif total_requests >= 1200:
+        score += 15
+
+    if features["duration_minutes"] >= 45:
+        score += 15
+    elif features["duration_minutes"] >= 25:
+        score += 8
+
+    if 2 <= features["peak_ratio"] < 5:
+        score += 15
+
+    if features["elevated_minutes"] >= 8:
+        score += 10
+
+    return min(score, 100)
+
+
 def _build_classification_result(
     pattern_type: str,
     score: int,
@@ -413,15 +486,27 @@ def _build_classification_result(
 ) -> AttackClassification:
     """Convert classifier features into a user-facing result."""
 
-    risk_level = _calculate_risk_level(score, peak, baseline, anomaly_count, external_ips)
-    confidence = _calculate_pattern_confidence(score, anomaly_count, external_ips)
+    risk_level = _calculate_risk_level(
+        score,
+        peak,
+        baseline,
+        anomaly_count,
+        external_ips,
+        unique_ips,
+    )
+    confidence = _calculate_pattern_confidence(
+        score,
+        anomaly_count,
+        external_ips,
+        unique_ips,
+    )
 
     evidence = [
         f"Peak traffic reached {peak} requests/minute against a baseline of {baseline:.1f}.",
         f"Detected {features['elevated_segments']} elevated traffic segment(s).",
         f"Detected {features['recovery_dips']} recovery dip(s) between elevated activity.",
         f"Observed {features['elevated_minutes']} elevated minute(s) across {features['duration_minutes']} total minute(s).",
-        f"Detected {anomaly_count} anomaly window(s) and {external_ips} external source(s).",
+        f"Detected {anomaly_count} anomaly window(s), {unique_ips} unique source(s), and {external_ips} external source(s).",
     ]
 
     labels = {
@@ -430,6 +515,7 @@ def _build_classification_result(
         "slow_build": "Slow Build Attack",
         "wave": "Wave Attack",
         "decay": "Decay Attack",
+        "distributed_low_volume": "Distributed Low-Volume Attack",
         "multi_stage": "Multi-Stage Attack",
     }
 
@@ -439,6 +525,7 @@ def _build_classification_result(
         "slow_build": "Traffic gradually increased over time before reaching an elevated attack peak.",
         "wave": "Multiple elevated attack waves were detected with partial recovery periods between them.",
         "decay": "Traffic rapidly peaked and then progressively reduced towards baseline behaviour.",
+        "distributed_low_volume": "Multiple sources sustained moderate request pressure over time without extreme volumetric spikes.",
         "multi_stage": "Traffic shows multiple suspicious behavioural phases but does not fit one clean attack shape.",
     }
 
@@ -455,7 +542,13 @@ def _build_classification_result(
     )
 
 
-def _calculate_pattern_confidence(score: int, anomaly_count: int, external_ips: int) -> int:
+
+def _calculate_pattern_confidence(
+    score: int,
+    anomaly_count: int,
+    external_ips: int,
+    unique_ips: int,
+) -> int:
     """Calculate confidence for the behavioural classification result."""
 
     confidence = score
@@ -470,7 +563,13 @@ def _calculate_pattern_confidence(score: int, anomaly_count: int, external_ips: 
     elif external_ips >= 3:
         confidence += 4
 
+    if unique_ips >= 5:
+        confidence += 8
+    elif unique_ips >= 3:
+        confidence += 4
+
     return int(max(20, min(confidence, 95)))
+
 
 
 def _calculate_risk_level(
@@ -479,6 +578,7 @@ def _calculate_risk_level(
     baseline: float,
     anomaly_count: int,
     external_ips: int,
+    unique_ips: int,
 ) -> str:
     """Calculate risk level from behavioural evidence."""
 
@@ -487,7 +587,7 @@ def _calculate_risk_level(
     if score >= 75 and peak_ratio >= 8 and anomaly_count >= 3:
         return "HIGH"
 
-    if score >= 55 or anomaly_count >= 3 or external_ips >= 5:
+    if score >= 55 or anomaly_count >= 3 or external_ips >= 5 or unique_ips >= 5:
         return "MEDIUM"
 
     return "LOW"

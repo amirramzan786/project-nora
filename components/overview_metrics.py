@@ -57,7 +57,7 @@ def metric_card(title, value, subtitle="", icon="", risk_class=""):
 
 
 
-def render_overview_metrics(ip_totals, time_counts, anomalies):
+def render_overview_metrics(ip_totals, time_counts, anomalies, classification=None):
     """Render the Overview Detection Summary cards and return df_time."""
 
     st.markdown("## Detection Summary")
@@ -86,7 +86,8 @@ def render_overview_metrics(ip_totals, time_counts, anomalies):
                 peak_requests,
                 unique_ips=unique_ips,
                 anomaly_count=anomaly_count,
-                avg_requests=avg_requests
+                avg_requests=avg_requests,
+                classification=classification,
             )
 
             risk = severity_logic["severity"]

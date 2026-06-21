@@ -6,7 +6,8 @@ def get_detection_metrics(
     ip_totals,
     anomalies,
     time_counts,
-    alerts
+    alerts,
+    classification=None,
 ):
     """
     Build the core Detection Intelligence telemetry metrics.
@@ -40,7 +41,8 @@ def get_detection_metrics(
         total_requests,
         unique_ips=len(ip_totals) if ip_totals else 1,
         anomaly_count=active_alerts,
-        avg_requests=avg_requests
+        avg_requests=avg_requests,
+        classification=classification,
     )
 
     overall_severity = severity_logic["severity"]

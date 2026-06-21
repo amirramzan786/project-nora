@@ -22,3 +22,9 @@ b65555be34c2dbd0,16:00|16:59,2358,238,39.3,8,0.003393,0.182782,decay,MEDIUM,95.0
 54a8adabc1d472e4,20:00|21:09,5950,303,85.0,4,0.000672,0.157143,decay,HIGH,54.0,56.0,2.0,Decay Attack,Under Analysis,935,Volumetric DDoS,34.0,203.0.113.77
 7cd50be812fc969c,13:00|14:29,2700,63,30.0,0,0.0,0.038889,normal,HIGH,45.0,45.0,0.0,Normal Traffic,Baseline Behaviour,105,Low Risk Consumer Traffic,34.0,10.0.0.22
 45b84f20f8763031,16:00|16:59,2358,238,39.3,8,0.003393,0.182782,sustained,MEDIUM,59.0,61.0,2.0,Sustained Distributed Attack,Behavioural Event,431,Volumetric DDoS,56.0,203.0.113.77
+d4a46128eb3e4f58,13:00|14:29,2700,63,30.0,1,0.00037,0.038889,wave,MEDIUM,58.0,58.0,0.0,Wave Attack,Behavioural Event,105,Volumetric DDoS,53.0,10.0.0.22
+5ebbec6f7b06b216,13:00|14:29,2700,63,30.0,1,0.00037,0.038889,distributed_low_volume,MEDIUM,58.0,58.0,0.0,Distributed Low-Volume Attack,Behavioural Event,105,Volumetric DDoS,32.0,10.0.0.22
+b99f966e2ed5266e,16:00|16:59,2358,238,39.3,8,0.003393,0.182782,distributed_low_volume,HIGH,57.0,57.0,0.0,Distributed Low-Volume Attack,Under Analysis,431,Low Risk Consumer Traffic,38.0,203.0.113.77
+63e71e58075072e5,16:00|16:59,2358,238,39.3,8,0.003393,0.182782,burst,MEDIUM,57.0,62.0,5.0,Burst Attack,Behavioural Event,431,Low Risk Consumer Traffic,38.0,203.0.113.77
+0f67037951cbb452,16:00|17:19,5029,161,62.8625,1,0.000199,0.119507,sustained,MEDIUM,48.0,52.0,4.0,Sustained Distributed Attack,Behavioural Event,601,Low Risk Consumer Traffic,33.0,91.240.118.172
+28ed2ebbbdedddea,18:30|19:44,4883,277,65.106667,8,0.001638,0.15298,wave,HIGH,57.0,57.0,0.0,Wave Attack,Under Analysis,747,Low Risk Consumer Traffic,35.0,103.21.244.18

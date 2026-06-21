@@ -156,14 +156,37 @@ def render_confidence_breakdown_panel(
 
 
 # Historical comparison panel helper
-def render_historical_comparison_panel(historical_matches):
+def render_historical_comparison_panel(historical_matches, is_baseline_context=False):
     rows_html = ""
 
     highest_match_label = historical_matches[0][0] if historical_matches else "No comparable pattern"
     highest_match = historical_matches[0][1] if historical_matches else "0%"
     highest_score = int(highest_match.replace("%", "")) if highest_match else 0
 
-    match_strength = "HIGH" if highest_score >= 75 else "MEDIUM" if highest_score >= 55 else "LOW"
+    is_baseline_match = is_baseline_context or (
+        any(
+            keyword in highest_match_label.lower()
+            for keyword in ["normal", "baseline", "consumer"]
+        ) if highest_match_label else False
+    )
+
+    if is_baseline_match:
+        match_strength = "BASELINE"
+    else:
+        match_strength = "HIGH" if highest_score >= 75 else "MEDIUM" if highest_score >= 55 else "LOW"
+
+    hero_label = "Highest Baseline Match" if is_baseline_match else "Highest Similarity Match"
+
+    hero_context = (
+        f"Matched against known baseline behaviour profile: {highest_match_label}"
+        if is_baseline_match
+        else f"Matched against {highest_match_label} using adaptive memory reinforcement from previously analysed traffic behaviour"
+    )
+
+    match_label = "Behaviour Type" if is_baseline_match else "Match Strength"
+
+    match_value = "BASELINE" if is_baseline_match else match_strength
+
     recurrence_count = len(historical_matches)
 
     for label, score in historical_matches:
@@ -192,14 +215,14 @@ def render_historical_comparison_panel(historical_matches):
         f"</div>"
         f"<div class='nora-detection-panel-divider'></div>"
         f"<div class='nora-detection-history-hero'>"
-        f"<div class='nora-detection-history-hero-label'>Highest Similarity Match</div>"
+        f"<div class='nora-detection-history-hero-label'>{hero_label}</div>"
         f"<div class='nora-detection-history-hero-score'>{highest_match}</div>"
-        f"<div class='nora-detection-history-hero-context'>Matched against {highest_match_label} using adaptive memory reinforcement from previously analysed traffic behaviour</div>"
+        f"<div class='nora-detection-history-hero-context'>{hero_context}</div>"
         f"</div>"
         f"<div class='nora-detection-history-meta-grid'>"
         f"<div class='nora-detection-history-meta-card'>"
-        f"<span>Match Strength</span>"
-        f"<strong>{match_strength}</strong>"
+        f"<span>{match_label}</span>"
+        f"<strong>{match_value}</strong>"
         f"</div>"
         f"<div class='nora-detection-history-meta-card'>"
         f"<span>Compared Patterns</span>"

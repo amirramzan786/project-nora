@@ -16,6 +16,12 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies)
     overall_severity = "LOW"
     anomaly_count = len(anomalies) if anomalies else 0
 
+    latest_anomaly = anomalies[-1] if anomalies else {}
+    classifier_label = latest_anomaly.get(
+        "attack_classification",
+        "Normal Traffic"
+    )
+
     if anomalies:
         severities = [
             str(anomaly.get("severity", "LOW")).upper()
@@ -34,7 +40,12 @@ def render_dashboard(ip_totals, alerts, normal_activity, time_counts, anomalies)
     )
 
     # --- Key Metrics ---
-    df_time = render_overview_metrics(ip_totals, time_counts, anomalies)
+    df_time = render_overview_metrics(
+        ip_totals,
+        time_counts,
+        anomalies,
+        classification=classifier_label,
+    )
 
     # --- MAIN DASHBOARD AREA ---
     main_left, main_right = st.columns([3.2, 1.8], gap="medium")

@@ -98,7 +98,12 @@ def get_detection_severity(
         "LOW_SLOW",
     )
 
-    if any(pattern in classification_label for pattern in high_risk_patterns):
+    classifier_attack_detected = any(
+        pattern in classification_label
+        for pattern in high_risk_patterns
+    )
+
+    if classifier_attack_detected:
         threat_score += 2
     elif "DECAY" in classification_label:
         threat_score += 1
@@ -143,6 +148,12 @@ def get_detection_severity(
     else:
         severity = "LOW"
         lifecycle = "Traffic Under Observation"
+
+    # Classifier-confirmed attack patterns should not be presented as LOW risk.
+    # This keeps Overview, Detection Intelligence, and classifier output aligned.
+    if classifier_attack_detected and severity == "LOW":
+        severity = "MEDIUM"
+        lifecycle = "Elevated Activity Observed"
 
     confidence_result = calculate_detection_confidence(
         severity=severity,
