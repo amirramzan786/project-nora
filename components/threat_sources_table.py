@@ -1,5 +1,3 @@
-
-
 import textwrap
 
 import streamlit as st
@@ -110,7 +108,7 @@ def render_threat_sources_section(
                 "Activity Type": activity_type,
                 "Behaviour": intelligence_profile["behaviour_classification"],
                 "Likelihood": intelligence_profile["threat_likelihood"],
-                "Confidence": f"{row_confidence}%",
+                "Intel Confidence": f"{row_confidence}%",
             })
 
     table_rows_html = ""
@@ -129,7 +127,7 @@ def render_threat_sources_section(
             <td>{row['Activity Type']}</td>
             <td>{row['Behaviour']}</td>
             <td>{row['Likelihood']}</td>
-            <td>{row['Confidence']}</td>
+            <td>{row['Intel Confidence']}</td>
         </tr>
         """
 
@@ -148,7 +146,7 @@ def render_threat_sources_section(
                         <th>Activity</th>
                         <th>Behaviour</th>
                         <th>Likelihood</th>
-                        <th>Confidence</th>
+                        <th>Intel Confidence</th>
                     </tr>
                 </thead>
                 <tbody>

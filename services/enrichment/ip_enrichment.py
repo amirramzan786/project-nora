@@ -21,6 +21,10 @@ import ipaddress
 import requests
 import streamlit as st
 
+from services.scoring.confidence_engine import (
+    calculate_intelligence_confidence,
+)
+
 try:
     import pycountry
 except ImportError:
@@ -265,7 +269,7 @@ ENRICHED_IP_TEMPLATE = {
     "abuse_score": 0,
     "external_reputation_score": 0,
     "behavioural_risk_score": 0,
-    "reputation_source": "Behavioural Analysis",
+    "reputation_source": "Unavailable",
     "usage_type": "Unknown",
     "domain": "Unknown",
     "hostnames": [],
@@ -277,6 +281,8 @@ ENRICHED_IP_TEMPLATE = {
     "threat_level": "Low",
     "known_malicious": False,
     "confidence_score": 0,
+    "confidence_band": "Minimal",
+    "confidence_evidence": {},
     "request_count": 0,
     "threat_tags": [],
     "attack_patterns": [],
@@ -611,14 +617,9 @@ def enrich_ip(
     ):
         enriched_ip["threat_level"] = "High"
         enriched_ip["behavioural_risk_score"] = 92
-        enriched_ip["abuse_score"] = max(
-            enriched_ip["external_reputation_score"],
-            enriched_ip["behavioural_risk_score"]
-        )
-        enriched_ip["known_malicious"] = (
-            enriched_ip["known_malicious"]
-            or enriched_ip["abuse_score"] >= 75
-        )
+        enriched_ip["abuse_score"] = enriched_ip[
+            "external_reputation_score"
+        ]
         enriched_ip["regional_risk"] = "High"
         enriched_ip["activity_profile"] = "High-Risk Behavioural Activity"
         enriched_ip["threat_infrastructure"] = (
@@ -657,10 +658,9 @@ def enrich_ip(
     ):
         enriched_ip["threat_level"] = "Medium"
         enriched_ip["behavioural_risk_score"] = 61
-        enriched_ip["abuse_score"] = max(
-            enriched_ip["external_reputation_score"],
-            enriched_ip["behavioural_risk_score"]
-        )
+        enriched_ip["abuse_score"] = enriched_ip[
+            "external_reputation_score"
+        ]
         enriched_ip["regional_risk"] = "Medium"
         enriched_ip["activity_profile"] = "Suspicious Behavioural Activity"
         enriched_ip["threat_infrastructure"] = (
@@ -689,10 +689,9 @@ def enrich_ip(
     else:
         enriched_ip["threat_level"] = "Low"
         enriched_ip["behavioural_risk_score"] = 18
-        enriched_ip["abuse_score"] = max(
-            enriched_ip["external_reputation_score"],
-            enriched_ip["behavioural_risk_score"]
-        )
+        enriched_ip["abuse_score"] = enriched_ip[
+            "external_reputation_score"
+        ]
         enriched_ip["regional_risk"] = "Low"
         enriched_ip["activity_profile"] = "Low-Risk Behavioural Activity"
         enriched_ip["threat_infrastructure"] = (
@@ -713,11 +712,39 @@ def enrich_ip(
         ]
 
     # -------------------------------------------------
-    # Adaptive Confidence Calculation
+    # Intelligence Confidence Calculation
     # -------------------------------------------------
 
+    intelligence_confidence = (
+        calculate_intelligence_confidence(
+            external_reputation_score=enriched_ip[
+                "external_reputation_score"
+            ],
+            behavioural_risk_score=enriched_ip[
+                "behavioural_risk_score"
+            ],
+            known_malicious=enriched_ip[
+                "known_malicious"
+            ],
+            total_reports=enriched_ip[
+                "total_reports"
+            ],
+            intelligence_sources=len(
+                enriched_ip["intel_sources"]
+            ),
+        )
+    )
+
     enriched_ip["confidence_score"] = (
-        calculate_confidence_score(enriched_ip)
+        intelligence_confidence["confidence"]
+    )
+
+    enriched_ip["confidence_band"] = (
+        intelligence_confidence["confidence_band"]
+    )
+
+    enriched_ip["confidence_evidence"] = (
+        intelligence_confidence["evidence"]
     )
 
     if not enriched_ip["intel_sources"]:

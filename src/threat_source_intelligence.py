@@ -110,7 +110,7 @@ def build_threat_source_rows(
             "Similarity": f"{diversified_similarity}%",
             "Escalation": escalation_state,
             "Traffic Profile": traffic_classification,
-            "Confidence": f"{source_confidence}%",
+            "Intel Confidence": f"{source_confidence}%",
             "Correlation": similarity.get(
                 "correlation_strength",
                 "Low"

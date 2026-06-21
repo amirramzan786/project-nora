@@ -174,6 +174,65 @@ def calculate_benign_reduction(
     return reduction
 
 
+# ----------------- Intelligence-specific confidence engine -----------------
+
+def calculate_intelligence_confidence(
+    external_reputation_score=0,
+    behavioural_risk_score=0,
+    known_malicious=False,
+    total_reports=0,
+    intelligence_sources=0,
+):
+    """
+    Calculate confidence for Threat Intelligence enrichment.
+
+    This is intentionally separate from attack-detection confidence.
+    External intelligence and behavioural evidence are tracked as
+    independent contributors.
+    """
+
+    external_score = min(40, external_reputation_score * 0.4)
+    behavioural_score = min(30, behavioural_risk_score * 0.3)
+
+    malicious_bonus = 15 if known_malicious else 0
+
+    report_score = min(10, total_reports / 10)
+
+    source_score = min(5, intelligence_sources * 2)
+
+    raw_confidence = (
+        external_score
+        + behavioural_score
+        + malicious_bonus
+        + report_score
+        + source_score
+    )
+
+    confidence = clamp_confidence(raw_confidence)
+
+    if confidence >= 80:
+        confidence_band = "High"
+    elif confidence >= 55:
+        confidence_band = "Moderate"
+    elif confidence >= 30:
+        confidence_band = "Low"
+    else:
+        confidence_band = "Minimal"
+
+    return {
+        "confidence": confidence,
+        "confidence_band": confidence_band,
+        "raw_confidence": raw_confidence,
+        "evidence": {
+            "external_reputation": round(external_score, 1),
+            "behavioural_risk": round(behavioural_score, 1),
+            "known_malicious": malicious_bonus,
+            "report_history": round(report_score, 1),
+            "intelligence_sources": round(source_score, 1),
+        },
+    }
+
+
 def calculate_detection_confidence(
     severity="LOW",
     request_count=0,

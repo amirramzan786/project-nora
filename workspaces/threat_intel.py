@@ -292,7 +292,12 @@ def render_threat_intelligence(
     geographic_card_meta = geo_city if geo_city != "Unknown" else "Region pending"
 
     reputation_available = primary_enrichment.get("abuse_score") not in [None, "N/A"]
-    asn_available = primary_enrichment.get("asn") not in [None, "N/A", "Unknown"]
+
+    asn_available = (
+        primary_enrichment.get("asn") not in [None, "N/A", "Unknown"]
+        or primary_enrichment.get("isp") not in [None, "Unknown Provider", "Unknown"]
+    )
+
     geoip_available = primary_enrichment.get("country") not in [None, "Unknown"]
     behavioural_available = behavioural_reputation_score > 0
 
@@ -317,6 +322,11 @@ def render_threat_intelligence(
         f"{classifier_label} with a {threat_rating.lower()} threat rating."
     )
 
+    confidence_band = primary_enrichment.get(
+        "confidence_band",
+        "Minimal",
+    )
+    
     intelligence_panels = {
         "Reputation": {
             "title": "Reputation Intelligence",
@@ -376,21 +386,26 @@ def render_threat_intelligence(
                 ("Coverage", f"{intelligence_coverage}%"),
                 (
                     "Reputation Context",
-                    "Available" if reputation_available else "Unavailable",
+                    reputation_source if reputation_available else "Unavailable",
                 ),
                 (
                     "ASN Intelligence",
-                    "Available" if asn_available else "Unavailable",
+                    asn_provider if asn_available else "Unavailable",
                 ),
                 (
                     "GeoIP Context",
-                    "Available" if geoip_available else "Unavailable",
+                    geo_country if geoip_available else "Unavailable",
                 ),
                 (
                     "Behavioural Context",
-                    "Available" if behavioural_available else "Unavailable",
+                    (
+                        f"Risk {behavioural_reputation_score}/100"
+                        if behavioural_available
+                        else "Unavailable"
+                    ),
                 ),
                 ("Assessment Reliability", assessment_reliability),
+                ("Confidence Band", confidence_band),
             ],
         },
     }
@@ -409,6 +424,7 @@ def render_threat_intelligence(
         "confidence_score",
         fallback_assessment_confidence,
     )
+
     confidence_bars = build_confidence_bars(assessment_confidence_pct)
 
 
