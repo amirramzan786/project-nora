@@ -16,6 +16,7 @@ This service will later integrate:
 """
 
 from copy import deepcopy
+import ipaddress
 import requests
 import streamlit as st
 
@@ -23,6 +24,11 @@ try:
     import pycountry
 except ImportError:
     pycountry = None
+
+try:
+    from ipwhois import IPWhois
+except ImportError:
+    IPWhois = None
 # =====================================================
 # ABUSEIPDB API CONFIGURATION
 # =====================================================
@@ -64,6 +70,54 @@ def resolve_country_name(country_code, fallback="Unknown"):
 
     return COUNTRY_NAME_FALLBACK_MAP.get(country_code, fallback)
 
+
+def is_routable_ip(ip_address):
+    """Return True when an IP is suitable for external ASN/reputation lookup."""
+
+    try:
+        ip_obj = ipaddress.ip_address(str(ip_address).strip())
+    except ValueError:
+        return False
+
+    return not (
+        ip_obj.is_private
+        or ip_obj.is_loopback
+        or ip_obj.is_link_local
+        or ip_obj.is_multicast
+        or ip_obj.is_reserved
+        or ip_obj.is_unspecified
+    )
+
+
+def query_asn_intelligence(ip_address):
+    """Resolve ASN/provider context using ipwhois when available.
+
+    This is intentionally optional and cached. If ipwhois is unavailable,
+    the IP is private/reserved, or lookup fails, None is returned safely.
+    """
+
+    if ip_address in ASN_CACHE:
+        return ASN_CACHE[ip_address]
+
+    if IPWhois is None or not is_routable_ip(ip_address):
+        return None
+
+    try:
+        rdap_result = IPWhois(ip_address).lookup_rdap(depth=1)
+
+        asn_data = {
+            "asn": rdap_result.get("asn"),
+            "asn_description": rdap_result.get("asn_description"),
+            "network_name": rdap_result.get("network", {}).get("name"),
+            "asn_country_code": rdap_result.get("asn_country_code"),
+        }
+
+        ASN_CACHE[ip_address] = asn_data
+        return asn_data
+
+    except Exception:
+        return None
+
 # =====================================================
 # ENRICHMENT CACHE
 # =====================================================
@@ -73,6 +127,8 @@ def resolve_country_name(country_code, fallback="Unknown"):
 # during dashboard refresh cycles.
 
 ENRICHMENT_CACHE = {}
+
+ASN_CACHE = {}
 
 
 def query_abuseipdb(ip_address):
@@ -147,10 +203,16 @@ ENRICHED_IP_TEMPLATE = {
     "city": "Unknown",
     "region": "Unknown",
     "asn": "Unknown",
+    "asn_description": "Unknown",
+    "asn_source": "Unavailable",
+    "network_name": "Unknown",
     "isp": "Unknown",
     "regional_risk": "Low",
     "activity_profile": "Unknown",
     "abuse_score": 0,
+    "external_reputation_score": 0,
+    "behavioural_risk_score": 0,
+    "reputation_source": "Behavioural Analysis",
     "threat_level": "Low",
     "known_malicious": False,
     "confidence_score": 0,
@@ -333,13 +395,17 @@ def enrich_ip(
 
     if abuseipdb_data:
 
-        enriched_ip["abuse_score"] = abuseipdb_data.get(
+        external_reputation_score = abuseipdb_data.get(
             "abuseConfidenceScore",
-            enriched_ip["abuse_score"]
+            enriched_ip["external_reputation_score"]
         )
 
+        enriched_ip["external_reputation_score"] = external_reputation_score
+        enriched_ip["abuse_score"] = external_reputation_score
+        enriched_ip["reputation_source"] = "AbuseIPDB"
+
         enriched_ip["known_malicious"] = (
-            enriched_ip["abuse_score"] >= 75
+            enriched_ip["external_reputation_score"] >= 75
         )
 
         country_code = abuseipdb_data.get(
@@ -366,6 +432,40 @@ def enrich_ip(
         )
 
     # -------------------------------------------------
+    # ASN Intelligence Enrichment
+    # -------------------------------------------------
+
+    asn_data = query_asn_intelligence(ip_address)
+
+    if asn_data:
+        asn_value = asn_data.get("asn")
+        asn_description = asn_data.get("asn_description")
+        network_name = asn_data.get("network_name")
+        asn_country_code = asn_data.get("asn_country_code")
+
+        if asn_value:
+            enriched_ip["asn"] = f"AS{asn_value}"
+
+        if asn_description:
+            enriched_ip["asn_description"] = asn_description
+            if enriched_ip["isp"] == "Unknown":
+                enriched_ip["isp"] = asn_description
+
+        if network_name:
+            enriched_ip["network_name"] = network_name
+
+        if asn_country_code and enriched_ip["country_code"] == "UN":
+            enriched_ip["country_code"] = asn_country_code
+            enriched_ip["country"] = resolve_country_name(
+                asn_country_code,
+                fallback=enriched_ip["country"]
+            )
+            enriched_ip["country_flag"] = get_country_flag(asn_country_code)
+
+        enriched_ip["asn_source"] = "ipwhois RDAP"
+        enriched_ip["intel_sources"].append("ipwhois RDAP")
+
+    # -------------------------------------------------
     # Mock Intelligence Logic
     # -------------------------------------------------
 
@@ -380,9 +480,10 @@ def enrich_ip(
         )
     ):
         enriched_ip["threat_level"] = "High"
+        enriched_ip["behavioural_risk_score"] = 92
         enriched_ip["abuse_score"] = max(
-            enriched_ip["abuse_score"],
-            92
+            enriched_ip["external_reputation_score"],
+            enriched_ip["behavioural_risk_score"]
         )
         enriched_ip["known_malicious"] = (
             enriched_ip["known_malicious"]
@@ -425,9 +526,10 @@ def enrich_ip(
         )
     ):
         enriched_ip["threat_level"] = "Medium"
+        enriched_ip["behavioural_risk_score"] = 61
         enriched_ip["abuse_score"] = max(
-            enriched_ip["abuse_score"],
-            61
+            enriched_ip["external_reputation_score"],
+            enriched_ip["behavioural_risk_score"]
         )
         enriched_ip["regional_risk"] = "Medium"
         enriched_ip["activity_profile"] = "Suspicious Behavioural Activity"
@@ -456,9 +558,10 @@ def enrich_ip(
 
     else:
         enriched_ip["threat_level"] = "Low"
+        enriched_ip["behavioural_risk_score"] = 18
         enriched_ip["abuse_score"] = max(
-            enriched_ip["abuse_score"],
-            18
+            enriched_ip["external_reputation_score"],
+            enriched_ip["behavioural_risk_score"]
         )
         enriched_ip["regional_risk"] = "Low"
         enriched_ip["activity_profile"] = "Low-Risk Behavioural Activity"
@@ -498,7 +601,10 @@ def enrich_ip(
         enriched_ip["country_flag"] = "🏳️"
         enriched_ip["city"] = "Unknown"
         enriched_ip["region"] = "Unknown"
-        enriched_ip["asn"] = "Unknown"
-        enriched_ip["isp"] = "Unknown"
+        if enriched_ip["asn_source"] == "Unavailable":
+            enriched_ip["asn"] = "Unknown"
+            enriched_ip["asn_description"] = "Unknown"
+            enriched_ip["network_name"] = "Unknown"
+            enriched_ip["isp"] = "Unknown"
 
     return enriched_ip
