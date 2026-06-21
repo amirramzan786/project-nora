@@ -16,6 +16,7 @@ This service will later integrate:
 """
 
 from copy import deepcopy
+from pathlib import Path
 import ipaddress
 import requests
 import streamlit as st
@@ -29,6 +30,11 @@ try:
     from ipwhois import IPWhois
 except ImportError:
     IPWhois = None
+
+try:
+    import geoip2.database
+except ImportError:
+    geoip2 = None
 # =====================================================
 # ABUSEIPDB API CONFIGURATION
 # =====================================================
@@ -36,6 +42,7 @@ except ImportError:
 
 
 ABUSEIPDB_BASE_URL = "https://api.abuseipdb.com/api/v2/check"
+GEOIP_DB_PATH = Path("data/geoip/GeoLite2-City.mmdb")
 
 COUNTRY_NAME_FALLBACK_MAP = {
     "GB": "United Kingdom",
@@ -128,7 +135,52 @@ def query_asn_intelligence(ip_address):
 
 ENRICHMENT_CACHE = {}
 
+
 ASN_CACHE = {}
+
+GEOIP_CACHE = {}
+def query_geoip_intelligence(ip_address):
+    """Resolve geographic context using GeoLite2 when available."""
+
+    if ip_address in GEOIP_CACHE:
+        return GEOIP_CACHE[ip_address]
+
+    if geoip2 is None or not is_routable_ip(ip_address):
+        return None
+
+    try:
+        if not GEOIP_DB_PATH.exists():
+            return None
+
+        with geoip2.database.Reader(str(GEOIP_DB_PATH)) as reader:
+            response = reader.city(ip_address)
+
+            geo_data = {
+                "country_code": response.country.iso_code,
+                "country": response.country.name,
+                "city": response.city.name,
+                "region": (
+                    response.subdivisions.most_specific.name
+                    if response.subdivisions
+                    else None
+                ),
+            }
+
+            if not any(
+                [
+                    geo_data["country_code"],
+                    geo_data["country"],
+                    geo_data["city"],
+                    geo_data["region"],
+                ]
+            ):
+                return None
+
+            GEOIP_CACHE[ip_address] = geo_data
+            return geo_data
+
+    except Exception:
+        return None
 
 
 def query_abuseipdb(ip_address):
@@ -202,6 +254,7 @@ ENRICHED_IP_TEMPLATE = {
     "country_flag": "🏳️",
     "city": "Unknown",
     "region": "Unknown",
+    "geoip_source": "Unavailable",
     "asn": "Unknown",
     "asn_description": "Unknown",
     "asn_source": "Unavailable",
@@ -213,6 +266,14 @@ ENRICHED_IP_TEMPLATE = {
     "external_reputation_score": 0,
     "behavioural_risk_score": 0,
     "reputation_source": "Behavioural Analysis",
+    "usage_type": "Unknown",
+    "domain": "Unknown",
+    "hostnames": [],
+    "is_whitelisted": False,
+    "is_tor": False,
+    "total_reports": 0,
+    "distinct_reporters": 0,
+    "last_reported_at": "Unknown",
     "threat_level": "Low",
     "known_malicious": False,
     "confidence_score": 0,
@@ -416,7 +477,6 @@ def enrich_ip(
         enriched_ip["country_code"] = country_code
         enriched_ip["country_flag"] = get_country_flag(country_code)
 
-
         enriched_ip["country"] = resolve_country_name(
             country_code,
             fallback=enriched_ip["country"]
@@ -425,6 +485,47 @@ def enrich_ip(
         enriched_ip["isp"] = abuseipdb_data.get(
             "isp",
             enriched_ip["isp"]
+        )
+
+        # Expanded AbuseIPDB mapping for additional fields
+        enriched_ip["usage_type"] = abuseipdb_data.get(
+            "usageType",
+            enriched_ip["usage_type"]
+        )
+
+        enriched_ip["domain"] = abuseipdb_data.get(
+            "domain",
+            enriched_ip["domain"]
+        )
+
+        enriched_ip["hostnames"] = abuseipdb_data.get(
+            "hostnames",
+            enriched_ip["hostnames"]
+        ) or []
+
+        enriched_ip["is_whitelisted"] = abuseipdb_data.get(
+            "isWhitelisted",
+            enriched_ip["is_whitelisted"]
+        )
+
+        enriched_ip["is_tor"] = abuseipdb_data.get(
+            "isTor",
+            enriched_ip["is_tor"]
+        )
+
+        enriched_ip["total_reports"] = abuseipdb_data.get(
+            "totalReports",
+            enriched_ip["total_reports"]
+        )
+
+        enriched_ip["distinct_reporters"] = abuseipdb_data.get(
+            "numDistinctUsers",
+            enriched_ip["distinct_reporters"]
+        )
+
+        enriched_ip["last_reported_at"] = abuseipdb_data.get(
+            "lastReportedAt",
+            enriched_ip["last_reported_at"]
         )
 
         enriched_ip["intel_sources"].append(
@@ -466,10 +567,39 @@ def enrich_ip(
         enriched_ip["intel_sources"].append("ipwhois RDAP")
 
     # -------------------------------------------------
+    # GeoIP Intelligence Enrichment
+    # -------------------------------------------------
+
+    geo_data = query_geoip_intelligence(ip_address)
+
+    if geo_data:
+        country_code = geo_data.get("country_code")
+
+        if country_code:
+            enriched_ip["country_code"] = country_code
+            enriched_ip["country_flag"] = get_country_flag(country_code)
+
+        if geo_data.get("country"):
+            enriched_ip["country"] = geo_data["country"]
+
+        if geo_data.get("city"):
+            enriched_ip["city"] = geo_data["city"]
+
+        if geo_data.get("region"):
+            enriched_ip["region"] = geo_data["region"]
+
+        enriched_ip["geoip_source"] = "GeoLite2"
+        enriched_ip["intel_sources"].append("GeoLite2")
+
+    # -------------------------------------------------
     # Mock Intelligence Logic
     # -------------------------------------------------
 
-    has_live_intelligence = abuseipdb_data is not None
+    has_live_intelligence = (
+        abuseipdb_data is not None
+        or asn_data is not None
+        or geo_data is not None
+    )
 
     if (
         request_count >= 1000
@@ -599,8 +729,9 @@ def enrich_ip(
         enriched_ip["country"] = "Unknown"
         enriched_ip["country_code"] = "UN"
         enriched_ip["country_flag"] = "🏳️"
-        enriched_ip["city"] = "Unknown"
-        enriched_ip["region"] = "Unknown"
+        if enriched_ip["geoip_source"] == "Unavailable":
+            enriched_ip["city"] = "Unknown"
+            enriched_ip["region"] = "Unknown"
         if enriched_ip["asn_source"] == "Unavailable":
             enriched_ip["asn"] = "Unknown"
             enriched_ip["asn_description"] = "Unknown"

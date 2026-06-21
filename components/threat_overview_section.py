@@ -1,5 +1,3 @@
-
-
 import textwrap
 
 import streamlit as st
@@ -78,6 +76,12 @@ def render_threat_overview_section(
         else f'{geo_city}, {geo_country}'
     )
 
+    display_asn_value = asn_value
+
+    if str(asn_value).strip().lower() in ["unknown", "n/a", "none"]:
+        if str(asn_provider).strip() not in ["", "Unknown", "None"]:
+            display_asn_value = "Provider Identified"
+
     render_html(f"""
         <div class='nora-threat-intel-shell'>
             <input class='nora-threat-panel-toggle' type='radio' name='nora-threat-panel' id='nora-panel-none' checked>
@@ -103,7 +107,7 @@ def render_threat_overview_section(
                         <span class='nora-threat-telemetry-label'>ASN</span>
                         <label class='nora-threat-info-dot' for='nora-panel-asn'>i</label>
                     </div>
-                    <div class='nora-threat-telemetry-value purple'>{asn_value}</div>
+                    <div class='nora-threat-telemetry-value purple'>{display_asn_value}</div>
                     <div class='nora-threat-telemetry-meta'>{asn_provider}</div>
                     <div class='nora-threat-telemetry-icon'>⌘</div>
                 </div>
@@ -120,7 +124,7 @@ def render_threat_overview_section(
 
                 <div class='nora-threat-telemetry-card coverage'>
                     <div class='nora-threat-telemetry-label-row'>
-                        <span class='nora-threat-telemetry-label'>Enrichment Coverage</span>
+                        <span class='nora-threat-telemetry-label'>Intelligence Coverage</span>
                         <label class='nora-threat-info-dot' for='nora-panel-coverage'>i</label>
                     </div>
                     <div class='nora-threat-telemetry-value green'>{intelligence_coverage}%</div>
@@ -180,7 +184,7 @@ def render_threat_overview_section(
                             <div class='nora-threat-mini-value'><div class='nora-threat-confidence-bars'>{behavioural_risk}</div></div>
                         </div>
                         <div class='nora-threat-mini-row'>
-                            <div class='nora-threat-mini-label'>Enrichment Coverage</div>
+                            <div class='nora-threat-mini-label'>Intelligence Coverage</div>
                             <div class='nora-threat-mini-value'><div class='nora-threat-confidence-bars'>{coverage_indicator}</div></div>
                         </div>
                         <div class='nora-threat-mini-note'>{assessment_summary}</div>
@@ -193,7 +197,7 @@ def render_threat_overview_section(
                     <div class='nora-threat-card-title'>Infrastructure Intelligence</div>
                     <div class='nora-threat-mini-row'>
                         <div class='nora-threat-mini-label'>ASN</div>
-                        <div class='nora-threat-mini-value'>{asn_value}</div>
+                        <div class='nora-threat-mini-value'>{display_asn_value}</div>
                     </div>
                     <div class='nora-threat-mini-row'>
                         <div class='nora-threat-mini-label'>Provider</div>

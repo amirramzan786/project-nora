@@ -6,3 +6,4 @@ plotly
 altair
 pycountry
 ipwhois
+geoip2

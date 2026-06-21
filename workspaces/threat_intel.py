@@ -223,6 +223,52 @@ def render_threat_intelligence(
         )
     asn_value = primary_enrichment.get("asn", "N/A")
     asn_provider = primary_enrichment.get("isp", "Unknown Provider")
+
+    asn_description = primary_enrichment.get(
+        "asn_description",
+        "Unknown"
+    )
+
+    network_name = primary_enrichment.get(
+        "network_name",
+        "Unknown"
+    )
+
+    asn_source = primary_enrichment.get(
+        "asn_source",
+        "Unavailable"
+    )
+
+    geoip_source = primary_enrichment.get(
+        "geoip_source",
+        "Unavailable"
+    )
+
+    reputation_source = primary_enrichment.get(
+        "reputation_source",
+        "Behavioural Analysis"
+    )
+
+    external_reputation_score = primary_enrichment.get(
+        "external_reputation_score",
+        0
+    )
+
+    behavioural_reputation_score = primary_enrichment.get(
+        "behavioural_risk_score",
+        0
+    )
+
+    usage_type = primary_enrichment.get("usage_type", "Unknown")
+    domain = primary_enrichment.get("domain", "Unknown")
+    total_reports = primary_enrichment.get("total_reports", 0)
+    distinct_reporters = primary_enrichment.get("distinct_reporters", 0)
+    is_whitelisted = primary_enrichment.get("is_whitelisted", False)
+    is_tor = primary_enrichment.get("is_tor", False)
+
+    whitelisted_display = "Yes" if is_whitelisted else "No"
+    tor_display = "Yes" if is_tor else "No"
+
     geo_country = primary_enrichment.get("country", "Unknown")
     geo_city = primary_enrichment.get("city", "Unknown")
     geo_country, geo_city = normalise_geographic_context(geo_country, geo_city)
@@ -245,13 +291,20 @@ def render_threat_intelligence(
     )
     geographic_card_meta = geo_city if geo_city != "Unknown" else "Region pending"
 
+    reputation_available = primary_enrichment.get("abuse_score") not in [None, "N/A"]
+    asn_available = primary_enrichment.get("asn") not in [None, "N/A", "Unknown"]
+    geoip_available = primary_enrichment.get("country") not in [None, "Unknown"]
+    behavioural_available = behavioural_reputation_score > 0
+
     available_context_signals = sum([
-        primary_enrichment.get("abuse_score") not in [None, "N/A"],
-        primary_enrichment.get("asn") not in [None, "N/A"],
-        primary_enrichment.get("country") not in [None, "Unknown"],
+        reputation_available,
+        asn_available,
+        geoip_available,
+        behavioural_available,
     ])
-    intelligence_coverage = round((available_context_signals / 3) * 100)
-    coverage_card_meta = f"{available_context_signals}/3 enrichment signals available"
+
+    intelligence_coverage = round((available_context_signals / 4) * 100)
+    coverage_card_meta = f"{available_context_signals}/4 intelligence domains available"
 
     assessment_summary = (
         f"{classifier_summary} Analysis identified {threat_count} detection "
@@ -270,14 +323,21 @@ def render_threat_intelligence(
             "summary": "Reputation context is derived from request volume, observed source behaviour and current detection severity.",
             "rows": [
                 ("Threat Rating", threat_rating),
+                ("Reputation Source", reputation_source),
                 (
-                    "Abuse Score",
-                    formatted_primary_abuse_score,
+                    "External Reputation",
+                    f"{external_reputation_score}/100",
                 ),
                 (
-                    "Infrastructure",
-                    enriched_infrastructure_class,
+                    "Behavioural Risk",
+                    f"{behavioural_reputation_score}/100",
                 ),
+                (
+                    "Reports",
+                    f"{total_reports} reports / {distinct_reporters} reporters",
+                ),
+                ("Whitelisted", whitelisted_display),
+                ("Tor Exit", tor_display),
             ],
         },
         "ASN": {
@@ -286,7 +346,10 @@ def render_threat_intelligence(
             "rows": [
                 ("ASN", asn_value),
                 ("Provider", asn_provider),
-                ("Infrastructure Class", enriched_infrastructure_class),
+                ("Usage Type", usage_type),
+                ("Domain", domain),
+                ("Network", network_name),
+                ("Source", asn_source),
             ],
         },
         "Geographic": {
@@ -294,34 +357,40 @@ def render_threat_intelligence(
             "summary": "Geographic context supports source concentration analysis by identifying where observed traffic sources are mapped.",
             "rows": [
                 ("Country", geo_country),
-                ("City / Region", geo_city),
+                (
+                    "City / Region",
+                    f"{geo_city} / {primary_enrichment.get('region', 'Unknown')}"
+                ),
                 ("Primary Source", top_ip),
                 (
                     "Behavioural Confidence",
                     f"{primary_enrichment.get('confidence_score', 'N/A')}%",
                 ),
+                ("Source", geoip_source),
             ],
         },
         "Coverage": {
-            "title": "Enrichment Coverage",
-            "summary": "Enrichment coverage shows which external and internal source-context signals are available for the current primary threat source.",
+            "title": "Intelligence Coverage",
+            "summary": "Coverage shows which enrichment and behavioural context signals are available for the current primary source.",
             "rows": [
                 ("Coverage", f"{intelligence_coverage}%"),
                 (
-                    "AbuseIPDB Data",
-                    "Available"
-                    if primary_enrichment.get("abuse_score") not in [None, "N/A"]
-                    else "Unavailable",
+                    "Reputation Context",
+                    "Available" if reputation_available else "Unavailable",
                 ),
                 (
-                    "ASN Context",
-                    "Available" if primary_enrichment.get("asn") not in [None, "N/A"] else "Unavailable",
+                    "ASN Intelligence",
+                    "Available" if asn_available else "Unavailable",
                 ),
                 (
-                    "Geographic Context",
-                    "Available" if primary_enrichment.get("country") not in [None, "Unknown"] else "Unavailable",
+                    "GeoIP Context",
+                    "Available" if geoip_available else "Unavailable",
                 ),
-                ("Reliability", assessment_reliability),
+                (
+                    "Behavioural Context",
+                    "Available" if behavioural_available else "Unavailable",
+                ),
+                ("Assessment Reliability", assessment_reliability),
             ],
         },
     }

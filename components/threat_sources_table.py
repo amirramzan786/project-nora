@@ -83,10 +83,27 @@ def render_threat_sources_section(
                 intelligence_profile["assessment_confidence"],
             )
 
+            asn_value = source_enrichment.get("asn", "Unknown")
+            provider_value = source_enrichment.get(
+                "isp",
+                "Unknown Provider"
+            )
+
+            if str(asn_value).strip() not in ["", "Unknown", "N/A", "None"]:
+                asn_provider_display = (
+                    f"{asn_value} · {provider_value}"
+                    if str(provider_value).strip() not in ["", "Unknown", "None"]
+                    else asn_value
+                )
+            elif str(provider_value).strip() not in ["", "Unknown", "None"]:
+                asn_provider_display = provider_value
+            else:
+                asn_provider_display = "Unknown Provider"
+
             threat_rows.append({
                 "IP Address": ip,
                 "Risk Level": risk_level,
-                "ASN / Provider": f"{source_enrichment.get('asn', 'N/A')} {source_enrichment.get('isp', 'Unknown Provider')}",
+                "ASN / Provider": asn_provider_display,
                 "Country": row_country,
                 "Reputation Score": reputation_score,
                 "Requests": f"{requests:,}",
