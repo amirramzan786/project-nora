@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Iterable, Optional
+import ipaddress
 
 import pandas as pd
 
@@ -141,17 +142,11 @@ def classify_attack_pattern(
 
     # Wave attacks can otherwise be misread as sustained when the total elevated
     # duration is high. Prioritise wave behaviour when repeated elevated segments
-    # and recovery dips are present, or when wave pulses are present.
+    # and recovery dips are present.
     if (
         wave_score >= 40
-        and (
-            features["elevated_segments"] >= 2
-            or features.get("wave_pulses", 0) >= 2
-        )
-        and (
-            features["recovery_dips"] >= 1
-            or features.get("wave_pulses", 0) >= 2
-        )
+        and features["elevated_segments"] >= 2
+        and features["recovery_dips"] >= 1
     ):
         pattern_type = "wave"
         score = wave_score
@@ -615,16 +610,23 @@ def _is_normal_profile(
 
 
 def _count_external_ips(ip_addresses: Iterable[str]) -> int:
-    """Approximate count of non-private/non-local IP addresses."""
+    """Count routable external IP addresses using Python's standard IP parser."""
 
     count = 0
 
     for ip in ip_addresses:
+        try:
+            ip_obj = ipaddress.ip_address(str(ip).strip())
+        except ValueError:
+            continue
+
         if not (
-            ip.startswith("10.")
-            or ip.startswith("192.168.")
-            or ip.startswith("172.16.")
-            or ip.startswith("127.")
+            ip_obj.is_private
+            or ip_obj.is_loopback
+            or ip_obj.is_link_local
+            or ip_obj.is_multicast
+            or ip_obj.is_reserved
+            or ip_obj.is_unspecified
         ):
             count += 1
 

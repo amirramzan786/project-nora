@@ -31,7 +31,30 @@ def extract_timestamp(line):
 
         return timestamp_part
 
+
     return None
+
+
+# Helper to build enriched IP entry for alerts and detection events
+def build_enriched_ip_entry(ip, count, operational_severity="LOW"):
+    """Build a consistent enriched IP dictionary for alerts and detection events."""
+    ip_context = enrich_ip(
+        ip,
+        request_count=count,
+        operational_severity=operational_severity
+    )
+
+    return {
+        "ip": ip,
+        "count": count,
+        "country": ip_context.get("country"),
+        "country_code": ip_context.get("country_code"),
+        "country_flag": ip_context.get("country_flag"),
+        "asn": ip_context.get("asn"),
+        "isp": ip_context.get("isp"),
+        "threat_level": ip_context.get("threat_level"),
+        "abuse_score": ip_context.get("abuse_score")
+    }
 
 def read_logs(file_path=None, file_content=None):
 
@@ -125,24 +148,12 @@ def read_logs(file_path=None, file_content=None):
     normal_activity = []
 
     for (ip, time_bucket), count in sorted(ip_time_counts.items(), key=lambda x: x[1], reverse=True):
-        ip_context = enrich_ip(
+        entry = build_enriched_ip_entry(
             ip,
-            request_count=count,
+            count,
             operational_severity="LOW"
         )
-
-        entry = {
-            "ip": ip,
-            "timestamp": time_bucket,
-            "count": count,
-            "country": ip_context.get("country"),
-            "country_code": ip_context.get("country_code"),
-            "country_flag": ip_context.get("country_flag"),
-            "asn": ip_context.get("asn"),
-            "isp": ip_context.get("isp"),
-            "threat_level": ip_context.get("threat_level"),
-            "abuse_score": ip_context.get("abuse_score")
-        }
+        entry["timestamp"] = time_bucket
         if count >= HIGH_THRESHOLD:
             entry["level"] = "high"
             alerts.append(entry)
@@ -275,17 +286,12 @@ def read_logs(file_path=None, file_content=None):
             spike_anomalies = df_time[df_time["DeltaAbs"] > std_requests]
             # Combine all sources
             anomaly_rows = pd.concat([anomaly_rows, stat_anomalies, spike_anomalies]).drop_duplicates()
-            print("ML anomalies:", len(df_time[df_time["anomaly"] == -1]))
-            print("Stat anomalies:", len(stat_anomalies))
-            print("Spike anomalies:", len(spike_anomalies))
-            print("Combined anomalies:", len(anomaly_rows))
 
             # --- KILL NOISE: remove low-value anomalies (stronger filter) ---
             anomaly_rows = anomaly_rows[
                 (anomaly_rows["Requests"] > avg_requests) &
                 (anomaly_rows["Requests"] > (avg_requests + 0.3 * std_requests))
             ]
-            print("After noise filter:", len(anomaly_rows))
 
             # --- Fallback detection if ML finds nothing ---
             if anomaly_rows.empty and len(df_time) > 2:
@@ -555,24 +561,13 @@ def read_logs(file_path=None, file_content=None):
                     ts_formatted = ts_key
 
                     if ts_formatted == time_str:
-
-                        ip_context = enrich_ip(
-                            ip_key,
-                            request_count=count,
-                            operational_severity=severity
+                        contributing_ips.append(
+                            build_enriched_ip_entry(
+                                ip_key,
+                                count,
+                                operational_severity=severity
+                            )
                         )
-
-                        contributing_ips.append({
-                            "ip": ip_key,
-                            "count": count,
-                            "country": ip_context.get("country"),
-                            "country_code": ip_context.get("country_code"),
-                            "country_flag": ip_context.get("country_flag"),
-                            "asn": ip_context.get("asn"),
-                            "isp": ip_context.get("isp"),
-                            "threat_level": ip_context.get("threat_level"),
-                            "abuse_score": ip_context.get("abuse_score")
-                        })
 
                 # Sort top contributors
                 contributing_ips = sorted(contributing_ips, key=lambda x: x["count"], reverse=True)[:3]
@@ -684,24 +679,13 @@ def read_logs(file_path=None, file_content=None):
                     enriched_aggregated_ips = []
 
                     for ip, cnt in aggregated_ips.items():
-
-                        ip_context = enrich_ip(
-                            ip,
-                            request_count=cnt,
-                            operational_severity=peak.get("severity", "LOW")
+                        enriched_aggregated_ips.append(
+                            build_enriched_ip_entry(
+                                ip,
+                                cnt,
+                                operational_severity=peak.get("severity", "LOW")
+                            )
                         )
-
-                        enriched_aggregated_ips.append({
-                            "ip": ip,
-                            "count": cnt,
-                            "country": ip_context.get("country"),
-                            "country_code": ip_context.get("country_code"),
-                            "country_flag": ip_context.get("country_flag"),
-                            "asn": ip_context.get("asn"),
-                            "isp": ip_context.get("isp"),
-                            "threat_level": ip_context.get("threat_level"),
-                            "abuse_score": ip_context.get("abuse_score")
-                        })
 
                     top_ips_combined = sorted(
                         enriched_aggregated_ips,
@@ -761,23 +745,13 @@ def read_logs(file_path=None, file_content=None):
 
                     top_ips_combined = []
                     for ip, cnt in sorted(ip_totals.items(), key=lambda x: x[1], reverse=True)[:3]:
-                        ip_context = enrich_ip(
-                            ip,
-                            request_count=cnt,
-                            operational_severity=attack_classification.risk_level
+                        top_ips_combined.append(
+                            build_enriched_ip_entry(
+                                ip,
+                                cnt,
+                                operational_severity=attack_classification.risk_level
+                            )
                         )
-
-                        top_ips_combined.append({
-                            "ip": ip,
-                            "count": cnt,
-                            "country": ip_context.get("country"),
-                            "country_code": ip_context.get("country_code"),
-                            "country_flag": ip_context.get("country_flag"),
-                            "asn": ip_context.get("asn"),
-                            "isp": ip_context.get("isp"),
-                            "threat_level": ip_context.get("threat_level"),
-                            "abuse_score": ip_context.get("abuse_score")
-                        })
 
                     anomalies.append({
                         "time": peak_time,
@@ -863,7 +837,6 @@ def read_logs(file_path=None, file_content=None):
 
         df_save.to_csv(history_path, index=False)
 
-    print("FINAL ANOMALIES:", len(anomalies))
-    print(anomalies)
+    # Removed debug print statements for anomalies
 
     return ip_totals, alerts, normal_activity, time_counts, anomalies, df_anom, pattern_colors

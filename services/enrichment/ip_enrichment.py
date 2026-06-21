@@ -18,12 +18,51 @@ This service will later integrate:
 from copy import deepcopy
 import requests
 import streamlit as st
+
+try:
+    import pycountry
+except ImportError:
+    pycountry = None
 # =====================================================
 # ABUSEIPDB API CONFIGURATION
 # =====================================================
 
 
+
 ABUSEIPDB_BASE_URL = "https://api.abuseipdb.com/api/v2/check"
+
+COUNTRY_NAME_FALLBACK_MAP = {
+    "GB": "United Kingdom",
+    "US": "United States",
+    "DE": "Germany",
+    "RU": "Russia",
+    "FR": "France",
+    "CN": "China",
+    "HK": "Hong Kong",
+    "NL": "Netherlands",
+    "SG": "Singapore",
+    "JP": "Japan"
+}
+
+
+def resolve_country_name(country_code, fallback="Unknown"):
+    """Resolve an ISO country code into a readable country name.
+
+    Uses pycountry when available for broad ISO coverage and falls back to
+    a small built-in map so enrichment remains safe without extra packages.
+    """
+
+    if not country_code or country_code == "UN":
+        return fallback
+
+    country_code = str(country_code).upper()
+
+    if pycountry is not None:
+        country = pycountry.countries.get(alpha_2=country_code)
+        if country:
+            return country.name
+
+    return COUNTRY_NAME_FALLBACK_MAP.get(country_code, fallback)
 
 # =====================================================
 # ENRICHMENT CACHE
@@ -311,22 +350,10 @@ def enrich_ip(
         enriched_ip["country_code"] = country_code
         enriched_ip["country_flag"] = get_country_flag(country_code)
 
-        COUNTRY_NAME_MAP = {
-            "GB": "United Kingdom",
-            "US": "United States",
-            "DE": "Germany",
-            "RU": "Russia",
-            "FR": "France",
-            "CN": "China",
-            "HK": "Hong Kong",
-            "NL": "Netherlands",
-            "SG": "Singapore",
-            "JP": "Japan"
-        }
 
-        enriched_ip["country"] = COUNTRY_NAME_MAP.get(
+        enriched_ip["country"] = resolve_country_name(
             country_code,
-            enriched_ip["country"]
+            fallback=enriched_ip["country"]
         )
 
         enriched_ip["isp"] = abuseipdb_data.get(
